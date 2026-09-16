@@ -31,16 +31,12 @@ app.use(cors({
     credentials: true,
 }));
 
-// ============================================================
-// Safe route loader — logs which file fails instead of crashing
-// ============================================================
 function loadRoute(name) {
     const filePath = `./routes/${name}`;
     try {
         const mod = require(filePath);
         if (typeof mod !== 'function') {
-            console.error(`[route-loader] BROKEN: ${name}.js exports "${typeof mod}" instead of a Router function. Check that the file ends with: module.exports = router;`);
-            // Return a placeholder router that responds with a clear error
+            console.error(`[route-loader] BROKEN: ${name}.js exports ${typeof mod} (expected function)`);
             const placeholder = express.Router();
             placeholder.use((req, res) => res.status(503).json({
                 error: `Route "${name}" is misconfigured on the server`,
@@ -50,7 +46,7 @@ function loadRoute(name) {
         console.log(`[route-loader] OK: ${name}.js`);
         return mod;
     } catch (err) {
-        console.error(`[route-loader] FAILED to load ${name}.js:`, err.message);
+        console.error(`[route-loader] FAILED: ${name}.js - ${err.message}`);
         const placeholder = express.Router();
         placeholder.use((req, res) => res.status(503).json({
             error: `Route "${name}" failed to load: ${err.message}`,
@@ -59,12 +55,10 @@ function loadRoute(name) {
     }
 }
 
-// Static uploads
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), { maxAge: '7d' }));
 
-// Rate limiters
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 500,
@@ -81,9 +75,6 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// ============================================================
-// Load all routes with the safe loader
-// ============================================================
 app.use('/api/auth',         loadRoute('auth'));
 app.use('/api/courses',      loadRoute('courses'));
 app.use('/api/enrollments',  loadRoute('enrollments'));
@@ -94,34 +85,24 @@ app.use('/api/certificates', loadRoute('certificates'));
 app.use('/api/admin',        loadRoute('admin'));
 app.use('/api/uploads',      loadRoute('uploads'));
 
-// ============================================================
-// Health check — shows which routes loaded OK
-// ============================================================
 app.get('/api/health', (req, res) => {
     const routeStatus = {};
     ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads']
         .forEach(name => {
             try {
                 const mod = require(`./routes/${name}`);
-                routeStatus[name] = typeof mod === 'function' ? 'OK' : `BROKEN (exports ${typeof mod})`;
+                routeStatus[name] = typeof mod === 'function' ? 'OK' : `BROKEN (${typeof mod})`;
             } catch (err) {
                 routeStatus[name] = `FAILED: ${err.message}`;
             }
         });
-
-    res.json({
-        ok: true,
-        ts: new Date().toISOString(),
-        routes: routeStatus,
-    });
+    res.json({ ok: true, ts: new Date().toISOString(), routes: routeStatus });
 });
 
-// 404
 app.use((req, res) => {
     res.status(404).json({ error: 'Not found' });
 });
 
-// Error handler
 app.use((err, req, res, next) => {
     console.error('[ERROR]', err.message);
     if (err.code === 'LIMIT_FILE_SIZE') {
@@ -136,7 +117,6 @@ app.use((err, req, res, next) => {
     });
 });
 
-// Session cleanup every hour
 setInterval(() => {
     try {
         require('./auth').cleanupExpiredSessions().catch(console.error);
