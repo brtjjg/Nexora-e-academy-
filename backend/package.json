@@ -1,4 +1,17 @@
-"dependencies": {
+{
+  "name": "nexora-academy-api",
+  "version": "1.0.0",
+  "description": "Nexora Academy production API",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "hash": "node scripts/hash-password.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
     "bcrypt": "^5.1.1",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -8,4 +21,5 @@
     "helmet": "^8.0.0",
     "multer": "^2.0.0",
     "pg": "^8.13.1"
+  }
 }
