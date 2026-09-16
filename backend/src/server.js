@@ -5,6 +5,7 @@ const helmet = require('helmet');
 const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 
@@ -30,6 +31,40 @@ app.use(cors({
     credentials: true,
 }));
 
+// ============================================================
+// Safe route loader — logs which file fails instead of crashing
+// ============================================================
+function loadRoute(name) {
+    const filePath = `./routes/${name}`;
+    try {
+        const mod = require(filePath);
+        if (typeof mod !== 'function') {
+            console.error(`[route-loader] BROKEN: ${name}.js exports "${typeof mod}" instead of a Router function. Check that the file ends with: module.exports = router;`);
+            // Return a placeholder router that responds with a clear error
+            const placeholder = express.Router();
+            placeholder.use((req, res) => res.status(503).json({
+                error: `Route "${name}" is misconfigured on the server`,
+            }));
+            return placeholder;
+        }
+        console.log(`[route-loader] OK: ${name}.js`);
+        return mod;
+    } catch (err) {
+        console.error(`[route-loader] FAILED to load ${name}.js:`, err.message);
+        const placeholder = express.Router();
+        placeholder.use((req, res) => res.status(503).json({
+            error: `Route "${name}" failed to load: ${err.message}`,
+        }));
+        return placeholder;
+    }
+}
+
+// Static uploads
+const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
+if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), { maxAge: '7d' }));
+
+// Rate limiters
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 500,
@@ -46,25 +81,39 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-// Static uploads
-app.use('/uploads', express.static(
-    path.resolve(process.env.UPLOAD_DIR || './uploads'),
-    { maxAge: '7d' }
-));
+// ============================================================
+// Load all routes with the safe loader
+// ============================================================
+app.use('/api/auth',         loadRoute('auth'));
+app.use('/api/courses',      loadRoute('courses'));
+app.use('/api/enrollments',  loadRoute('enrollments'));
+app.use('/api/progress',     loadRoute('progress'));
+app.use('/api/applications', loadRoute('applications'));
+app.use('/api/payments',     loadRoute('payments'));
+app.use('/api/certificates', loadRoute('certificates'));
+app.use('/api/admin',        loadRoute('admin'));
+app.use('/api/uploads',      loadRoute('uploads'));
 
-// Routes
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/courses', require('./routes/courses'));
-app.use('/api/enrollments', require('./routes/enrollments'));
-app.use('/api/progress', require('./routes/progress'));
-app.use('/api/applications', require('./routes/applications'));
-app.use('/api/payments', require('./routes/payments'));
-app.use('/api/certificates', require('./routes/certificates'));
-app.use('/api/admin', require('./routes/admin'));
-app.use('/api/uploads', require('./routes/uploads'));
-
+// ============================================================
+// Health check — shows which routes loaded OK
+// ============================================================
 app.get('/api/health', (req, res) => {
-    res.json({ ok: true, ts: new Date().toISOString() });
+    const routeStatus = {};
+    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads']
+        .forEach(name => {
+            try {
+                const mod = require(`./routes/${name}`);
+                routeStatus[name] = typeof mod === 'function' ? 'OK' : `BROKEN (exports ${typeof mod})`;
+            } catch (err) {
+                routeStatus[name] = `FAILED: ${err.message}`;
+            }
+        });
+
+    res.json({
+        ok: true,
+        ts: new Date().toISOString(),
+        routes: routeStatus,
+    });
 });
 
 // 404
@@ -83,15 +132,15 @@ app.use((err, req, res, next) => {
     }
     const status = err.status || 500;
     res.status(status).json({
-        error: process.env.NODE_ENV === 'production'
-            ? 'Server error'
-            : err.message,
+        error: process.env.NODE_ENV === 'production' ? 'Server error' : err.message,
     });
 });
 
 // Session cleanup every hour
 setInterval(() => {
-    require('./auth').cleanupExpiredSessions().catch(console.error);
+    try {
+        require('./auth').cleanupExpiredSessions().catch(console.error);
+    } catch (e) {}
 }, 60 * 60 * 1000);
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
