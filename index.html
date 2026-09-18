@@ -227,7 +227,7 @@ table tbody tr:hover{background:#f8fafc}
 .doc-info .doc-meta{font-size:0.75rem;color:var(--text-secondary);margin-top:2px}
 .doc-actions{display:flex;gap:6px;flex-wrap:wrap}
 .students-table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
-.students-table{width:100%;min-width:1100px;border-collapse:collapse}
+.students-table{width:100%;min-width:1300px;border-collapse:collapse}
 .students-table thead{background:var(--navy);color:#fff;position:sticky;top:0;z-index:5}
 .students-table thead th{padding:0.75rem 0.6rem;text-align:left;font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
 .students-table tbody td{padding:0.75rem 0.6rem;border-bottom:1px solid #f0f0f0;font-size:0.82rem;color:var(--text-secondary);vertical-align:middle;white-space:nowrap}
@@ -237,12 +237,6 @@ table tbody tr:hover{background:#f8fafc}
 .status-pill.rejected{background:#fee2e2;color:#991b1b}
 .status-pill.paid{background:#dcfce7;color:#166534}
 .status-pill.unpaid{background:#fee2e2;color:#991b1b}
-.status-pill.issued{background:#dcfce7;color:#166534}
-.status-pill.eligible{background:#fef3c7;color:#92400e}
-.status-pill.not-eligible{background:#f1f5f9;color:#64748b}
-.status-pill.none{background:#f1f5f9;color:#64748b}
-.status-pill.partial-s{background:#fef3c7;color:#92400e}
-.status-pill.full{background:#dcfce7;color:#166534}
 .clickable-count{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline dotted}
 .student-actions{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}
 .action-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:0.85rem;transition:all 0.15s}
@@ -258,14 +252,6 @@ table tbody tr:hover{background:#f8fafc}
 .overall-progress{background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:14px;text-align:center;margin-bottom:1.5rem}
 .overall-progress .big-pct{font-size:3rem;font-weight:900;color:var(--gold);line-height:1}
 .overall-progress .big-lbl{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;opacity:0.8;margin-top:0.4rem}
-.progress-course-card{background:var(--white);border-radius:12px;box-shadow:var(--shadow);padding:1.25rem;margin-bottom:1rem;border-left:4px solid var(--gold)}
-.progress-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-top:0.75rem}
-.progress-item{background:var(--bg);padding:0.6rem;border-radius:8px;text-align:center;font-size:0.75rem}
-.progress-item .pct{font-size:1.1rem;font-weight:800;color:var(--navy)}
-.progress-item .lbl{color:var(--text-secondary);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px}
-.certificate-status-card{background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid var(--gold);border-radius:12px;padding:1.5rem;text-align:center}
-.certificate-status-card.issued{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border-color:var(--success)}
-.certificate-status-card.not-eligible{background:#f8fafc;border-color:#cbd5e1}
 .sponsorship-card{background:linear-gradient(135deg,#fce7f3,#fef2f2);border:2px solid #fbcfe8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
 .sponsorship-card.full{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border-color:#bbf7d0}
 .sponsorship-card.partial{background:linear-gradient(135deg,#fef3c7,#fffbeb);border-color:#fde68a}
@@ -273,6 +259,9 @@ table tbody tr:hover{background:#f8fafc}
 .discount-price-row{margin-top:0.4rem}
 .discount-price-row s{color:var(--text-secondary);font-size:0.8rem;margin-right:6px}
 .discount-price-row .discounted{color:var(--gold);font-weight:800;font-size:1.15rem}
+.lesson-material{display:flex;align-items:center;gap:10px;padding:0.75rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem}
+.lesson-material i.file-icon{font-size:1.2rem}
+.lesson-material .mat-name{flex:1;color:var(--navy);font-weight:600}
 .hidden{display:none!important}
 .text-center{text-align:center}
 @media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.footer .container{grid-template-columns:1fr 1fr}.app-filters{grid-template-columns:1fr 1fr}}
@@ -627,8 +616,17 @@ table tbody tr:hover{background:#f8fafc}
 <div class="modal-backdrop" id="rejectReasonModal">
 <div class="modal-box" style="max-width:520px">
 <h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject Application</h2>
-<div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="3" placeholder="Enter reason..."></textarea></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()">Confirm</button></div>
+<div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="4" placeholder="Enter the reason for rejection (e.g., unclear ID document, ineligible age, incorrect details)..."></textarea></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()"><i class="fas fa-times-circle"></i> Confirm Reject</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="approveConfirmModal">
+<div class="modal-box" style="max-width:520px">
+<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve Student</h2>
+<p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Are you sure you want to approve this student?</p>
+<div class="form-group"><label>Optional Note</label><input type="text" id="approveNoteText" placeholder="Any notes (optional)"></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()"><i class="fas fa-check-circle"></i> Confirm Approve</button></div>
 </div>
 </div>
 
@@ -642,6 +640,66 @@ table tbody tr:hover{background:#f8fafc}
 <div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option><option value="paypal">🌐 PayPal</option></select></div>
 <div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closePayCourseModal()">Cancel</button><button type="submit" class="btn btn-success">Pay</button></div>
 </form>
+</div>
+</div>
+
+<div class="modal-backdrop" id="lessonEditorModal">
+<div class="modal-box" style="max-width:720px">
+<h2><i class="fas fa-play-circle"></i> <span id="lessonEditorTitle">Add Lesson</span></h2>
+<input type="hidden" id="lessonEditModuleIdx">
+<input type="hidden" id="lessonEditLessonIdx">
+<div class="form-row">
+<div class="form-group"><label>Lesson Title <span class="required">*</span></label><input type="text" id="lesTitle" placeholder="e.g., Introduction to Computing"></div>
+<div class="form-group"><label>Order</label><input type="number" id="lesOrder" min="1" value="1"></div>
+</div>
+<div class="form-group"><label>Short Description</label><input type="text" id="lesDescription" placeholder="One-line summary"></div>
+<div class="form-group">
+<label>Video (upload from device)</label>
+<div class="file-upload-container" onclick="document.getElementById('lesVideoInput').click()">
+<div class="upload-icon"><i class="fas fa-video"></i></div>
+<div class="upload-text">Tap to choose a video file</div>
+<div class="upload-hint">MP4, WebM, MOV — up to 100MB</div>
+<input type="file" id="lesVideoInput" accept="video/*" onchange="handleLesVideo(event)">
+</div>
+<div id="lesVideoPreview" style="margin-top:0.75rem;display:none">
+<div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video id="lesVideoEl" controls style="width:100%;height:100%"></video></div>
+<button type="button" class="btn btn-danger btn-sm" style="margin-top:0.5rem" onclick="removeLesVideo()"><i class="fas fa-trash"></i> Remove video</button>
+</div>
+</div>
+<div class="form-group">
+<label>Learning Materials / Notes</label>
+<textarea id="lesNotes" rows="5" placeholder="Type lesson notes, key points, and learning materials here..."></textarea>
+</div>
+<div class="form-group">
+<label>Assignment</label>
+<textarea id="lesAssignment" rows="3" placeholder="Homework or task for the student..."></textarea>
+</div>
+<div class="form-group">
+<label>Attach PDFs (optional)</label>
+<div class="file-upload-container" onclick="document.getElementById('lesPdfInput').click()">
+<div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+<div class="upload-text">Tap to choose PDF files</div>
+<input type="file" id="lesPdfInput" accept=".pdf,.doc,.docx" multiple onchange="handleLesPdfs(event)">
+</div>
+<div id="lesPdfList" style="margin-top:0.5rem"></div>
+</div>
+<div class="form-group">
+<label>Attach Images (optional)</label>
+<div class="file-upload-container" onclick="document.getElementById('lesImgInput').click()">
+<div class="upload-icon"><i class="fas fa-images"></i></div>
+<div class="upload-text">Tap to choose images</div>
+<input type="file" id="lesImgInput" accept="image/*" multiple onchange="handleLesImages(event)">
+</div>
+<div id="lesImgList" style="margin-top:0.5rem"></div>
+</div>
+<div class="form-group">
+<label>Visibility</label>
+<select id="lesPublished"><option value="published">Published</option><option value="draft">Draft</option></select>
+</div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end">
+<button type="button" class="btn btn-outline" onclick="closeLessonEditor()">Cancel</button>
+<button type="button" class="btn btn-success" onclick="saveLesson()"><i class="fas fa-save"></i> Save Lesson</button>
+</div>
 </div>
 </div>
 
@@ -704,6 +762,8 @@ let examQuestions = [];
 let catQuestions = [];
 let pendingRegUser = null;
 let rejectTargetId = null;
+let approveTargetId = null;
+let lessonDraft = { videoFile: null, pdfs: [], images: [] };
 let appFilterState = { search: '', status: 'all', payment: 'all', sort: 'newest' };
 
 const COUNTRIES = ['Kenya','Uganda','Tanzania','Rwanda','Burundi','South Sudan','Ethiopia','Somalia','Djibouti','Eritrea','Nigeria','Ghana','South Africa','Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Senegal','Ivory Coast','Cameroon','Zambia','Zimbabwe','Botswana','Namibia','Mozambique','Malawi','Angola','United States','United Kingdom','Canada','Australia','India','China','Japan','Germany','France','Italy','Spain','Brazil','Mexico','Argentina','Netherlands','Sweden','Norway','Denmark','Switzerland','Ireland','Belgium','Portugal','Poland','Russia','Turkey','Saudi Arabia','United Arab Emirates','Qatar','Pakistan','Bangladesh','Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam','South Korea','New Zealand','Other'];
@@ -715,23 +775,15 @@ function fmtDateTime(d) { return d ? new Date(d).toLocaleString() : '—'; }
 function showFlash(id, msg, type = 'info') { const c = document.getElementById(id); if (!c) return; c.innerHTML = `<div class="flash flash-${type}">${msg}</div>`; setTimeout(() => { c.innerHTML = ''; }, 6000); }
 function setLoading(on) { document.getElementById('loadingModal').classList.toggle('active', !!on); }
 function courseDiscountActive(c) { return !!(c && c.discount_enabled && c.discount_ends_at && new Date(c.discount_ends_at) > new Date()); }
-
 function renderPriceHTML(course) {
     const active = courseDiscountActive(course);
     if (active) {
-        return `<div>
-            <span class="discount-badge">🔥 ${esc(course.discount_label || 'Limited Offer')}</span>
-            <div class="discount-price-row">
-                <s>${fmtMoney(course.original_price)}</s>
-                <span class="discounted">${fmtMoney(course.discount_price)}</span>
-            </div>
-        </div>`;
+        return `<div><span class="discount-badge">🔥 ${esc(course.discount_label || 'Limited Offer')}</span><div class="discount-price-row"><s>${fmtMoney(course.original_price)}</s><span class="discounted">${fmtMoney(course.discount_price)}</span></div></div>`;
     }
     return `<span style="color:var(--gold);font-weight:700;font-size:1.1rem">${fmtMoney(course.price)}</span>`;
 }
 
 async function bootSession() { try { const { user } = await api('/auth/me'); currentUser = user; } catch (e) { currentUser = null; } }
-
 async function loginUser(e) {
     e.preventDefault();
     const btn = document.getElementById('loginBtn');
@@ -1100,8 +1152,10 @@ async function renderLessonView(lessonId) {
         const done = completed.includes(les.id);
         let html = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backToCourseModules()"><i class="fas fa-arrow-left"></i> Modules</button><div style="font-size:0.9rem;color:var(--text-secondary)">${esc(course.title)} • ${idx + 1}/${modLessons.length}</div></div><h2>${esc(les.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(les.description || '')}</p>`;
         if (les.video_url) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-video" style="color:var(--gold)"></i> Video</h3><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video controls controlsList="nodownload" style="width:100%;height:100%"><source src="${esc(les.video_url)}"></video></div></div>`; }
-        if (les.notes && les.notes.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-sticky-note" style="color:var(--gold)"></i> Notes</h3><div style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.95rem">${esc(les.notes)}</div></div>`; }
+        if (les.notes && les.notes.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> Learning Materials</h3><div style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.95rem">${esc(les.notes)}</div></div>`; }
         if (les.assignment && les.assignment.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-tasks" style="color:var(--gold)"></i> Assignment</h3><div style="background:#fef3c7;border-left:4px solid var(--warning);padding:1rem;border-radius:8px;color:#78350f">${esc(les.assignment)}</div></div>`; }
+        if (les.pdfs && les.pdfs.length) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> PDF Materials</h3>${les.pdfs.map(p => `<a href="${esc(p.path)}" target="_blank" class="lesson-material"><i class="fas fa-file-pdf file-icon" style="color:var(--danger)"></i><span class="mat-name">${esc(p.name)}</span><i class="fas fa-download" style="color:var(--blue)"></i></a>`).join('')}</div>`; }
+        if (les.images && les.images.length) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-images" style="color:var(--gold)"></i> Images</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem">${les.images.map(im => `<a href="${esc(im.path)}" target="_blank"><img src="${esc(im.path)}" style="width:100%;border-radius:10px;border:2px solid #e2e8f0"></a>`).join('')}</div></div>`; }
         html += `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:space-between;margin-top:1.5rem"><button class="btn ${done ? 'btn-outline' : 'btn-success'}" onclick="toggleLessonComplete('${les.id}')"><i class="fas fa-${done ? 'check-circle' : 'circle'}"></i> ${done ? 'Completed' : 'Mark Complete'}</button><div style="display:flex;gap:0.5rem">${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="openLesson('${modLessons[idx - 1].id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}${idx < modLessons.length - 1 ? `<button class="btn btn-primary btn-sm" onclick="openLesson('${modLessons[idx + 1].id}')">Next <i class="fas fa-arrow-right"></i></button>` : ''}</div></div>`;
         c.innerHTML = html;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load lesson.</div>'; }
@@ -1218,7 +1272,7 @@ async function renderAdminApplications() {
                 const paidOk = a.payment_status === 'paid';
                 const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected';
                 const canReject = a.status !== 'rejected' && a.status !== 'approved';
-                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="approveApplication('${a.id}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
+                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${a.id}', '${esc(a.full_name)}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
         c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" id="appSearch" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select><select onchange="appFilterState.sort=this.value;renderAdminApplications()"><option value="newest" ${appFilterState.sort === 'newest' ? 'selected' : ''}>Newest</option><option value="oldest" ${appFilterState.sort === 'oldest' ? 'selected' : ''}>Oldest</option><option value="name" ${appFilterState.sort === 'name' ? 'selected' : ''}>A→Z</option></select><button class="btn btn-outline btn-sm" onclick="appFilterState={search:'',status:'all',payment:'all',sort:'newest'};renderAdminApplications()"><i class="fas fa-times"></i></button></div>${tableHTML}`;
@@ -1238,25 +1292,39 @@ async function viewApplicationDetails(appId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 function closeAppDetailsModal() { document.getElementById('appDetailsModal').classList.remove('active'); }
-async function approveApplication(appId) {
-    if (!confirm('Approve this application?')) return;
+
+function openApproveModal(appId, studentName) {
+    approveTargetId = appId;
+    document.getElementById('approveConfirmText').textContent = `Approve application for ${studentName}? An admission number will be auto-generated.`;
+    document.getElementById('approveNoteText').value = '';
+    document.getElementById('approveConfirmModal').classList.add('active');
+}
+function closeApproveModal() { document.getElementById('approveConfirmModal').classList.remove('active'); approveTargetId = null; }
+async function confirmApprove() {
+    if (!approveTargetId) return;
     try {
-        const r = await api(`/applications/${appId}/approve`, { method: 'POST' });
+        const r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
+        closeApproveModal();
         alert('✅ Approved! Admission Number: ' + r.admission_number);
         await renderAdminApplications();
         await updateAdminDashboard();
         await updateCounts();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
-function openRejectModal(appId) { rejectTargetId = appId; document.getElementById('rejectReasonText').value = ''; document.getElementById('rejectReasonModal').classList.add('active'); }
+
+function openRejectModal(appId) {
+    rejectTargetId = appId;
+    document.getElementById('rejectReasonText').value = '';
+    document.getElementById('rejectReasonModal').classList.add('active');
+}
 function closeRejectModal() { document.getElementById('rejectReasonModal').classList.remove('active'); rejectTargetId = null; }
 async function confirmReject() {
     const reason = document.getElementById('rejectReasonText').value.trim();
-    if (!reason) { alert('⚠️ Reason required'); return; }
+    if (!reason) { alert('⚠️ Rejection reason is required'); return; }
     try {
         await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
         closeRejectModal();
-        alert('❌ Rejected');
+        alert('❌ Rejected. Reason saved.');
         await renderAdminApplications();
         await updateAdminDashboard();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
@@ -1268,23 +1336,21 @@ async function renderAdminStudents() {
     try {
         const { students } = await api('/admin/students');
         if (!students.length) { c.innerHTML = '<div class="empty-state">No students yet.</div>'; return; }
-        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${ap === 'pending' ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; const canApprove = ap !== 'approved'; const canReject = ap !== 'rejected'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${canApprove ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}', '${esc(s.full_name)}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load students.</div>'; }
 }
-async function quickApproveStudent(studentId) {
-    if (!confirm('Approve this student?')) return;
-    try {
-        const r = await api(`/admin/students/${studentId}/approve`, { method: 'POST' });
-        alert('✅ Approved! Admission: ' + r.admission_number);
-        await renderAdminStudents();
-        await updateAdminDashboard();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+async function quickApproveStudent(studentId, name) {
+    openApproveModal(studentId, name);
+    approveTargetId = studentId;
+    // The approveConfirm modal calls /applications/:id/approve — for students we need a different route
+    // We'll override confirmApprove temporarily by using a flag
+    document.getElementById('approveConfirmModal').dataset.mode = 'student';
 }
 async function quickRejectStudent(studentId) {
-    const reason = prompt('Rejection reason:');
-    if (!reason) return;
-    try { await api(`/admin/students/${studentId}/reject`, { method: 'POST', body: { reason } }); await renderAdminStudents(); }
-    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    rejectTargetId = studentId;
+    document.getElementById('rejectReasonText').value = '';
+    document.getElementById('rejectReasonModal').dataset.mode = 'student';
+    document.getElementById('rejectReasonModal').classList.add('active');
 }
 async function viewStudentProfile(studentId) {
     try {
@@ -1402,7 +1468,7 @@ async function deleteCourse(courseId) {
 async function editCourse(courseId) {
     try {
         const { course, modules, lessons } = await api(`/courses/${courseId}`);
-        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, instructor_name: course.instructor_name, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' } };
+        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, instructor_name: course.instructor_name, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' }, _existingSaved: true };
         examQuestions = []; catQuestions = [];
         document.getElementById('courseTitle').value = course.title || '';
         document.getElementById('courseCode').value = course.code || '';
@@ -1531,26 +1597,163 @@ function savePaymentInfo() {
     } else { currentCourseData.discount = { enabled: false, originalPrice: orig, discountPrice: 0, endsAt: null, label: '' }; }
     goToStep(2);
 }
-function addModule() { const n = prompt('Module name:'); if (!n) return; currentCourseData.modules.push({ title: n, position: currentCourseData.modules.length + 1, lessons: [] }); renderModules(); }
-function deleteModule(mi) { if (!confirm('Delete?')) return; currentCourseData.modules.splice(mi, 1); renderModules(); }
-function renderModules() {
-    const c = document.getElementById('modulesContainer');
-    if (!currentCourseData.modules || !currentCourseData.modules.length) { c.innerHTML = '<div class="empty-state">No modules yet.</div>'; return; }
-    c.innerHTML = currentCourseData.modules.map((m, mi) => `<div style="background:var(--white);border:1px solid #e2e8f0;border-radius:12px;margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem"><strong>Module ${mi + 1}: ${esc(m.title)}</strong><div><button class="btn btn-primary btn-sm" onclick="addLesson(${mi})"><i class="fas fa-plus"></i> Lesson</button> <button class="btn btn-danger btn-sm" onclick="deleteModule(${mi})"><i class="fas fa-trash"></i></button></div></div><div style="padding:1rem">${(!m.lessons || !m.lessons.length) ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons.</p>' : m.lessons.map((l, li) => `<div style="padding:0.6rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap"><div><strong>${esc(l.title)}</strong><div style="font-size:0.75rem;color:var(--text-secondary)">${l.video_url ? '🎬' : ''}</div></div><div><button class="btn btn-primary btn-sm" onclick="editLesson(${mi},${li})"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteLesson(${mi},${li})"><i class="fas fa-trash"></i></button></div></div>`).join('')}</div></div>`).join('');
-}
-function addLesson(mi) { const title = prompt('Lesson title:'); if (!title) return; currentCourseData.modules[mi].lessons = currentCourseData.modules[mi].lessons || []; currentCourseData.modules[mi].lessons.push({ title, description: '', position: currentCourseData.modules[mi].lessons.length + 1, notes: '', assignment: '', video_url: null, published: true, _new: true }); renderModules(); }
-function editLesson(mi, li) {
-    const les = currentCourseData.modules[mi].lessons[li];
-    const title = prompt('Lesson title:', les.title);
-    if (title === null) return;
-    les.title = title;
-    les.description = prompt('Description:', les.description || '') || '';
-    les.notes = prompt('Notes:', les.notes || '') || '';
-    les.assignment = prompt('Assignment:', les.assignment || '') || '';
-    les.video_url = prompt('Video URL (leave empty for none):', les.video_url || '') || null;
+function addModule() {
+    const n = prompt('Module name:');
+    if (!n) return;
+    currentCourseData.modules.push({ title: n, position: currentCourseData.modules.length + 1, lessons: [] });
     renderModules();
 }
-function deleteLesson(mi, li) { if (!confirm('Delete?')) return; currentCourseData.modules[mi].lessons.splice(li, 1); renderModules(); }
+function deleteModule(mi) { if (!confirm('Delete this module and all its lessons?')) return; currentCourseData.modules.splice(mi, 1); renderModules(); }
+function renderModules() {
+    const c = document.getElementById('modulesContainer');
+    if (!currentCourseData.modules || !currentCourseData.modules.length) { c.innerHTML = '<div class="empty-state">No modules yet. Click "Add Module" to begin.</div>'; return; }
+    c.innerHTML = currentCourseData.modules.map((m, mi) => `<div style="background:var(--white);border:1px solid #e2e8f0;border-radius:12px;margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem"><strong>Module ${mi + 1}: ${esc(m.title)}</strong><div><button class="btn btn-primary btn-sm" onclick="addLesson(${mi})"><i class="fas fa-plus"></i> Lesson</button> <button class="btn btn-danger btn-sm" onclick="deleteModule(${mi})"><i class="fas fa-trash"></i></button></div></div><div style="padding:1rem">${(!m.lessons || !m.lessons.length) ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons yet.</p>' : m.lessons.map((l, li) => `<div style="padding:0.75rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px"><strong>${esc(l.title)}</strong><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px">${l.video_url ? '🎬 Video ' : ''}${(l.pdfs && l.pdfs.length) ? l.pdfs.length + ' PDF ' : ''}${(l.images && l.images.length) ? l.images.length + ' img ' : ''}${l.published === 'draft' ? '• 📝 Draft' : ''}</div></div><div><button class="btn btn-primary btn-sm" onclick="editLesson(${mi},${li})"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteLesson(${mi},${li})"><i class="fas fa-trash"></i></button></div></div>`).join('')}</div></div>`).join('');
+}
+function deleteLesson(mi, li) { if (!confirm('Delete this lesson?')) return; currentCourseData.modules[mi].lessons.splice(li, 1); renderModules(); }
+
+// === Lesson Editor ===
+function addLesson(mi) {
+    lessonDraft = { videoFile: null, pdfs: [], images: [] };
+    document.getElementById('lessonEditorTitle').textContent = 'Add Lesson';
+    document.getElementById('lessonEditModuleIdx').value = mi;
+    document.getElementById('lessonEditLessonIdx').value = '';
+    document.getElementById('lesTitle').value = '';
+    document.getElementById('lesDescription').value = '';
+    document.getElementById('lesOrder').value = (currentCourseData.modules[mi].lessons || []).length + 1;
+    document.getElementById('lesNotes').value = '';
+    document.getElementById('lesAssignment').value = '';
+    document.getElementById('lesPublished').value = 'published';
+    document.getElementById('lesVideoPreview').style.display = 'none';
+    document.getElementById('lesVideoInput').value = '';
+    document.getElementById('lesPdfList').innerHTML = '';
+    document.getElementById('lesImgList').innerHTML = '';
+    document.getElementById('lessonEditorModal').classList.add('active');
+}
+function editLesson(mi, li) {
+    const les = currentCourseData.modules[mi].lessons[li];
+    lessonDraft = { videoFile: les.video_url || null, pdfs: JSON.parse(JSON.stringify(les.pdfs || [])), images: JSON.parse(JSON.stringify(les.images || [])) };
+    document.getElementById('lessonEditorTitle').textContent = 'Edit Lesson';
+    document.getElementById('lessonEditModuleIdx').value = mi;
+    document.getElementById('lessonEditLessonIdx').value = li;
+    document.getElementById('lesTitle').value = les.title || '';
+    document.getElementById('lesDescription').value = les.description || '';
+    document.getElementById('lesOrder').value = les.position || li + 1;
+    document.getElementById('lesNotes').value = les.notes || '';
+    document.getElementById('lesAssignment').value = les.assignment || '';
+    document.getElementById('lesPublished').value = les.published === 'draft' ? 'draft' : 'published';
+    if (les.video_url) {
+        document.getElementById('lesVideoEl').src = les.video_url;
+        document.getElementById('lesVideoPreview').style.display = 'block';
+    } else {
+        document.getElementById('lesVideoPreview').style.display = 'none';
+    }
+    renderLesPdfs();
+    renderLesImgs();
+    document.getElementById('lessonEditorModal').classList.add('active');
+}
+function closeLessonEditor() { document.getElementById('lessonEditorModal').classList.remove('active'); }
+async function handleLesVideo(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 100 * 1024 * 1024) { alert('⚠️ Max 100 MB'); e.target.value = ''; return; }
+    document.getElementById('lesVideoEl').src = URL.createObjectURL(file);
+    document.getElementById('lesVideoPreview').style.display = 'block';
+    try {
+        setLoading(true);
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await apiForm('/uploads/lesson-video?scope=lessons', fd);
+        lessonDraft.videoFile = r.path;
+    } catch (err) {
+        alert('❌ Video upload failed: ' + (err.data?.error || err.message));
+        document.getElementById('lesVideoPreview').style.display = 'none';
+        lessonDraft.videoFile = null;
+    } finally { setLoading(false); }
+}
+function removeLesVideo() {
+    lessonDraft.videoFile = null;
+    document.getElementById('lesVideoEl').src = '';
+    document.getElementById('lesVideoPreview').style.display = 'none';
+    document.getElementById('lesVideoInput').value = '';
+}
+function handleLesPdfs(e) {
+    const files = Array.from(e.target.files || []);
+    files.forEach(f => lessonDraft.pdfs.push({ name: f.name, _file: f }));
+    e.target.value = '';
+    renderLesPdfs();
+}
+function renderLesPdfs() {
+    const c = document.getElementById('lesPdfList');
+    c.innerHTML = lessonDraft.pdfs.map((p, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">📄 ${esc(p.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesPdf(${i})">✕</span></span>`).join('');
+}
+function removeLesPdf(i) { lessonDraft.pdfs.splice(i, 1); renderLesPdfs(); }
+function handleLesImages(e) {
+    const files = Array.from(e.target.files || []);
+    files.forEach(f => lessonDraft.images.push({ name: f.name, _file: f }));
+    e.target.value = '';
+    renderLesImgs();
+}
+function renderLesImgs() {
+    const c = document.getElementById('lesImgList');
+    c.innerHTML = lessonDraft.images.map((im, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">🖼️ ${esc(im.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesImg(${i})">✕</span></span>`).join('');
+}
+function removeLesImg(i) { lessonDraft.images.splice(i, 1); renderLesImgs(); }
+async function saveLesson() {
+    const mi = parseInt(document.getElementById('lessonEditModuleIdx').value);
+    const li = document.getElementById('lessonEditLessonIdx').value;
+    const title = document.getElementById('lesTitle').value.trim();
+    if (!title) { alert('⚠️ Lesson title required'); return; }
+
+    const uploadedPdfs = [];
+    const uploadedImgs = [];
+    try {
+        setLoading(true);
+        for (const p of lessonDraft.pdfs) {
+            if (p._file) {
+                const fd = new FormData();
+                fd.append('file', p._file);
+                const r = await apiForm('/uploads/lesson-attachment?attachment_type=pdf&scope=lessons', fd);
+                uploadedPdfs.push({ name: p.name, path: r.path });
+            } else { uploadedPdfs.push(p); }
+        }
+        for (const im of lessonDraft.images) {
+            if (im._file) {
+                const fd = new FormData();
+                fd.append('file', im._file);
+                const r = await apiForm('/uploads/lesson-attachment?attachment_type=image&scope=lessons', fd);
+                uploadedImgs.push({ name: im.name, path: r.path });
+            } else { uploadedImgs.push(im); }
+        }
+    } catch (err) {
+        setLoading(false);
+        alert('❌ Attachment upload failed: ' + (err.data?.error || err.message));
+        return;
+    }
+    setLoading(false);
+
+    const lessonObj = {
+        title,
+        description: document.getElementById('lesDescription').value,
+        position: parseInt(document.getElementById('lesOrder').value) || 1,
+        notes: document.getElementById('lesNotes').value,
+        assignment: document.getElementById('lesAssignment').value,
+        video_url: lessonDraft.videoFile || null,
+        pdfs: uploadedPdfs,
+        images: uploadedImgs,
+        published: document.getElementById('lesPublished').value,
+    };
+
+    const lessons = currentCourseData.modules[mi].lessons = currentCourseData.modules[mi].lessons || [];
+    if (li !== '') {
+        lessons[parseInt(li)] = { ...lessons[parseInt(li)], ...lessonObj };
+    } else {
+        lessons.push(lessonObj);
+    }
+    lessons.forEach((x, i) => x.position = i + 1);
+    closeLessonEditor();
+    renderModules();
+}
+
 function addExamQuestion() { examQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 2 }); renderExamQuestionsBuilder(); }
 function addCATQuestion() { catQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 5 }); renderCATQuestionsBuilder(); }
 function renderExamQuestionsBuilder() {
@@ -1600,7 +1803,9 @@ async function saveCourseToServer(status) {
             for (const mod of currentCourseData.modules) {
                 const modRes = await api(`/courses/${courseId}/modules`, { method: 'POST', body: { title: mod.title, position: mod.position } });
                 const newModuleId = modRes.module.id;
-                for (const les of (mod.lessons || [])) { await api(`/courses/${courseId}/lessons`, { method: 'POST', body: { module_id: newModuleId, title: les.title, description: les.description, position: les.position, notes: les.notes, assignment: les.assignment, video_url: les.video_url, published: les.published !== false } }); }
+                for (const les of (mod.lessons || [])) {
+                    await api(`/courses/${courseId}/lessons`, { method: 'POST', body: { module_id: newModuleId, title: les.title, description: les.description, position: les.position, notes: les.notes, assignment: les.assignment, video_url: les.video_url, published: les.published !== 'draft' } });
+                }
             }
             for (const q of examQuestions) { if (!q.question_text || !q.options.some(o => o)) continue; await api(`/courses/${courseId}/questions`, { method: 'POST', body: { question_type: 'exam', ...q } }); }
             for (const q of catQuestions) { if (!q.question_text || !q.options.some(o => o)) continue; await api(`/courses/${courseId}/questions`, { method: 'POST', body: { question_type: 'cat', ...q } }); }
@@ -1614,13 +1819,15 @@ async function saveCourseToServer(status) {
         document.getElementById('courseStatusBadge').textContent = status.charAt(0).toUpperCase() + status.slice(1);
         document.getElementById('courseStatusBadge').className = 'badge badge-' + status;
         alert('✅ Course saved!');
+        currentCourseData = null;
         await updateCounts();
-        await renderAdminCourses();
+        await navigateTo('admin-courses');
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
     finally { setLoading(false); }
 }
 function saveDraft() { saveCourseToServer('draft'); }
 function publishCourse() { saveCourseToServer('published'); }
+
 async function renderAdminExams() {
     const c = document.getElementById('adminExamsList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1664,7 +1871,7 @@ async function verifyCertificate() {
         else { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3><p>This certificate has been revoked.</p></div>`; }
     } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3><p>No certificate found with that ID.</p></div>`; }
 }
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); } });
 const _origNavigateTo = navigateTo;
 navigateTo = async function(page) {
     if (page === 'student-course-viewer') {
@@ -1678,11 +1885,52 @@ navigateTo = async function(page) {
     }
     return _origNavigateTo(page);
 };
+// Fix confirmReject to handle both applications and students
+const _origConfirmReject = confirmReject;
+confirmReject = async function() {
+    const reason = document.getElementById('rejectReasonText').value.trim();
+    if (!reason) { alert('⚠️ Rejection reason is required'); return; }
+    const mode = document.getElementById('rejectReasonModal').dataset.mode || 'application';
+    try {
+        if (mode === 'student') {
+            await api(`/admin/students/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
+        } else {
+            await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
+        }
+        closeRejectModal();
+        document.getElementById('rejectReasonModal').dataset.mode = 'application';
+        alert('❌ Rejected. Reason saved.');
+        if (mode === 'student') await renderAdminStudents();
+        else { await renderAdminApplications(); await updateAdminDashboard(); }
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+};
+const _origConfirmApprove = confirmApprove;
+confirmApprove = async function() {
+    const mode = document.getElementById('approveConfirmModal').dataset.mode || 'application';
+    try {
+        if (mode === 'student') {
+            const r = await api(`/admin/students/${approveTargetId}/approve`, { method: 'POST' });
+            alert('✅ Approved! Admission: ' + r.admission_number);
+            closeApproveModal();
+            document.getElementById('approveConfirmModal').dataset.mode = 'application';
+            await renderAdminStudents();
+            await updateAdminDashboard();
+        } else {
+            const r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
+            alert('✅ Approved! Admission: ' + r.admission_number);
+            closeApproveModal();
+            await renderAdminApplications();
+            await updateAdminDashboard();
+            await updateCounts();
+        }
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+};
+
 (async function boot() {
     await bootSession();
     if (currentUser) { showApp(); } else { goHome(); }
 })();
-console.log('🎓 Nexora Academy v9.4 — API:', API_BASE);
+console.log('🎓 Nexora Academy v9.5 — API:', API_BASE);
 </script>
 
 </body>
