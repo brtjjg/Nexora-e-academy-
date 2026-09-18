@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
-const { asyncHandler, money, genTransactionId, genWalletTxId, logActivity } = require('../utils');
+const { asyncHandler, money, genTransactionId, genWalletTxId } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
 
 const ACTIVATION_FEE = parseFloat(process.env.ACTIVATION_FEE) || 0.50;
@@ -14,8 +14,14 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
             `SELECT payment_status FROM applications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 1 FOR UPDATE`,
             [req.user.user_id]
         );
-        if (!existing.rows.length) { await client.query('ROLLBACK'); return res.status(400).json({ error: 'No application found' }); }
-        if (existing.rows[0].payment_status === 'paid') { await client.query('ROLLBACK'); return res.status(409).json({ error: 'Already paid' }); }
+        if (!existing.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'No application found' });
+        }
+        if (existing.rows[0].payment_status === 'paid') {
+            await client.query('ROLLBACK');
+            return res.status(409).json({ error: 'Already paid' });
+        }
 
         const txId = await genTransactionId(client);
         const tx = await client.query(
@@ -26,7 +32,10 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
              RETURNING *`,
             [txId, req.user.user_id, ACTIVATION_FEE]
         );
-        await client.query(`UPDATE transactions SET status='completed', verified_at=NOW() WHERE id=$1`, [tx.rows[0].id]);
+        await client.query(
+            `UPDATE transactions SET status='completed', verified_at=NOW() WHERE id=$1`,
+            [tx.rows[0].id]
+        );
         await client.query(
             `UPDATE applications SET status='paid', payment_status='paid', payment_reference=$1, paid_at=NOW()
              WHERE user_id=$2 AND status='payment_due'`,
@@ -66,7 +75,10 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
              FROM courses c LEFT JOIN course_discounts d ON d.course_id = c.id WHERE c.id = $1`,
             [course_id]
         );
-        if (!c.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Course not found' }); }
+        if (!c.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Course not found' });
+        }
         const course = c.rows[0];
         const activeDiscount = course.discount_enabled && course.ends_at && new Date(course.ends_at) > new Date();
         const effectivePrice = activeDiscount ? parseFloat(course.discount_price) : parseFloat(course.price);
@@ -79,8 +91,14 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
         const paid = parseFloat(paidRes.rows[0].total);
         const remaining = Math.max(0, effectivePrice - paid);
 
-        if (remaining <= 0) { await client.query('ROLLBACK'); return res.status(400).json({ error: 'Course already fully paid' }); }
-        if (payAmount > remaining + 0.01) { await client.query('ROLLBACK'); return res.status(400).json({ error: `Amount exceeds remaining ($${remaining.toFixed(2)})` }); }
+        if (remaining <= 0) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Course already fully paid' });
+        }
+        if (payAmount > remaining + 0.01) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: `Amount exceeds remaining ($${remaining.toFixed(2)})` });
+        }
 
         const txId = await genTransactionId(client);
         const tx = await client.query(
@@ -89,7 +107,10 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
              RETURNING *`,
             [txId, req.user.user_id, course_id, payAmount, payment_method || 'internal', effectivePrice]
         );
-        await client.query(`UPDATE transactions SET status='completed', verified_at=NOW() WHERE id=$1`, [tx.rows[0].id]);
+        await client.query(
+            `UPDATE transactions SET status='completed', verified_at=NOW() WHERE id=$1`,
+            [tx.rows[0].id]
+        );
 
         const wId = await genWalletTxId(client);
         await client.query(
