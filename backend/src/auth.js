@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
+const db = require('./db');
 const { asyncHandler, isValidEmail, isStrongPassword, logActivity } = require('../utils');
 const {
     hashPassword, verifyPassword,
