@@ -16,7 +16,6 @@ const COOKIE_OPTS = {
     path: '/',
 };
 
-// POST /api/auth/register
 router.post('/register', asyncHandler(async (req, res) => {
     const { username, email, password, full_name, phone, country,
             date_of_birth, course_interest } = req.body;
@@ -62,7 +61,6 @@ router.post('/register', asyncHandler(async (req, res) => {
     }
 }));
 
-// POST /api/auth/login
 router.post('/login', asyncHandler(async (req, res) => {
     const { email, password } = req.body;
     if (!email || !password) {
@@ -85,10 +83,8 @@ router.post('/login', asyncHandler(async (req, res) => {
     res.json({ ok: true, role: user.role });
 }));
 
-// GET /api/auth/me
 router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));
 
-// POST /api/auth/logout
 router.post('/logout', asyncHandler(async (req, res) => {
     const token = req.cookies.session;
     if (token) await deleteSession(token);
@@ -96,10 +92,6 @@ router.post('/logout', asyncHandler(async (req, res) => {
     res.json({ ok: true });
 }));
 
-// ============================================================
-// TEMPORARY EMERGENCY PASSWORD RESET
-// Remove this endpoint after resetting the passwords.
-// ============================================================
 router.post('/emergency-reset', asyncHandler(async (req, res) => {
     const { email, newPassword, secret } = req.body;
     if (secret !== 'nexora-reset-2026') {
