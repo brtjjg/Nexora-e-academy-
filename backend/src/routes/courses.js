@@ -199,3 +199,22 @@ router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 module.exports = router;
+router.put('/:id/discount', requireAdmin, asyncHandler(async (req, res) => {
+    const { enabled, original_price, discount_price, label, ends_at } = req.body;
+    if (enabled && (!discount_price || discount_price >= original_price)) {
+        return res.status(400).json({ error: 'Invalid discount price' });
+    }
+    const existing = await db.query(`SELECT id FROM course_discounts WHERE course_id = $1`, [req.params.id]);
+    if (existing.rows.length) {
+        await db.query(
+            `UPDATE course_discounts SET enabled = $1, original_price = $2, discount_price = $3, label = $4, ends_at = $5, updated_at = NOW() WHERE course_id = $6`,
+            [enabled, original_price, discount_price, label, ends_at, req.params.id]
+        );
+    } else {
+        await db.query(
+            `INSERT INTO course_discounts (course_id, enabled, original_price, discount_price, label, ends_at) VALUES ($1, $2, $3, $4, $5, $6)`,
+            [req.params.id, enabled, original_price, discount_price, label, ends_at]
+        );
+    }
+    res.json({ ok: true });
+}));
