@@ -662,14 +662,11 @@ table tbody tr:hover{background:#f8fafc}
 
 <script>
 /* ============================================================
-   NEXORA ACADEMY — PRODUCTION FRONTEND v9.0
-   Talks to the Node.js + PostgreSQL API.
+   NEXORA ACADEMY — PRODUCTION FRONTEND v9.1
+   Backend: https://nexora-api-sskg.onrender.com/api
 ============================================================ */
 
-// ============================================================
-// API CLIENT
-// ============================================================
-const API_BASE = window.NEXORA_API_BASE || '/api';
+const API_BASE = 'https://nexora-api-sskg.onrender.com/api';
 
 async function api(path, options = {}) {
     const opts = {
@@ -715,9 +712,6 @@ async function apiForm(path, formData, method = 'POST') {
     return data;
 }
 
-// ============================================================
-// STATE
-// ============================================================
 let currentUser = null;
 let sidebarOpen = false;
 let currentStep = 0;
@@ -732,9 +726,6 @@ let appFilterState = { search: '', status: 'all', payment: 'all', sort: 'newest'
 
 const COUNTRIES = ['Kenya','Uganda','Tanzania','Rwanda','Burundi','South Sudan','Ethiopia','Somalia','Djibouti','Eritrea','Nigeria','Ghana','South Africa','Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Senegal','Ivory Coast','Cameroon','Zambia','Zimbabwe','Botswana','Namibia','Mozambique','Malawi','Angola','United States','United Kingdom','Canada','Australia','India','China','Japan','Germany','France','Italy','Spain','Brazil','Mexico','Argentina','Netherlands','Sweden','Norway','Denmark','Switzerland','Ireland','Belgium','Portugal','Poland','Russia','Turkey','Saudi Arabia','United Arab Emirates','Qatar','Pakistan','Bangladesh','Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam','South Korea','New Zealand','Other'];
 
-// ============================================================
-// HELPERS
-// ============================================================
 function esc(s) {
     return (s == null ? '' : String(s))
         .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
@@ -756,23 +747,7 @@ function courseDiscountActive(c) {
     return !!(c && c.discount_enabled && c.discount_ends_at &&
         new Date(c.discount_ends_at) > new Date());
 }
-function effectivePrice(c) {
-    if (!c) return 0;
-    if (courseDiscountActive(c)) return parseFloat(c.discount_price);
-    return parseFloat(c.price);
-}
-function currentEffectivePrice(course) {
-    if (!course) return 0;
-    if (course.discount && course.discount.enabled && course.discount.endsAt &&
-        new Date(course.discount.endsAt) > new Date()) {
-        return parseFloat(course.discount.discountPrice);
-    }
-    return parseFloat(course.price);
-}
 
-// ============================================================
-// AUTH
-// ============================================================
 async function bootSession() {
     try {
         const { user } = await api('/auth/me');
@@ -811,9 +786,6 @@ async function logout() {
     goHome();
 }
 
-// ============================================================
-// NAVIGATION
-// ============================================================
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-landing').classList.add('active');
@@ -1023,9 +995,6 @@ async function updateCounts() {
     } catch (e) {}
 }
 
-// ============================================================
-// COUNTRY FILTER
-// ============================================================
 function filterCountries(q) {
     const dd = document.getElementById('countryDropdown');
     if (!dd) return;
@@ -1070,9 +1039,6 @@ function checkPasswordStrength(pw) {
     bar.style.background = score <= 1 ? 'var(--danger)' : score === 2 ? 'var(--warning)' : 'var(--success)';
 }
 
-// ============================================================
-// REGISTRATION
-// ============================================================
 function regGoToStep(n) {
     document.querySelectorAll('.reg-step').forEach(el => el.classList.remove('active'));
     const s = document.getElementById('reg-step-' + n);
@@ -1135,7 +1101,6 @@ async function regStep2() {
 
     setLoading(true);
     try {
-        // 1. Register account
         await api('/auth/register', {
             method: 'POST',
             body: {
@@ -1150,20 +1115,17 @@ async function regStep2() {
             },
         });
 
-        // 2. Log in
         await api('/auth/login', {
             method: 'POST',
             body: { email: pendingRegUser.email, password: pendingRegUser.password },
         });
         await bootSession();
 
-        // 3. Create application
         const { application } = await api('/applications', {
             method: 'POST',
             body: { course_interest: pendingRegUser.course_interest },
         });
 
-        // 4. Upload documents (only if present)
         const files = {
             national_front: document.getElementById('doc_national_front').files[0],
             national_back: document.getElementById('doc_national_back').files[0],
@@ -1210,9 +1172,6 @@ function goToDashboard() {
     showApp();
 }
 
-// ============================================================
-// COURSE CARDS
-// ============================================================
 function renderCourseCardHTML(course, mode, extra = {}) {
     const active = courseDiscountActive(course);
     const effPrice = active ? parseFloat(course.discount_price) : parseFloat(course.price);
@@ -1282,9 +1241,6 @@ async function renderPublicCourses() {
     }
 }
 
-// ============================================================
-// STUDENT DASHBOARD
-// ============================================================
 async function updateStudentDashboard() {
     const c = document.getElementById('studentDashboardContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1338,9 +1294,6 @@ function renderEnrolledCard(e) {
     </div>`;
 }
 
-// ============================================================
-// STUDENT WALLET
-// ============================================================
 async function renderStudentWallet() {
     const c = document.getElementById('studentWalletContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1380,9 +1333,6 @@ async function renderStudentWallet() {
     }
 }
 
-// ============================================================
-// STUDENT COURSES
-// ============================================================
 async function renderStudentCourses() {
     const c = document.getElementById('studentCoursesList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1419,9 +1369,6 @@ async function enrollInCourse(courseId) {
     }
 }
 
-// ============================================================
-// COURSE VIEWER (student)
-// ============================================================
 async function openCourseViewer(courseId) {
     currentCourseView = { courseId };
     currentLessonView = null;
@@ -1571,9 +1518,6 @@ async function toggleLessonComplete(lessonId) {
     }
 }
 
-// ============================================================
-// PAY COURSE
-// ============================================================
 let payCourseTarget = null;
 
 async function openPayCourseModal(courseId) {
@@ -1621,16 +1565,13 @@ async function processCoursePayment(e) {
     }
 }
 
-// ============================================================
-// STUDENT RESULTS / EXAMS / CERTIFICATES / PROFILE
-// ============================================================
 async function renderStudentResults() {
     const c = document.getElementById('studentResultsTable');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { results } = await api('/progress/results/all');
         if (!results.length) {
-            c.innerHTML = '<div class="empty-state">No results yet.</p>';
+            c.innerHTML = '<div class="empty-state">No results yet.</div>';
             return;
         }
         c.innerHTML = `<div class="table-wrapper"><table>
@@ -1713,9 +1654,6 @@ function renderStudentProfile() {
         </div>`;
 }
 
-// ============================================================
-// ADMIN DASHBOARD
-// ============================================================
 async function updateAdminDashboard() {
     try {
         const stats = await api('/admin/stats');
@@ -1756,9 +1694,6 @@ async function updateAdminDashboard() {
     }
 }
 
-// ============================================================
-// ADMIN APPLICATIONS
-// ============================================================
 async function renderAdminApplications() {
     const c = document.getElementById('adminApplicationsList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1855,7 +1790,7 @@ async function viewApplicationDetails(appId) {
                         <div class="doc-meta">${esc(d.file_name)} • Status: <strong>${d.status.toUpperCase()}</strong></div>
                     </div>
                     <div class="doc-actions">
-                        <a href="${API_BASE}/../uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
+                        <a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a>
                     </div>
                 </div>`).join('');
 
@@ -1915,9 +1850,6 @@ async function confirmReject() {
     }
 }
 
-// ============================================================
-// ADMIN STUDENTS
-// ============================================================
 async function renderAdminStudents() {
     const c = document.getElementById('adminStudentsList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1981,19 +1913,15 @@ async function quickRejectStudent(studentId) {
     }
 }
 
-// ============================================================
-// ADMIN COURSES
-// ============================================================
 async function renderAdminCourses() {
     const c = document.getElementById('adminCoursesList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
-        const { courses } = await api('/courses');
+        const { courses } = await api('/courses?include_drafts=true');
         if (!courses.length) {
             c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No courses yet.</div>';
             return;
         }
-        // For admin view, we need unpublished too — fetch all admin courses
         c.innerHTML = courses.map(co => renderCourseCardHTML(co, 'admin')).join('');
     } catch (err) {
         c.innerHTML = '<div class="empty-state">Failed to load courses.</div>';
@@ -2052,7 +1980,6 @@ async function editCourse(courseId) {
         examQuestions = [];
         catQuestions = [];
 
-        // Populate form
         document.getElementById('courseTitle').value = course.title || '';
         document.getElementById('courseCode').value = course.code || '';
         document.getElementById('courseCategory').value = course.category || 'IT & Technology';
@@ -2082,9 +2009,6 @@ async function editCourse(courseId) {
     }
 }
 
-// ============================================================
-// COURSE BUILDER
-// ============================================================
 function initBuilder() {
     if (!currentCourseData || !currentCourseData.id) {
         currentCourseData = {
@@ -2407,10 +2331,6 @@ async function saveCourseToServer(status) {
             currentCourseData.id = courseId;
         }
 
-        // Modules + lessons: delete existing and recreate to keep it simple
-        // (For large courses, use a diff-based sync instead.)
-        // We only support "save on create" here for simplicity.
-
         if (!currentCourseData._existingSaved) {
             for (const mod of currentCourseData.modules) {
                 const modRes = await api(`/courses/${courseId}/modules`, {
@@ -2450,11 +2370,6 @@ async function saveCourseToServer(status) {
             currentCourseData._existingSaved = true;
         }
 
-        // Discount
-        if (currentCourseData.discount && currentCourseData.discount.enabled) {
-            // Discounts are handled via direct API; for now, skip auto-save
-        }
-
         document.getElementById('courseStatusBadge').textContent = status.charAt(0).toUpperCase() + status.slice(1);
         document.getElementById('courseStatusBadge').className = 'badge badge-' + status;
         alert('✅ Course saved!');
@@ -2470,14 +2385,11 @@ async function saveCourseToServer(status) {
 function saveDraft() { saveCourseToServer('draft'); }
 function publishCourse() { saveCourseToServer('published'); }
 
-// ============================================================
-// ADMIN EXAMS / CERTIFICATES / REVENUE / PAYMENTS
-// ============================================================
 async function renderAdminExams() {
     const c = document.getElementById('adminExamsList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
-        const { courses } = await api('/courses');
+        const { courses } = await api('/courses?include_drafts=true');
         const withExams = courses.filter(co => co.id);
         if (!withExams.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No courses yet.</p>'; return; }
         c.innerHTML = withExams.map(co => `
@@ -2548,9 +2460,6 @@ async function renderAdminPayments() {
     }
 }
 
-// ============================================================
-// VERIFY CERTIFICATE
-// ============================================================
 async function verifyCertificate() {
     const token = document.getElementById('verifyToken').value.trim();
     const r = document.getElementById('verifyResult');
@@ -2582,9 +2491,6 @@ async function verifyCertificate() {
     }
 }
 
-// ============================================================
-// GLOBAL EVENT LISTENERS
-// ============================================================
 document.addEventListener('keydown', e => {
     if (e.key === 'Escape') {
         closeSidebar();
@@ -2594,7 +2500,6 @@ document.addEventListener('keydown', e => {
     }
 });
 
-// Patch navigateTo to handle course viewer specially
 const _origNavigateTo = navigateTo;
 navigateTo = async function(page) {
     if (page === 'student-course-viewer') {
@@ -2609,9 +2514,6 @@ navigateTo = async function(page) {
     return _origNavigateTo(page);
 };
 
-// ============================================================
-// BOOT
-// ============================================================
 (async function boot() {
     await bootSession();
     if (currentUser) {
@@ -2621,7 +2523,7 @@ navigateTo = async function(page) {
     }
 })();
 
-console.log('🎓 Nexora Academy v9.0 — Production Frontend');
+console.log('🎓 Nexora Academy v9.1 — API:', API_BASE);
 </script>
 
 </body>
