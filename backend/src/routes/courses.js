@@ -2,9 +2,9 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
-const { requireAuth, requireAdmin } = require('../middleware');
+const { requireAdmin } = require('../middleware');
 
-// GET /api/courses — list courses (published by default)
+// GET /api/courses — list all (published only unless include_drafts=true)
 router.get('/', asyncHandler(async (req, res) => {
     const includeDrafts = req.query.include_drafts === 'true';
     const r = await db.query(
@@ -54,14 +54,10 @@ router.get('/:id', asyncHandler(async (req, res) => {
         [req.params.id]
     );
 
-    res.json({
-        course: course.rows[0],
-        modules: modules.rows,
-        lessons: lessons.rows,
-    });
+    res.json({ course: course.rows[0], modules: modules.rows, lessons: lessons.rows });
 }));
 
-// POST /api/courses — create (admin only)
+// POST /api/courses — create
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const {
         title, code, category, level, description, instructor_name,
@@ -69,7 +65,6 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
         cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
         status,
     } = req.body;
-
     if (!title) return res.status(400).json({ error: 'Title required' });
 
     const r = await db.query(
@@ -89,7 +84,7 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ course: r.rows[0] });
 }));
 
-// PUT /api/courses/:id — update (admin only)
+// PUT /api/courses/:id — update
 router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const fields = ['title','code','category','level','description',
         'instructor_name','duration','cover_image_url','price',
@@ -113,14 +108,14 @@ router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ course: r.rows[0] });
 }));
 
-// DELETE /api/courses/:id (admin only)
+// DELETE /api/courses/:id
 router.delete('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query('DELETE FROM courses WHERE id = $1 RETURNING id', [req.params.id]);
     if (!r.rows.length) return res.status(404).json({ error: 'Course not found' });
     res.json({ ok: true });
 }));
 
-// POST /api/courses/:id/modules — add module (admin only)
+// POST /api/courses/:id/modules — add module
 router.post('/:id/modules', requireAdmin, asyncHandler(async (req, res) => {
     const { title, position } = req.body;
     if (!title) return res.status(400).json({ error: 'Title required' });
@@ -134,7 +129,7 @@ router.post('/:id/modules', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ module: r.rows[0] });
 }));
 
-// POST /api/courses/:id/lessons — add lesson (admin only)
+// POST /api/courses/:id/lessons — add lesson
 router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
     const { module_id, title, description, position, notes, assignment,
             video_url, published } = req.body;
@@ -154,7 +149,7 @@ router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ lesson: r.rows[0] });
 }));
 
-// POST /api/courses/:id/questions — add exam or CAT question (admin only)
+// POST /api/courses/:id/questions — add exam or CAT question
 router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     const { question_type, question_text, options, correct_index, marks, position } = req.body;
     if (!['exam','cat'].includes(question_type)) {
@@ -176,7 +171,7 @@ router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ question: r.rows[0] });
 }));
 
-// PUT /api/courses/:id/discount — create or update discount (admin only)
+// PUT /api/courses/:id/discount — create or update discount
 router.put('/:id/discount', requireAdmin, asyncHandler(async (req, res) => {
     const { enabled, original_price, discount_price, label, ends_at } = req.body;
     if (enabled && (!discount_price || discount_price >= original_price)) {
