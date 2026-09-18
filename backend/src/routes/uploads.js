@@ -148,4 +148,22 @@ router.post('/generic',
     })
 );
 
+// ============================================================
+// Assignment submission file upload
+// ============================================================
+router.post('/assignment-file',
+    requireAuth,
+    upload.single('file'),
+    asyncHandler(async (req, res) => {
+        if (!req.file) return res.status(400).json({ error: 'No file' });
+        const storagePath = path.relative(UPLOAD_DIR, req.file.path);
+        res.status(201).json({
+            path: '/uploads/' + storagePath,
+            file_name: req.file.originalname,
+            file_type: req.file.mimetype,
+            file_size: req.file.size,
+        });
+    })
+);
+
 module.exports = router;
