@@ -6,6 +6,7 @@ const cors = require('cors');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const fs = require('fs');
+const { runMigrations } = require('./migrate');
 
 const app = express();
 
@@ -36,10 +37,10 @@ function loadRoute(name) {
     try {
         const mod = require(filePath);
         if (typeof mod !== 'function') {
-            console.error(`[route-loader] BROKEN: ${name}.js exports ${typeof mod} (expected function)`);
+            console.error(`[route-loader] BROKEN: ${name}.js exports ${typeof mod}`);
             const placeholder = express.Router();
             placeholder.use((req, res) => res.status(503).json({
-                error: `Route "${name}" is misconfigured on the server`,
+                error: `Route "${name}" is misconfigured`,
             }));
             return placeholder;
         }
@@ -124,6 +125,9 @@ setInterval(() => {
 }, 60 * 60 * 1000);
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
-app.listen(PORT, () => {
-    console.log(`[Nexora API] listening on port ${PORT}`);
+
+runMigrations().then(() => {
+    app.listen(PORT, () => {
+        console.log(`[Nexora API] listening on port ${PORT}`);
+    });
 });
