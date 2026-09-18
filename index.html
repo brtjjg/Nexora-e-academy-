@@ -660,8 +660,14 @@ table tbody tr:hover{background:#f8fafc}
 <p>Empowering learners worldwide.</p>
 </div>
 <div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
-<div><h4>Support</h4><ul><li><a>Help</a></li><li><a href="mailto:nexo27716@gmail.com">Contact</a></li></ul></div>
-<div><h4>Connect</h4><ul><li><a><i class="fab fa-facebook"></i> Facebook</a></li><li><a><i class="fab fa-twitter"></i> Twitter</a></li></ul></div>
+<div><h4>Support</h4><ul>
+<li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
+<li><a href="https://chat.whatsapp.com/G3cSmU5k7KLA6CunwrLeTw" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
+</ul></div>
+<div><h4>Connect</h4><ul>
+<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
+<li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> Email Support</a></li>
+</ul></div>
 <div class="bottom">&copy; 2026 <span class="gold">Nexora Academy</span>. All rights reserved.</div>
 </div>
 </footer>
@@ -739,6 +745,7 @@ async function loginUser(e) {
     finally { btn.disabled = false; }
 }
 async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); goHome(); }
+
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-landing').classList.add('active');
@@ -965,7 +972,7 @@ async function regStep2() {
             if (!file) continue;
             const fd = new FormData();
             fd.append('file', file);
-            await apiForm(`/uploads/application-document?application_id=${application.id}&document_type=${type}&scope=applications`, fd);
+            try { await apiForm(`/uploads/application-document?application_id=${application.id}&document_type=${type}&scope=applications`, fd); } catch (e) { console.warn('Upload failed for', type, e.message); }
         }
         document.getElementById('regAppId').textContent = application.application_id;
         pendingRegUser = null;
@@ -1172,6 +1179,7 @@ async function renderStudentCertificates() {
 function renderStudentProfile() {
     document.getElementById('studentProfileContent').innerHTML = `<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)"><div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem"><div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc((currentUser.full_name || 'U').charAt(0))}</div><div><h2>${esc(currentUser.full_name)}</h2><p>${esc(currentUser.email)}</p></div></div><div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${esc(currentUser.username)}" disabled></div><div class="form-group"><label>Role</label><input type="text" value="${esc(currentUser.role)}" disabled></div></div></div>`;
 }
+
 async function updateAdminDashboard() {
     try {
         const stats = await api('/admin/stats');
@@ -1186,9 +1194,10 @@ async function updateAdminDashboard() {
         document.getElementById('adminActivityFeed').innerHTML = activities.length === 0 ? '<p style="color:var(--text-secondary)">No activity.</p>' : activities.slice(0, 10).map(a => `<div class="activity-item"><div class="a-icon"><i class="fas fa-circle"></i></div><div class="a-content"><div class="a-title">${esc(a.title)}</div><div style="font-size:0.85rem;color:var(--text-secondary)">${esc(a.description || '')}</div></div></div>`).join('');
     } catch (err) { console.error(err); }
 }
+
 async function renderAdminApplications() {
     const c = document.getElementById('adminApplicationsList');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    c.innerHTML = '<div class="empty-state">Loading applications...</div>';
     try {
         const params = new URLSearchParams();
         if (appFilterState.status !== 'all') params.set('status', appFilterState.status);
@@ -1201,11 +1210,24 @@ async function renderAdminApplications() {
         const rejected = applications.filter(a => a.status === 'rejected').length;
         const paid = applications.filter(a => a.payment_status === 'paid').length;
         const unpaid = applications.filter(a => a.payment_status === 'unpaid').length;
-        c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" id="appSearch" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select><select onchange="appFilterState.sort=this.value;renderAdminApplications()"><option value="newest" ${appFilterState.sort === 'newest' ? 'selected' : ''}>Newest</option><option value="oldest" ${appFilterState.sort === 'oldest' ? 'selected' : ''}>Oldest</option><option value="name" ${appFilterState.sort === 'name' ? 'selected' : ''}>A→Z</option></select><button class="btn btn-outline btn-sm" onclick="appFilterState={search:'',status:'all',payment:'all',sort:'newest'};renderAdminApplications()"><i class="fas fa-times"></i></button></div><div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Date</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => { const paidOk = a.payment_status === 'paid'; const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected'; const canReject = a.status !== 'rejected' && a.status !== 'approved'; return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="approveApplication('${a.id}')"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`; }).join('')}</tbody></table></div>`;
-    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load applications.</div>'; }
+        let tableHTML = '';
+        if (!applications.length) {
+            tableHTML = `<div class="empty-state" style="margin-top:1rem"><i class="fas fa-inbox" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>No applications yet.<br><span style="font-size:0.85rem">Applications will appear here when students register.</span></div>`;
+        } else {
+            tableHTML = `<div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Date</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => {
+                const paidOk = a.payment_status === 'paid';
+                const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected';
+                const canReject = a.status !== 'rejected' && a.status !== 'approved';
+                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="approveApplication('${a.id}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
+            }).join('')}</tbody></table></div>`;
+        }
+        c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" id="appSearch" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select><select onchange="appFilterState.sort=this.value;renderAdminApplications()"><option value="newest" ${appFilterState.sort === 'newest' ? 'selected' : ''}>Newest</option><option value="oldest" ${appFilterState.sort === 'oldest' ? 'selected' : ''}>Oldest</option><option value="name" ${appFilterState.sort === 'name' ? 'selected' : ''}>A→Z</option></select><button class="btn btn-outline btn-sm" onclick="appFilterState={search:'',status:'all',payment:'all',sort:'newest'};renderAdminApplications()"><i class="fas fa-times"></i></button></div>${tableHTML}`;
+    } catch (err) { console.error('Applications error:', err); c.innerHTML = `<div class="empty-state" style="border-color:var(--danger)"><i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--danger);display:block;margin-bottom:0.5rem"></i>Failed to load: ${esc(err.data?.error || err.message)}<div style="margin-top:1rem"><button class="btn btn-outline btn-sm" onclick="renderAdminApplications()"><i class="fas fa-sync"></i> Retry</button></div></div>`; }
 }
+
 let debounceTimer;
 function debouncedApps() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderAdminApplications, 300); }
+
 async function viewApplicationDetails(appId) {
     try {
         const data = await api(`/applications/${appId}`);
@@ -1239,13 +1261,14 @@ async function confirmReject() {
         await updateAdminDashboard();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
+
 async function renderAdminStudents() {
     const c = document.getElementById('adminStudentsList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { students } = await api('/admin/students');
         if (!students.length) { c.innerHTML = '<div class="empty-state">No students yet.</div>'; return; }
-        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all columns and actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${ap === 'pending' ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View profile"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Issue certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${ap === 'pending' ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load students.</div>'; }
 }
 async function quickApproveStudent(studentId) {
@@ -1308,7 +1331,7 @@ async function viewStudentProgress(studentId) {
         const { students } = await api('/admin/students');
         const s = students.find(x => x.id === studentId);
         if (!s) return;
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Progress — ${esc(s.full_name)}</h2><div class="overall-progress"><div class="big-pct">${s.enrollment_count}</div><div class="big-lbl">Enrolled Courses</div></div><p style="color:var(--text-secondary);font-size:0.9rem;margin-top:1rem">Detailed per-course progress is available to the student when they log in and visit <strong>My Courses</strong>.</p><div class="stats-grid"><div class="stat-card"><div class="stat-number">${s.enrollment_count}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(s.total_paid)}</div><div class="stat-label">Paid</div></div></div>`;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Progress — ${esc(s.full_name)}</h2><div class="overall-progress"><div class="big-pct">${s.enrollment_count}</div><div class="big-lbl">Enrolled Courses</div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${s.enrollment_count}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(s.total_paid)}</div><div class="stat-label">Paid</div></div></div>`;
         document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + err.message); }
@@ -1356,6 +1379,7 @@ async function saveStudentSponsorship(studentId) {
         await renderAdminStudents();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
+
 async function renderAdminCourses() {
     const c = document.getElementById('adminCoursesList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1397,7 +1421,6 @@ async function editCourse(courseId) {
         document.getElementById('courseStatusBadge').className = 'badge badge-' + course.status;
         document.getElementById('builderTitle').textContent = 'Edit Course';
         if (course.cover_image_url) { document.getElementById('imagePreview').src = course.cover_image_url; document.getElementById('imagePreviewContainer').style.display = 'block'; }
-        // Pre-fill discount fields if discount exists
         if (course.discount_enabled) {
             document.getElementById('discountEnabled').checked = true;
             document.getElementById('discountFields').classList.remove('hidden');
@@ -1583,7 +1606,6 @@ async function saveCourseToServer(status) {
             for (const q of catQuestions) { if (!q.question_text || !q.options.some(o => o)) continue; await api(`/courses/${courseId}/questions`, { method: 'POST', body: { question_type: 'cat', ...q } }); }
             currentCourseData._existingSaved = true;
         }
-        // Save discount
         if (currentCourseData.discount && currentCourseData.discount.enabled) {
             await api(`/courses/${courseId}/discount`, { method: 'PUT', body: { enabled: true, original_price: currentCourseData.discount.originalPrice || currentCourseData.price, discount_price: currentCourseData.discount.discountPrice, label: currentCourseData.discount.label || 'Limited Time Offer', ends_at: currentCourseData.discount.endsAt } });
         } else {
@@ -1660,7 +1682,7 @@ navigateTo = async function(page) {
     await bootSession();
     if (currentUser) { showApp(); } else { goHome(); }
 })();
-console.log('🎓 Nexora Academy v9.3 — API:', API_BASE);
+console.log('🎓 Nexora Academy v9.4 — API:', API_BASE);
 </script>
 
 </body>
