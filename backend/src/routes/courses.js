@@ -1,220 +1,1689 @@
-const express = require('express');
-const router = express.Router();
-const db = require('../db');
-const { asyncHandler } = require('../utils');
-const { requireAuth, requireAdmin } = require('../middleware');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexora Academy — Complete Platform</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-VF0CF8P62S"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+  gtag('config', 'G-VF0CF8P62S');
+</script>
+<style>
+:root{--navy:#0B1F3A;--navy-light:#172B4D;--blue:#29A9E8;--blue-dark:#1E8BC3;--gold:#D4A63A;--gold-light:#E8C84A;--gold-dark:#A67C1E;--bg:#F5F7FA;--white:#FFF;--text-primary:#172B4D;--text-secondary:#64748B;--success:#16A34A;--danger:#EF4444;--warning:#F59E0B;--shadow:0 4px 20px rgba(11,31,58,0.12);--shadow-hover:0 8px 40px rgba(11,31,58,0.2);--radius:16px;--sidebar-width:260px}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6}
+a{text-decoration:none;color:inherit}
+.top-nav{background:var(--navy);padding:10px 24px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:1001}
+.top-nav .container{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;flex-wrap:wrap;gap:1rem}
+.top-nav .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
+.top-nav .brand .logo-icon{font-size:2rem;color:var(--gold)}
+.top-nav .brand .brand-text-wrap{display:flex;flex-direction:column;line-height:1.1}
+.top-nav .brand .brand-text{font-size:1.4rem;font-weight:800;letter-spacing:1px}
+.top-nav .brand .brand-text .nexora{color:var(--blue)}
+.top-nav .brand .brand-text .academy{color:var(--white)}
+.top-nav .brand .tagline{font-size:0.55rem;color:var(--gold);letter-spacing:3px;font-weight:500;margin-top:1px}
+.top-nav .nav-links{display:flex;gap:1.8rem;align-items:center;flex-wrap:wrap}
+.top-nav .nav-links a{color:rgba(255,255,255,0.85);font-weight:500;font-size:0.95rem;padding:4px 0}
+.top-nav .nav-links a:hover{color:var(--blue)}
+.top-nav .nav-links .btn{padding:8px 20px;border-radius:50px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-size:0.9rem}
+.btn-login{background:transparent;border:2px solid rgba(255,255,255,0.25);color:var(--white)}
+.btn-register{background:var(--gold);color:var(--navy);border:2px solid var(--gold)}
+.btn-logout{background:transparent;border:2px solid var(--danger);color:var(--danger)}
+.btn-logout:hover{background:var(--danger);color:var(--white)}
+.top-nav .nav-links .user-info{display:flex;align-items:center;gap:8px;color:var(--white)}
+.top-nav .nav-links .user-info .avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}
+.sidebar-toggle-bar{background:var(--navy-light);padding:10px 24px;border-bottom:1px solid rgba(255,255,255,0.05);display:none;align-items:center;gap:12px}
+.sidebar-toggle-bar.visible{display:flex}
+.sidebar-toggle-bar .toggle-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-size:1.2rem;cursor:pointer;padding:8px 16px;border-radius:50px;display:flex;align-items:center;gap:10px}
+.sidebar-toggle-bar .toggle-btn span{font-size:0.85rem;font-weight:600;color:rgba(255,255,255,0.85)}
+.sidebar-toggle-bar .page-indicator{color:rgba(255,255,255,0.7);font-size:0.9rem;font-weight:500;margin-left:auto}
+.sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:var(--navy);color:rgba(255,255,255,0.8);z-index:1000;overflow-y:auto;transition:transform 0.3s ease;transform:translateX(-100%);padding-top:80px}
+.sidebar.open{transform:translateX(0)}
+.sidebar-brand{display:flex;align-items:center;gap:12px;padding:16px;border-bottom:1px solid rgba(255,255,255,0.08)}
+.sidebar-brand .brand-icon{font-size:1.5rem;color:var(--gold)}
+.sidebar-brand .brand-text{font-size:1rem;font-weight:800}
+.sidebar-brand .brand-text .nexora{color:var(--blue)}
+.sidebar-brand .brand-text .academy{color:var(--white)}
+.sidebar-menu{padding:12px 0}
+.menu-item{display:flex;align-items:center;gap:12px;padding:12px 16px;color:rgba(255,255,255,0.75);cursor:pointer;font-size:0.9rem;border-left:3px solid transparent}
+.menu-item:hover{background:rgba(255,255,255,0.05);color:var(--white)}
+.menu-item.active{background:rgba(41,169,232,0.15);color:var(--blue);border-left-color:var(--blue)}
+.menu-item i{width:20px;text-align:center;font-size:1rem}
+.menu-item .badge-count{background:var(--gold);color:var(--navy);font-size:0.65rem;padding:1px 8px;border-radius:50px;margin-left:auto;font-weight:700}
+.menu-divider{height:1px;background:rgba(255,255,255,0.06);margin:8px 16px}
+.menu-label{font-size:0.6rem;text-transform:uppercase;letter-spacing:1.5px;color:rgba(255,255,255,0.3);padding:10px 16px 6px;font-weight:700}
+.main-content{margin-left:0;transition:margin-left 0.3s ease;min-height:100vh}
+.main-content.sidebar-open{margin-left:var(--sidebar-width)}
+.sidebar-overlay{display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:999}
+.sidebar-overlay.active{display:block}
+.page-content{padding:24px;max-width:1200px;margin:0 auto}
+.page{display:none}
+.page.active{display:block}
+.landing-hero{text-align:center;padding:4rem 0 3rem}
+.landing-hero .badge-tag{display:inline-block;background:rgba(212,166,58,0.15);border:1px solid rgba(212,166,58,0.3);color:var(--gold);padding:6px 18px;border-radius:50px;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:1.5rem}
+.landing-hero h1{font-size:3.5rem;font-weight:800;color:var(--navy);line-height:1.15;margin-bottom:1.2rem}
+.landing-hero h1 .gold{color:var(--gold)}
+.landing-hero p{color:var(--text-secondary);font-size:1.15rem;max-width:620px;margin:0 auto 2rem}
+.landing-hero .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
+.landing-hero .hero-buttons .btn{padding:14px 36px;font-size:1rem;border-radius:50px;font-weight:700;display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer}
+.btn-primary-hero{background:var(--blue);color:var(--white)}
+.btn-outline-hero{background:transparent;color:var(--navy);border:2px solid #e2e8f0}
+.landing-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;padding:2rem 0 3rem}
+.landing-features .feature{background:var(--white);padding:2rem 1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center}
+.landing-features .feature .feature-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,rgba(212,166,58,0.15),rgba(41,169,232,0.15));display:flex;align-items:center;justify-content:center;margin:0 auto 1.2rem}
+.landing-features .feature .feature-icon i{font-size:1.8rem;color:var(--gold)}
+.landing-features .feature h3{color:var(--navy);margin-bottom:0.5rem;font-size:1.1rem}
+.landing-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1.5rem;padding:2rem 0;text-align:center;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:2rem}
+.landing-stats .stat h3{font-size:2.2rem;font-weight:800;color:var(--navy)}
+.landing-stats .stat h3 .gold{color:var(--gold)}
+.landing-stats .stat p{color:var(--text-secondary);font-size:0.9rem}
+.badge{padding:3px 12px;border-radius:50px;font-size:0.7rem;font-weight:600;display:inline-block}
+.badge-published{background:#dcfce7;color:#166534}
+.badge-draft{background:#fef3c7;color:#92400e}
+.badge-success{background:#dcfce7;color:#166534}
+.badge-warning{background:#fef3c7;color:#92400e}
+.badge-danger{background:#fee2e2;color:#991b1b}
+.badge-paid{background:#dcfce7;color:#166534}
+.badge-unpaid{background:#fee2e2;color:#991b1b}
+.badge-active{background:#dbeafe;color:#1e40af}
+.flash{padding:1rem 1.5rem;border-radius:var(--radius);margin:1rem 0;font-weight:500}
+.flash-success{background:#dcfce7;color:#166534;border-left:4px solid var(--success)}
+.flash-danger{background:#fee2e2;color:#991b1b;border-left:4px solid var(--danger)}
+.flash-info{background:#dbeafe;color:#1e40af;border-left:4px solid var(--blue)}
+.flash-warning{background:#fef3c7;color:#92400e;border-left:4px solid var(--warning)}
+.stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1.5rem;margin:1.5rem 0}
+.stat-card{background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);text-align:center;border-left:4px solid var(--blue)}
+.stat-card .stat-number{font-size:2.5rem;font-weight:800;color:var(--navy)}
+.stat-card .stat-label{color:var(--text-secondary);font-size:0.9rem;font-weight:500}
+.stat-card.gold{border-left-color:var(--gold)}
+.stat-card.green{border-left-color:var(--success)}
+.stat-card.purple{border-left-color:#8B5CF6}
+.form-group{margin-bottom:1.5rem}
+.form-group label{display:block;font-weight:600;margin-bottom:0.4rem;color:var(--navy);font-size:0.9rem}
+.form-group label .required{color:var(--danger)}
+.form-group input,.form-group textarea,.form-group select{width:100%;padding:12px 14px;border:2px solid #e2e8f0;border-radius:10px;font-size:1rem;background:var(--white);color:var(--text-primary);font-family:inherit}
+.form-group input:focus,.form-group textarea:focus,.form-group select:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(41,169,232,0.1)}
+.form-group textarea{min-height:80px;resize:vertical}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.btn{padding:10px 22px;border-radius:50px;font-weight:600;font-size:0.9rem;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit}
+.btn:disabled{opacity:0.6;cursor:not-allowed}
+.btn-primary{background:var(--blue);color:var(--white)}
+.btn-primary:hover:not(:disabled){background:var(--blue-dark)}
+.btn-success{background:var(--success);color:var(--white)}
+.btn-success:hover:not(:disabled){background:#15803d}
+.btn-warning{background:var(--warning);color:var(--white)}
+.btn-warning:hover:not(:disabled){background:#d97706}
+.btn-danger{background:var(--danger);color:var(--white)}
+.btn-danger:hover:not(:disabled){background:#dc2626}
+.btn-outline{background:transparent;border:2px solid #e2e8f0;color:var(--text-secondary)}
+.btn-outline:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
+.btn-sm{padding:6px 14px;font-size:0.8rem}
+.btn-block{width:100%;justify-content:center}
+.table-wrapper{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse}
+table thead{background:var(--navy);color:var(--white)}
+table thead th{padding:0.9rem 1rem;text-align:left;font-weight:600;font-size:0.8rem;text-transform:uppercase}
+table tbody td{padding:0.9rem 1rem;border-bottom:1px solid #f0f0f0;color:var(--text-secondary);font-size:0.9rem}
+table tbody tr:hover{background:#f8fafc}
+.progress-bar{width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin:0.5rem 0}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:4px;transition:width 0.5s}
+.courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin:1.5rem 0}
+.course-card{background:var(--white);border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);border:1px solid rgba(11,31,58,0.06)}
+.course-card .course-image{width:100%;height:160px;object-fit:cover;background:linear-gradient(135deg,var(--navy),var(--navy-light))}
+.course-card .course-body{padding:1.2rem}
+.course-card .course-body .course-title{font-size:1.1rem;font-weight:700;color:var(--navy)}
+.course-card .course-body .course-meta{display:flex;gap:1rem;flex-wrap:wrap;font-size:0.8rem;color:var(--text-secondary);margin:0.3rem 0}
+.course-card-actions{display:flex;gap:0.5rem;margin-top:0.5rem;flex-wrap:wrap}
+.modal-backdrop{display:none;position:fixed;inset:0;background:rgba(11,31,58,0.6);backdrop-filter:blur(6px);z-index:2000;align-items:center;justify-content:center;padding:1rem}
+.modal-backdrop.active{display:flex}
+.modal-box{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow-hover);max-width:900px;width:100%;max-height:92vh;overflow-y:auto;padding:2rem}
+.modal-box h2{color:var(--navy);margin-bottom:1.5rem;display:flex;align-items:center;gap:10px}
+.modal-box h2 i{color:var(--gold)}
+.wallet-hero{background:linear-gradient(135deg,var(--navy) 0%,#1a3a5c 100%);color:#fff;padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow-hover);margin-bottom:1.5rem;position:relative;overflow:hidden}
+.wallet-hero::before{content:'';position:absolute;top:-50%;right:-10%;width:300px;height:300px;background:radial-gradient(circle,rgba(212,166,58,0.15) 0%,transparent 70%);border-radius:50%}
+.wallet-hero h2{font-size:1.5rem;margin-bottom:0.3rem;color:#fff}
+.wallet-hero p{opacity:0.75;font-size:0.9rem}
+.wallet-hero .balances{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-top:1.5rem;position:relative;z-index:1}
+.wallet-hero .bal-box{background:rgba(255,255,255,0.08);padding:1rem;border-radius:12px;border:1px solid rgba(255,255,255,0.1)}
+.wallet-hero .bal-box .lbl{font-size:0.7rem;text-transform:uppercase;letter-spacing:1px;opacity:0.7}
+.wallet-hero .bal-box .val{font-size:1.5rem;font-weight:700;color:var(--gold)}
+.wallet-hero .bal-box .val.green{color:#86efac}
+.wallet-hero .bal-box .val.red{color:#fca5a5}
+.enrolled-card{background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)}
+.enrolled-card h4{color:var(--navy);font-size:1.1rem;margin-bottom:0.3rem}
+.enrolled-card .meta{font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem}
+.enrolled-card .stats-line{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.8rem;margin:1rem 0;font-size:0.85rem}
+.enrolled-card .stat-box{background:var(--bg);padding:0.6rem 0.8rem;border-radius:8px;text-align:center}
+.enrolled-card .stat-box .lbl{font-size:0.7rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.5px}
+.enrolled-card .stat-box .val{font-weight:700;color:var(--navy);font-size:1rem}
+.activity-item{display:flex;gap:0.8rem;padding:0.75rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem}
+.activity-item:last-child{border-bottom:none}
+.activity-item .a-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);color:var(--gold)}
+.activity-item .a-content{flex:1}
+.activity-item .a-title{font-weight:600;color:var(--navy)}
+.activity-item .a-time{font-size:0.75rem;color:var(--text-secondary)}
+.file-upload-container{border:2px dashed #e2e8f0;border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg)}
+.file-upload-container:hover{border-color:var(--blue);background:rgba(41,169,232,0.05)}
+.file-upload-container .upload-icon{font-size:2.5rem;color:var(--gold);margin-bottom:0.5rem}
+.file-upload-container .upload-text{color:var(--text-secondary);font-size:0.9rem}
+.file-upload-container .upload-hint{color:var(--text-secondary);font-size:0.8rem;margin-top:0.3rem}
+.file-upload-container input[type="file"]{display:none}
+.step-indicator{display:flex;justify-content:center;gap:8px;margin-bottom:2rem}
+.step-indicator .si{width:34px;height:34px;border-radius:50%;background:#e2e8f0;color:var(--text-secondary);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.85rem}
+.step-indicator .si.active{background:var(--blue);color:var(--white)}
+.step-indicator .si.done{background:var(--success);color:var(--white)}
+.reg-step{display:none}
+.reg-step.active{display:block}
+.footer{background:var(--navy);color:rgba(255,255,255,0.8);padding:50px 0 30px;margin-top:3rem;border-top:3px solid var(--gold)}
+.footer .container{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:2.5rem;max-width:1200px;margin:0 auto;padding:0 24px}
+.footer .brand .logo-bottom{font-size:1.6rem;font-weight:800}
+.footer .brand .logo-bottom .nexora{color:var(--blue)}
+.footer .brand .logo-bottom .academy{color:var(--white)}
+.footer .brand .tagline{color:var(--gold);font-weight:300;letter-spacing:2px;margin:0.5rem 0 1rem}
+.footer .brand p{color:rgba(255,255,255,0.6);line-height:1.8;font-size:0.9rem}
+.footer h4{color:var(--white);margin-bottom:1rem;font-size:1rem}
+.footer ul{list-style:none;padding:0}
+.footer ul li{margin-bottom:0.5rem}
+.footer ul li a{color:rgba(255,255,255,0.6);font-size:0.9rem;cursor:pointer}
+.footer ul li a:hover{color:var(--gold)}
+.footer .bottom{grid-column:1/-1;border-top:1px solid rgba(255,255,255,0.08);padding-top:1.5rem;text-align:center;color:rgba(255,255,255,0.4);font-size:0.85rem}
+.footer .bottom .gold{color:var(--gold)}
+.auth-wrap{max-width:460px;margin:3rem auto}
+.auth-wrap.wide{max-width:620px}
+.auth-logo{text-align:center;margin-bottom:2rem}
+.auth-logo .auth-brand{font-size:2.5rem;font-weight:800;color:var(--blue);letter-spacing:2px}
+.auth-logo .auth-academy{font-size:0.9rem;color:var(--gold);letter-spacing:4px;font-weight:700}
+.auth-logo .auth-tagline{font-size:0.7rem;color:var(--text-secondary);letter-spacing:2px;margin-top:0.3rem}
+.auth-card{background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)}
+.auth-card h2{text-align:center;color:var(--navy);margin-bottom:1.5rem;font-size:1.4rem}
+.country-item{padding:10px 14px;cursor:pointer;font-size:0.9rem;border-bottom:1px solid #f0f0f0}
+.country-item:hover{background:#eff6ff;color:var(--blue)}
+.summary-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:1rem;margin-bottom:1.5rem}
+.summary-card{background:#fff;padding:1.25rem;border-radius:14px;box-shadow:var(--shadow);text-align:center;border-top:3px solid var(--blue)}
+.summary-card .num{font-size:1.8rem;font-weight:800;color:var(--navy)}
+.summary-card .lbl{font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;font-weight:600;margin-top:0.25rem}
+.summary-card.gold{border-top-color:var(--gold)}
+.summary-card.green{border-top-color:var(--success)}
+.summary-card.red{border-top-color:var(--danger)}
+.summary-card.grey{border-top-color:#94a3b8}
+.app-filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:0.6rem;margin-bottom:1.25rem}
+.app-filters input,.app-filters select{padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:0.9rem}
+.status-payment_due{background:#fef3c7;color:#92400e;font-weight:700}
+.status-paid{background:#dbeafe;color:#1e40af;font-weight:700}
+.status-approved{background:#dcfce7;color:#166534;font-weight:700}
+.status-rejected{background:#fee2e2;color:#991b1b;font-weight:700}
+.empty-state{text-align:center;padding:2rem;color:var(--text-secondary);background:var(--bg);border-radius:12px;border:1px dashed #cbd5e1}
+.doc-card{display:flex;gap:1rem;padding:1rem;background:var(--bg);border-radius:12px;margin-bottom:0.75rem;border-left:4px solid var(--blue);align-items:center;flex-wrap:wrap}
+.doc-card.verified{border-left-color:var(--success)}
+.doc-card.rejected{border-left-color:var(--danger)}
+.doc-thumb{width:80px;height:60px;border-radius:8px;object-fit:cover;background:#fff;cursor:pointer;border:2px solid #e2e8f0}
+.doc-info{flex:1;min-width:180px}
+.doc-info .doc-name{font-weight:700;color:var(--navy);font-size:0.9rem}
+.doc-info .doc-meta{font-size:0.75rem;color:var(--text-secondary);margin-top:2px}
+.doc-actions{display:flex;gap:6px;flex-wrap:wrap}
+.students-table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
+.students-table{width:100%;min-width:1100px;border-collapse:collapse}
+.students-table thead{background:var(--navy);color:#fff;position:sticky;top:0;z-index:5}
+.students-table thead th{padding:0.75rem 0.6rem;text-align:left;font-weight:600;font-size:0.7rem;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap}
+.students-table tbody td{padding:0.75rem 0.6rem;border-bottom:1px solid #f0f0f0;font-size:0.82rem;color:var(--text-secondary);vertical-align:middle;white-space:nowrap}
+.status-pill{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:50px;font-size:0.7rem;font-weight:700;white-space:nowrap}
+.status-pill.pending{background:#fef3c7;color:#92400e}
+.status-pill.approved{background:#dcfce7;color:#166534}
+.status-pill.rejected{background:#fee2e2;color:#991b1b}
+.status-pill.paid{background:#dcfce7;color:#166534}
+.status-pill.unpaid{background:#fee2e2;color:#991b1b}
+.status-pill.issued{background:#dcfce7;color:#166534}
+.status-pill.eligible{background:#fef3c7;color:#92400e}
+.status-pill.not-eligible{background:#f1f5f9;color:#64748b}
+.status-pill.none{background:#f1f5f9;color:#64748b}
+.status-pill.partial-s{background:#fef3c7;color:#92400e}
+.status-pill.full{background:#dcfce7;color:#166534}
+.clickable-count{color:var(--blue);font-weight:700;cursor:pointer;text-decoration:underline dotted}
+.student-actions{display:flex;gap:4px;align-items:center;flex-wrap:nowrap}
+.action-btn{width:32px;height:32px;border-radius:8px;display:inline-flex;align-items:center;justify-content:center;border:none;cursor:pointer;font-size:0.85rem;transition:all 0.15s}
+.action-btn:hover{transform:translateY(-2px);box-shadow:0 4px 10px rgba(11,31,58,0.15)}
+.action-btn.approve{background:#dcfce7;color:#166534}
+.action-btn.reject{background:#fee2e2;color:#991b1b}
+.action-btn.documents{background:#dbeafe;color:#1e40af}
+.action-btn.progress{background:#fef3c7;color:#92400e}
+.action-btn.view{background:#f1f5f9;color:#334155}
+.action-btn.payments{background:#dcfce7;color:#16a34a}
+.action-btn.sponsorship{background:#fce7f3;color:#9d174d}
+.action-btn.certificate{background:#fef3c7;color:#a16207}
+.overall-progress{background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:14px;text-align:center;margin-bottom:1.5rem}
+.overall-progress .big-pct{font-size:3rem;font-weight:900;color:var(--gold);line-height:1}
+.overall-progress .big-lbl{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;opacity:0.8;margin-top:0.4rem}
+.progress-course-card{background:var(--white);border-radius:12px;box-shadow:var(--shadow);padding:1.25rem;margin-bottom:1rem;border-left:4px solid var(--gold)}
+.progress-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin-top:0.75rem}
+.progress-item{background:var(--bg);padding:0.6rem;border-radius:8px;text-align:center;font-size:0.75rem}
+.progress-item .pct{font-size:1.1rem;font-weight:800;color:var(--navy)}
+.progress-item .lbl{color:var(--text-secondary);font-size:0.65rem;text-transform:uppercase;letter-spacing:0.5px}
+.certificate-status-card{background:linear-gradient(135deg,#fef3c7,#fffbeb);border:2px solid var(--gold);border-radius:12px;padding:1.5rem;text-align:center}
+.certificate-status-card.issued{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border-color:var(--success)}
+.certificate-status-card.not-eligible{background:#f8fafc;border-color:#cbd5e1}
+.sponsorship-card{background:linear-gradient(135deg,#fce7f3,#fef2f2);border:2px solid #fbcfe8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
+.sponsorship-card.full{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border-color:#bbf7d0}
+.sponsorship-card.partial{background:linear-gradient(135deg,#fef3c7,#fffbeb);border-color:#fde68a}
+.discount-badge{background:linear-gradient(135deg,#dc2626,#ef4444);color:#fff;padding:4px 12px;border-radius:50px;font-size:0.7rem;font-weight:700;display:inline-block}
+.discount-price-row{margin-top:0.4rem}
+.discount-price-row s{color:var(--text-secondary);font-size:0.8rem;margin-right:6px}
+.discount-price-row .discounted{color:var(--gold);font-weight:800;font-size:1.15rem}
+.hidden{display:none!important}
+.text-center{text-align:center}
+@media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.footer .container{grid-template-columns:1fr 1fr}.app-filters{grid-template-columns:1fr 1fr}}
+@media(max-width:768px){.sidebar{width:280px;padding-top:60px}.main-content{margin-left:0!important}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.page-content{padding:16px}.footer .container{grid-template-columns:1fr}.top-nav .brand .tagline{display:none}.top-nav .nav-links{gap:0.8rem}.top-nav .nav-links a{font-size:0.85rem}.landing-hero h1{font-size:2.2rem}.app-filters{grid-template-columns:1fr}}
+@media(max-width:480px){.page-content{padding:12px}.stat-card .stat-number{font-size:1.8rem}.landing-hero h1{font-size:1.8rem}.top-nav .brand .brand-text{font-size:1.1rem}}
+</style>
+</head>
+<body>
 
-// GET /api/courses — public, returns published courses
-router.get('/', asyncHandler(async (req, res) => {
-    const r = await db.query(
-        `SELECT c.*,
-                d.enabled AS discount_enabled,
-                d.original_price, d.discount_price, d.label AS discount_label,
-                d.ends_at AS discount_ends_at,
-                (SELECT COUNT(*)::int FROM modules m WHERE m.course_id = c.id) AS module_count,
-                (SELECT COUNT(*)::int FROM lessons l
-                  JOIN modules m ON m.id = l.module_id
-                  WHERE m.course_id = c.id AND l.published = TRUE) AS lesson_count
-         FROM courses c
-         LEFT JOIN course_discounts d ON d.course_id = c.id
-         WHERE c.status = 'published'
-         ORDER BY c.created_at DESC`
-    );
-    res.json({ courses: r.rows });
-}));
+<nav class="top-nav">
+<div class="container">
+<div class="brand" onclick="goHome()">
+<span class="logo-icon"><i class="fas fa-graduation-cap"></i></span>
+<div class="brand-text-wrap">
+<span class="brand-text"><span class="nexora">NEXORA</span> <span class="academy">ACADEMY</span></span>
+<span class="tagline">EXPERT ONLINE · QUALITY EDUCATION</span>
+</div>
+</div>
+<div class="nav-links">
+<a href="#" onclick="goHome()"><i class="fas fa-home"></i> Home</a>
+<a href="#" onclick="showCoursesPublic()"><i class="fas fa-book-open"></i> Courses</a>
+<a href="#" onclick="showVerifyPublic()"><i class="fas fa-certificate"></i> Verify</a>
+<span id="topAuthLinks">
+<a href="#" onclick="showLogin()" class="btn btn-login"><i class="fas fa-sign-in-alt"></i> Login</a>
+<a href="#" onclick="showRegister()" class="btn btn-register"><i class="fas fa-user-plus"></i> Register</a>
+</span>
+<span id="topUserLinks" class="hidden">
+<span class="user-info"><span class="avatar" id="topUserAvatar">A</span><span id="topUserName">Admin</span></span>
+<a href="#" onclick="logout()" class="btn btn-logout"><i class="fas fa-sign-out-alt"></i> Logout</a>
+</span>
+</div>
+</div>
+</nav>
 
-// GET /api/courses/:id
-router.get('/:id', asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const course = await db.query(
-        `SELECT c.*, d.enabled AS discount_enabled,
-                d.original_price, d.discount_price, d.label AS discount_label,
-                d.ends_at AS discount_ends_at
-         FROM courses c
-         LEFT JOIN course_discounts d ON d.course_id = c.id
-         WHERE c.id = $1`,
-        [id]
-    );
-    if (!course.rows.length) return res.status(404).json({ error: 'Course not found' });
+<div class="sidebar-toggle-bar" id="sidebarToggleBar">
+<button class="toggle-btn" onclick="toggleSidebar()"><i class="fas fa-bars"></i><span id="sidebarToggleLabel">MENU</span></button>
+<span class="page-indicator" id="pageIndicator"></span>
+</div>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
-    const modules = await db.query(
-        `SELECT id, title, position FROM modules
-         WHERE course_id = $1 ORDER BY position`,
-        [id]
-    );
-    const lessons = await db.query(
-        `SELECT l.* FROM lessons l
-         JOIN modules m ON m.id = l.module_id
-         WHERE m.course_id = $1 AND l.published = TRUE
-         ORDER BY m.position, l.position`,
-        [id]
-    );
-    res.json({
-        course: course.rows[0],
-        modules: modules.rows,
-        lessons: lessons.rows,
-    });
-}));
+<aside class="sidebar" id="sidebar">
+<div class="sidebar-brand"><span class="brand-icon"><i class="fas fa-graduation-cap"></i></span><span class="brand-text"><span class="nexora">NEXORA</span> <span class="academy">ACADEMY</span></span></div>
+<nav class="sidebar-menu">
+<div id="adminMenu" class="hidden">
+<div class="menu-item active" onclick="navigateTo('admin-dashboard')"><i class="fas fa-chart-pie"></i><span>Dashboard</span></div>
+<div class="menu-label">Management</div>
+<div class="menu-item" onclick="navigateTo('admin-students')"><i class="fas fa-users"></i><span>Students</span><span class="badge-count" id="studentCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('admin-applications')"><i class="fas fa-user-clock"></i><span>Applications</span><span class="badge-count" id="appCount">0</span></div>
+<div class="menu-label">Courses</div>
+<div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
+<div class="menu-label">Assessment</div>
+<div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
+<div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
+<div class="menu-label">Finance</div>
+<div class="menu-item" onclick="navigateTo('admin-revenue')"><i class="fas fa-chart-line"></i><span>Revenue</span></div>
+<div class="menu-item" onclick="navigateTo('admin-payments')"><i class="fas fa-credit-card"></i><span>Payments</span></div>
+<div class="menu-divider"></div>
+<div class="menu-item" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
+</div>
+<div id="studentMenu" class="hidden">
+<div class="menu-item active" onclick="navigateTo('student-dashboard')"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
+<div class="menu-item" onclick="navigateTo('student-wallet')"><i class="fas fa-wallet"></i><span>Wallet & Payments</span></div>
+<div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
+<div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
+<div class="menu-item" onclick="navigateTo('student-certificates')"><i class="fas fa-certificate"></i><span>My Certificates</span></div>
+<div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+<div class="menu-divider"></div>
+<div class="menu-item" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
+</div>
+</nav>
+</aside>
 
-// POST /api/courses — admin only
-router.post('/', requireAdmin, asyncHandler(async (req, res) => {
-    const {
-        title, code, category, level, description, instructor_name,
-        duration, cover_image_url, price, initial_payment_percent,
-        cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
-        status,
-    } = req.body;
+<div class="main-content" id="mainContent">
+<div class="page-content">
 
-    if (!title) return res.status(400).json({ error: 'Title required' });
+<div id="page-landing" class="page active">
+<section class="landing-hero">
+<span class="badge-tag"><i class="fas fa-star"></i> NEXORA ACADEMY</span>
+<h1>Learn. <span class="gold">Grow.</span> Achieve.</h1>
+<p>Build practical, career-focused skills with expert instructors from anywhere in the world.</p>
+<div class="hero-buttons">
+<button class="btn btn-primary-hero" onclick="showRegister()"><i class="fas fa-rocket"></i> Get Started</button>
+<button class="btn btn-outline-hero" onclick="showCoursesPublic()"><i class="fas fa-book-open"></i> Browse Courses</button>
+</div>
+</section>
+<section class="landing-stats">
+<div class="stat"><h3>1,000<span class="gold">+</span></h3><p>Active Students</p></div>
+<div class="stat"><h3>20<span class="gold">+</span></h3><p>Expert Courses</p></div>
+<div class="stat"><h3>15<span class="gold">+</span></h3><p>Instructors</p></div>
+<div class="stat"><h3>95<span class="gold">%</span></h3><p>Completion Rate</p></div>
+</section>
+<section class="landing-features">
+<div class="feature"><div class="feature-icon"><i class="fas fa-graduation-cap"></i></div><h3>Expert Instructors</h3><p>Learn from industry professionals.</p></div>
+<div class="feature"><div class="feature-icon"><i class="fas fa-wallet"></i></div><h3>Lipa Mdogo Mdogo</h3><p>Pay for your course in installments.</p></div>
+<div class="feature"><div class="feature-icon"><i class="fas fa-certificate"></i></div><h3>Certified Courses</h3><p>Earn recognized certificates.</p></div>
+<div class="feature"><div class="feature-icon"><i class="fas fa-globe-africa"></i></div><h3>Learn Anywhere</h3><p>Access from any device.</p></div>
+</section>
+</div>
 
-    const r = await db.query(
-        `INSERT INTO courses (title, code, category, level, description,
-            instructor_name, duration, cover_image_url, price,
-            initial_payment_percent, cat_pass_mark, exam_pass_mark,
-            cat_unlock_hours, exam_unlock_hours, status, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-         RETURNING *`,
-        [title, code || null, category || null, level || null,
-         description || null, instructor_name || null, duration || null,
-         cover_image_url || null, price || 0, initial_payment_percent || 25,
-         cat_pass_mark || 50, exam_pass_mark || 50,
-         cat_unlock_hours || 24, exam_unlock_hours || 72,
-         status || 'draft', req.user.user_id]
-    );
-    res.status(201).json({ course: r.rows[0] });
-}));
+<div id="page-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> All Courses</h2><div id="allCoursesList" class="courses-grid"></div></div>
 
-// PUT /api/courses/:id
-router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
-    const { id } = req.params;
-    const fields = ['title','code','category','level','description',
-        'instructor_name','duration','cover_image_url','price',
-        'initial_payment_percent','cat_pass_mark','exam_pass_mark',
-        'cat_unlock_hours','exam_unlock_hours','status'];
-    const updates = [];
-    const values = [];
-    fields.forEach(f => {
-        if (f in req.body) {
-            values.push(req.body[f]);
-            updates.push(`${f} = $${values.length}`);
-        }
-    });
-    if (!updates.length) return res.status(400).json({ error: 'No fields' });
-    values.push(id);
-    const r = await db.query(
-        `UPDATE courses SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
-        values
-    );
-    if (!r.rows.length) return res.status(404).json({ error: 'Course not found' });
-    res.json({ course: r.rows[0] });
-}));
+<div id="page-verify" class="page">
+<div style="max-width:600px;margin:2rem auto 1rem">
+<div class="auth-card">
+<h2><i class="fas fa-certificate" style="color:var(--gold)"></i> Verify Certificate</h2>
+<p style="color:var(--text-secondary);margin-bottom:1.5rem;text-align:center">Enter certificate ID or verification token</p>
+<div class="form-group"><input type="text" id="verifyToken" placeholder="e.g., NXA-CP-2026-000001"></div>
+<button class="btn btn-primary btn-block" onclick="verifyCertificate()"><i class="fas fa-search"></i> Verify</button>
+</div>
+</div>
+<div id="verifyResult"></div>
+</div>
 
-// DELETE /api/courses/:id
-router.delete('/:id', requireAdmin, asyncHandler(async (req, res) => {
-    const r = await db.query('DELETE FROM courses WHERE id = $1 RETURNING id', [req.params.id]);
-    if (!r.rows.length) return res.status(404).json({ error: 'Course not found' });
-    res.json({ ok: true });
-}));
+<div id="page-login" class="page">
+<div class="auth-wrap">
+<div class="auth-logo"><div class="auth-brand">NEXORA</div><div class="auth-academy">ACADEMY</div><div class="auth-tagline">LEARN · GROW · ACHIEVE</div></div>
+<div class="auth-card">
+<h2><i class="fas fa-sign-in-alt" style="color:var(--gold)"></i> Welcome Back</h2>
+<div id="loginFlash"></div>
+<form onsubmit="loginUser(event)">
+<div class="form-group"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
+<div class="form-group"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
+<button type="submit" class="btn btn-primary btn-block" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
+</form>
+<p class="text-center" style="color:var(--text-secondary);font-size:0.9rem;margin-top:1.5rem">Don't have an account? <a onclick="showRegister()" style="color:var(--blue);font-weight:600;cursor:pointer">Register</a></p>
+</div>
+</div>
+</div>
 
-// POST /api/courses/:id/modules
-router.post('/:id/modules', requireAdmin, asyncHandler(async (req, res) => {
-    const { title, position } = req.body;
-    if (!title) return res.status(400).json({ error: 'Title required' });
-    const r = await db.query(
-        `INSERT INTO modules (course_id, title, position)
-         VALUES ($1, $2, COALESCE($3, (SELECT COALESCE(MAX(position),0)+1 FROM modules WHERE course_id=$1)))
-         RETURNING *`,
-        [req.params.id, title, position || null]
-    );
-    res.status(201).json({ module: r.rows[0] });
-}));
+<div id="page-register" class="page">
+<div class="auth-wrap wide">
+<div class="auth-logo"><div class="auth-brand">NEXORA</div><div class="auth-academy">ACADEMY</div><div class="auth-tagline">LEARN · GROW · ACHIEVE</div></div>
+<div class="step-indicator" id="regStepIndicator">
+<div class="si active" data-s="1">1</div><div class="si" data-s="2">2</div><div class="si" data-s="3">3</div><div class="si" data-s="4">4</div>
+</div>
+<div class="auth-card">
+<div id="registerFlash"></div>
 
-// POST /api/courses/:id/lessons
-router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
-    const { module_id, title, description, position, notes, assignment,
-            video_url, published } = req.body;
-    if (!module_id || !title) {
-        return res.status(400).json({ error: 'module_id and title required' });
+<div class="reg-step active" id="reg-step-1">
+<h2><i class="fas fa-user" style="color:var(--gold)"></i> Personal Details</h2>
+<form onsubmit="regStep1(event)">
+<div class="form-row">
+<div class="form-group"><label>Full Name <span class="required">*</span></label><input type="text" id="regFullName" required placeholder="e.g., Jane Wanjiku"></div>
+<div class="form-group"><label>Username <span class="required">*</span></label><input type="text" id="regUsername" required placeholder="e.g., janew"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Email <span class="required">*</span></label><input type="email" id="regEmail" required placeholder="you@example.com"></div>
+<div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="regPhone" required placeholder="+254 7XX XXX XXX"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Date of Birth <span class="required">*</span></label><input type="date" id="regDob" required max=""><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.3rem"><i class="fas fa-info-circle"></i> Today or earlier only</div></div>
+<div class="form-group"><label>Country <span class="required">*</span></label><div style="position:relative"><input type="text" id="regCountry" required placeholder="Start typing..." autocomplete="off" oninput="filterCountries(this.value)" onfocus="filterCountries(this.value)"><div id="countryDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #e2e8f0;border-radius:10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(11,31,58,0.15)"></div></div></div>
+</div>
+<div class="form-group"><label>Course of Interest <span class="required">*</span></label><select id="regCourseInterest" required><option value="">Select a course...</option></select></div>
+<div class="form-group">
+<label>Password <span class="required">*</span></label>
+<div style="position:relative">
+<input type="password" id="regPassword" required minlength="8" oninput="checkPasswordStrength(this.value)" placeholder="Min 8 characters" autocomplete="new-password">
+<button type="button" onclick="togglePassword('regPassword',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;color:var(--text-secondary);font-size:1rem;padding:6px"><i class="fas fa-eye"></i></button>
+</div>
+<div style="margin-top:0.4rem;font-size:0.75rem;color:var(--text-secondary)">Password must contain: <span id="pwReq-length" style="color:var(--danger)">✗ 8+ chars</span> <span id="pwReq-upper" style="color:var(--danger)">✗ uppercase</span> <span id="pwReq-num" style="color:var(--danger)">✗ number</span></div>
+<div style="margin-top:0.5rem;height:6px;background:#e2e8f0;border-radius:3px;overflow:hidden"><div id="pwStrengthBar" style="height:100%;width:0%;background:var(--danger);transition:all 0.3s"></div></div>
+</div>
+<div class="form-group">
+<label>Confirm Password <span class="required">*</span></label>
+<div style="position:relative">
+<input type="password" id="regPasswordConfirm" required placeholder="Re-enter password" autocomplete="new-password">
+<button type="button" onclick="togglePassword('regPasswordConfirm',this)" style="position:absolute;right:10px;top:50%;transform:translateY(-50%);background:transparent;border:none;cursor:pointer;color:var(--text-secondary);font-size:1rem;padding:6px"><i class="fas fa-eye"></i></button>
+</div>
+</div>
+<div class="form-group" style="display:flex;gap:0.6rem;align-items:flex-start">
+<input type="checkbox" id="regTerms" required style="margin-top:5px;width:18px;height:18px;accent-color:var(--blue)">
+<label for="regTerms" style="font-weight:400;font-size:0.85rem;color:var(--text-secondary);cursor:pointer">I agree to the Terms and Privacy Policy.</label>
+</div>
+<button type="submit" class="btn btn-primary btn-block"><i class="fas fa-arrow-right"></i> Continue</button>
+</form>
+</div>
+
+<div class="reg-step" id="reg-step-2">
+<h2><i class="fas fa-id-card" style="color:var(--gold)"></i> Upload Documents</h2>
+<p style="color:var(--text-secondary);text-align:center;margin-bottom:1rem;font-size:0.9rem">Upload up to 4 documents. National ID (front) is required.</p>
+<div style="background:#eff6ff;border-left:4px solid var(--blue);padding:0.75rem 1rem;border-radius:8px;margin-bottom:1.25rem;font-size:0.85rem;color:#1e40af"><i class="fas fa-info-circle"></i> <strong>Required:</strong> National ID (front). <strong>Optional:</strong> ID back, certificate, passport.</div>
+<div class="form-group">
+<label>National ID — Front <span class="required">*</span></label>
+<div class="file-upload-container" onclick="document.getElementById('doc_national_front').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (front)</div><div class="upload-hint">PNG, JPG up to 5MB</div><input type="file" id="doc_national_front" accept="image/*" onchange="handleDocumentUpload(event,'national_front')"></div>
+<div id="preview_national_front" style="margin-top:0.5rem;display:none"></div>
+</div>
+<div class="form-group">
+<label>National ID — Back <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
+<div class="file-upload-container" onclick="document.getElementById('doc_national_back').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (back)</div><input type="file" id="doc_national_back" accept="image/*" onchange="handleDocumentUpload(event,'national_back')"></div>
+<div id="preview_national_back" style="margin-top:0.5rem;display:none"></div>
+</div>
+<div class="form-group">
+<label>Academic Certificate <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
+<div class="file-upload-container" onclick="document.getElementById('doc_certificate').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-certificate"></i></div><div class="upload-text">Click to upload certificate</div><input type="file" id="doc_certificate" accept="image/*" onchange="handleDocumentUpload(event,'certificate')"></div>
+<div id="preview_certificate" style="margin-top:0.5rem;display:none"></div>
+</div>
+<div class="form-group">
+<label>Passport Photo <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
+<div class="file-upload-container" onclick="document.getElementById('doc_passport').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-user-circle"></i></div><div class="upload-text">Click to upload passport photo</div><input type="file" id="doc_passport" accept="image/*" onchange="handleDocumentUpload(event,'passport')"></div>
+<div id="preview_passport" style="margin-top:0.5rem;display:none"></div>
+</div>
+<div id="docUploadSummary" style="background:var(--bg);padding:0.75rem;border-radius:10px;margin-bottom:1rem;font-size:0.85rem"></div>
+<div style="display:flex;gap:0.5rem">
+<button type="button" class="btn btn-outline" onclick="regGoBack(1)"><i class="fas fa-arrow-left"></i> Back</button>
+<button type="button" class="btn btn-primary" style="flex:1;justify-content:center" onclick="event.preventDefault();regStep2();"><i class="fas fa-paper-plane"></i> Submit Application</button>
+</div>
+</div>
+
+<div class="reg-step" id="reg-step-3">
+<div style="text-align:center;padding:1rem 0">
+<i class="fas fa-receipt" style="font-size:3.5rem;color:var(--gold);margin-bottom:1rem"></i>
+<h2 style="color:var(--navy)">Application Received!</h2>
+<p style="color:var(--text-secondary);margin:1rem 0">Pay the processing fee of <strong>$0.50</strong>.</p>
+<div style="background:var(--bg);padding:1rem;border-radius:12px;margin:1rem 0;text-align:left;font-size:0.9rem">
+<div><strong>Application ID:</strong> <span id="regAppId" style="color:var(--gold);font-weight:700">—</span></div>
+<div style="margin-top:0.3rem"><strong>Status:</strong> <span class="badge status-payment_due">AWAITING PAYMENT</span></div>
+</div>
+<div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:12px;margin:1rem 0">
+<div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Processing Fee</div>
+<div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.50</div>
+</div>
+<button class="btn btn-success btn-block" id="payFeeBtn" onclick="payActivationFee()"><i class="fas fa-credit-card"></i> Pay $0.50 Now</button>
+<div id="feeFlash" style="margin-top:1rem"></div>
+</div>
+</div>
+
+<div class="reg-step" id="reg-step-4">
+<div style="text-align:center;padding:1rem 0">
+<i class="fas fa-check-circle" style="font-size:3.5rem;color:var(--success);margin-bottom:1rem"></i>
+<h2 style="color:var(--navy)">You're Admitted!</h2>
+<div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid var(--success);padding:1.5rem;border-radius:12px;margin:1rem 0">
+<div style="font-size:0.75rem;letter-spacing:2px;color:#166534;text-transform:uppercase;font-weight:700">Admission Number</div>
+<div id="regAdmissionNumber" style="font-size:1.8rem;font-weight:900;color:var(--navy);margin:0.5rem 0;letter-spacing:2px">—</div>
+</div>
+<button class="btn btn-primary btn-block" onclick="goToDashboard()"><i class="fas fa-tachometer-alt"></i> Go to Dashboard</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="page-student-dashboard" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-tachometer-alt" style="color:var(--gold)"></i> My Dashboard</h2><div id="studentDashboardContent"></div></div>
+<div id="page-student-wallet" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-wallet" style="color:var(--gold)"></i> Wallet & Payments</h2><div id="studentWalletContent"></div></div>
+<div id="page-student-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> My Courses</h2><div id="studentCoursesList"></div></div>
+<div id="page-student-course-viewer" class="page"><div id="studentCourseViewerContent"></div></div>
+<div id="page-student-results" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-list" style="color:var(--gold)"></i> My Results</h2><div id="studentResultsTable"></div></div>
+<div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>
+<div id="page-student-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> My Certificates</h2><div id="studentCertificatesList"></div></div>
+<div id="page-student-profile" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user" style="color:var(--gold)"></i> My Profile</h2><div id="studentProfileContent"></div></div>
+
+<div id="page-admin-dashboard" class="page">
+<h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-pie" style="color:var(--gold)"></i> Admin Dashboard</h2>
+<div id="adminStats"></div>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-top:1.5rem" id="adminRecentGrid">
+<div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow)"><h3 style="color:var(--navy);margin-bottom:1rem"><i class="fas fa-clock"></i> Recent Applications</h3><div id="recentApplications"></div></div>
+<div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow)"><h3 style="color:var(--navy);margin-bottom:1rem"><i class="fas fa-credit-card"></i> Recent Payments</h3><div id="recentPayments"></div></div>
+</div>
+<div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-top:1.5rem"><h3 style="color:var(--navy);margin-bottom:1rem"><i class="fas fa-stream"></i> Activity Feed</h3><div id="adminActivityFeed"></div></div>
+</div>
+
+<div id="page-admin-applications" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user-clock" style="color:var(--gold)"></i> Student Applications</h2><div id="adminApplicationsList"></div></div>
+<div id="page-admin-students" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-users" style="color:var(--gold)"></i> Students</h2><div id="adminStudentsList"></div></div>
+
+<div id="page-admin-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book" style="color:var(--gold)"></i> All Courses</h2><div id="adminCoursesList" class="courses-grid"></div></div>
+
+<div id="page-admin-builder" class="page">
+<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e2e8f0">
+<h1 style="font-size:1.6rem;color:var(--navy);display:flex;align-items:center;gap:12px"><i class="fas fa-plus-circle" style="color:var(--gold)"></i> <span id="builderTitle">Create New Course</span></h1>
+<div><span class="badge badge-draft" id="courseStatusBadge">Draft</span></div>
+</div>
+<div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-bottom:2rem;padding:1rem;background:var(--bg);border-radius:12px">
+<button class="btn btn-primary btn-sm" onclick="goToStep(0)">1. Basic Info</button>
+<button class="btn btn-outline btn-sm" onclick="goToStep(1)">2. Payment</button>
+<button class="btn btn-outline btn-sm" onclick="goToStep(2)">3. Modules</button>
+<button class="btn btn-outline btn-sm" onclick="goToStep(3)">4. Exam & CAT</button>
+<button class="btn btn-outline btn-sm" onclick="goToStep(4)">5. Publish</button>
+</div>
+<div id="step-0" class="step-content">
+<div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-info-circle" style="color:var(--gold)"></i> Basic Course Information</div>
+<div class="form-row"><div class="form-group"><label>Course Title <span class="required">*</span></label><input type="text" id="courseTitle"></div><div class="form-group"><label>Course Code</label><input type="text" id="courseCode" placeholder="e.g., NXA-CP-101"></div></div>
+<div class="form-row"><div class="form-group"><label>Category</label><select id="courseCategory"><option>IT & Technology</option><option>Business</option><option>Finance</option><option>Education</option><option>Design</option><option>Marketing</option><option>Personal Development</option><option>Other</option></select></div><div class="form-group"><label>Level</label><select id="courseLevel"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Professional</option></select></div></div>
+<div class="form-group"><label>Course Cover Image</label><div class="file-upload-container" onclick="document.getElementById('courseImageInput').click()"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-text">Click to upload</div><input type="file" id="courseImageInput" accept="image/*" onchange="handleImageUpload(event)"></div><div id="imagePreviewContainer" style="margin-top:0.8rem;display:none"><img id="imagePreview" style="max-width:200px;border-radius:10px"></div></div>
+<div class="form-group"><label>Description <span class="required">*</span></label><textarea id="courseDescription" rows="4"></textarea></div>
+<div class="form-row"><div class="form-group"><label>Instructor</label><input type="text" id="courseInstructor" placeholder="e.g., Dr. Kelvin M. Obieing"></div><div class="form-group"><label>Duration</label><input type="text" id="courseDuration" placeholder="e.g., 6 Weeks"></div></div>
+<div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="saveBasicInfo()"><i class="fas fa-arrow-right"></i> Save & Continue</button></div>
+</div>
+<div id="step-1" class="step-content hidden">
+<div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> Payment Configuration</div>
+<div class="form-row"><div class="form-group"><label>Regular Price ($) <span class="required">*</span></label><input type="number" id="coursePrice" step="0.01" value="0.00" min="0" oninput="updateDiscountPreview()"></div><div class="form-group"><label>Initial Payment (%)</label><input type="number" id="initialPaymentPercent" value="25" min="0" max="100"></div></div>
+<div style="background:linear-gradient(135deg,#fff7ed,#fef2f2);border:2px solid #fed7aa;border-radius:12px;padding:1.25rem;margin:1rem 0">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><h4 style="color:var(--navy);margin:0"><i class="fas fa-tags" style="color:#dc2626"></i> Limited-Time Offer</h4><label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;cursor:pointer;font-weight:600;color:var(--navy)"><input type="checkbox" id="discountEnabled" onchange="toggleDiscountFields()" style="width:18px;height:18px;accent-color:var(--gold)"> Enable Discount</label></div>
+<div id="discountFields" class="hidden">
+<div class="form-row"><div class="form-group"><label>Discounted Price ($) <span class="required">*</span></label><input type="number" id="discountPrice" step="0.01" value="0.00" min="0" oninput="updateDiscountPreview()"></div><div class="form-group"><label>Offer Label</label><input type="text" id="discountLabel" value="Limited Time Offer" maxlength="30" oninput="updateDiscountPreview()"></div></div>
+<div class="form-row"><div class="form-group"><label>End Date <span class="required">*</span></label><input type="date" id="discountEndDate" oninput="updateDiscountPreview()"></div><div class="form-group"><label>End Time <span class="required">*</span></label><input type="time" id="discountEndTime" value="23:59" oninput="updateDiscountPreview()"></div></div>
+<div id="discountPreview" style="display:none;background:#fef3c7;border-radius:10px;padding:1rem;margin-top:0.5rem"></div>
+</div></div>
+<div style="display:flex;justify-content:space-between;margin-top:1.5rem"><button class="btn btn-outline" onclick="goToStep(0)"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" onclick="savePaymentInfo()"><i class="fas fa-arrow-right"></i> Continue</button></div>
+</div>
+<div id="step-2" class="step-content hidden">
+<div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-layer-group" style="color:var(--gold)"></i> Modules & Lessons</div>
+<div id="modulesContainer"></div>
+<button class="btn btn-success btn-sm" onclick="addModule()"><i class="fas fa-plus"></i> Add Module</button>
+<div style="display:flex;justify-content:space-between;margin-top:1.5rem"><button class="btn btn-outline" onclick="goToStep(1)"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" onclick="goToStep(3)"><i class="fas fa-arrow-right"></i> Continue</button></div>
+</div>
+<div id="step-3" class="step-content hidden">
+<div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Exam & CAT</div>
+<div style="background:var(--bg);padding:1.25rem;border-radius:12px;margin-bottom:1.5rem">
+<div class="form-row"><div class="form-group"><label>CAT Unlock (hours)</label><input type="number" id="catUnlockHours" value="24" min="0"></div><div class="form-group"><label>Exam Unlock (hours)</label><input type="number" id="examUnlockHours" value="72" min="0"></div></div>
+<div class="form-row"><div class="form-group"><label>CAT Pass Mark (%)</label><input type="number" id="catPassMark" value="50" min="0" max="100"></div><div class="form-group"><label>Exam Pass Mark (%)</label><input type="number" id="examPassMark" value="50" min="0" max="100"></div></div>
+</div>
+<div style="background:var(--white);border:2px solid #e2e8f0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><h4 style="color:var(--navy);margin:0"><i class="fas fa-graduation-cap" style="color:var(--success)"></i> Exam Questions <span class="badge badge-active" id="examQCount">0</span></h4><button type="button" class="btn btn-success btn-sm" onclick="addExamQuestion()"><i class="fas fa-plus"></i> Add</button></div>
+<div id="examQuestionsBuilder"></div>
+</div>
+<div style="background:var(--white);border:2px solid #e2e8f0;border-radius:12px;padding:1.25rem;margin-bottom:1.5rem">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><h4 style="color:var(--navy);margin:0"><i class="fas fa-clipboard-check" style="color:var(--warning)"></i> CAT Questions <span class="badge badge-warning" id="catQCount">0</span></h4><button type="button" class="btn btn-warning btn-sm" onclick="addCATQuestion()"><i class="fas fa-plus"></i> Add</button></div>
+<div id="catQuestionsBuilder"></div>
+</div>
+<div style="display:flex;justify-content:space-between;margin-top:1.5rem"><button class="btn btn-outline" onclick="goToStep(2)"><i class="fas fa-arrow-left"></i> Back</button><button class="btn btn-primary" onclick="saveExamCATAndContinue()"><i class="fas fa-arrow-right"></i> Save & Continue</button></div>
+</div>
+<div id="step-4" class="step-content hidden">
+<div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-check-circle" style="color:var(--gold)"></i> Preview & Publish</div>
+<div id="previewContent"></div>
+<div style="display:flex;justify-content:space-between;margin-top:1.5rem;flex-wrap:wrap;gap:0.5rem">
+<button class="btn btn-outline" onclick="goToStep(3)"><i class="fas fa-arrow-left"></i> Back</button>
+<div style="display:flex;gap:0.5rem"><button class="btn btn-warning" onclick="saveDraft()"><i class="fas fa-save"></i> Save Draft</button><button class="btn btn-success" onclick="publishCourse()"><i class="fas fa-rocket"></i> Publish</button></div>
+</div>
+</div>
+</div>
+</div>
+
+<div id="page-admin-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Examinations</h2><div id="adminExamsList"></div></div>
+<div id="page-admin-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> Certificates</h2><div id="adminCertificatesList"></div></div>
+<div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
+<div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
+
+</div>
+</div>
+
+<div class="modal-backdrop" id="appDetailsModal">
+<div class="modal-box">
+<h2><i class="fas fa-file-alt"></i> Details</h2>
+<div id="appDetailsContent"></div>
+<div id="appDetailsFooter" style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap"><button type="button" class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="rejectReasonModal">
+<div class="modal-box" style="max-width:520px">
+<h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject Application</h2>
+<div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="3" placeholder="Enter reason..."></textarea></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()">Confirm</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="payCourseModal">
+<div class="modal-box" style="max-width:520px">
+<h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2>
+<div id="payCourseInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem"></div>
+<form onsubmit="processCoursePayment(event)">
+<input type="hidden" id="payEnrollmentId">
+<div class="form-group"><label>Amount ($) *</label><input type="number" id="payAmount" step="0.01" min="0.5" required></div>
+<div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option><option value="paypal">🌐 PayPal</option></select></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closePayCourseModal()">Cancel</button><button type="submit" class="btn btn-success">Pay</button></div>
+</form>
+</div>
+</div>
+
+<div class="modal-backdrop" id="loadingModal">
+<div class="modal-box" style="max-width:320px;text-align:center">
+<i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i>
+<p style="margin-top:1rem;color:var(--text-secondary)">Please wait...</p>
+</div>
+</div>
+
+<footer class="footer">
+<div class="container">
+<div class="brand">
+<div class="logo-bottom"><span class="nexora">NEXORA</span> <span class="academy">ACADEMY</span></div>
+<p class="tagline">LEARN · GROW · ACHIEVE</p>
+<p>Empowering learners worldwide.</p>
+</div>
+<div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
+<div><h4>Support</h4><ul>
+<li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
+<li><a href="https://chat.whatsapp.com/G3cSmU5k7KLA6CunwrLeTw" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
+</ul></div>
+<div><h4>Connect</h4><ul>
+<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
+<li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> Email Support</a></li>
+</ul></div>
+<div class="bottom">&copy; 2026 <span class="gold">Nexora Academy</span>. All rights reserved.</div>
+</div>
+</footer>
+
+<script>
+const API_BASE = 'https://nexora-api-sskg.onrender.com/api';
+
+async function api(path, options = {}) {
+    const opts = { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options };
+    if (opts.body && typeof opts.body !== 'string') opts.body = JSON.stringify(opts.body);
+    const res = await fetch(API_BASE + path, opts);
+    let data = null;
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) data = await res.json().catch(() => null);
+    if (!res.ok) { const err = new Error((data && data.error) || `HTTP ${res.status}`); err.status = res.status; err.data = data; throw err; }
+    return data;
+}
+async function apiForm(path, formData, method = 'POST') {
+    const res = await fetch(API_BASE + path, { method, credentials: 'include', body: formData });
+    let data = null;
+    const ct = res.headers.get('content-type') || '';
+    if (ct.includes('application/json')) data = await res.json().catch(() => null);
+    if (!res.ok) { const err = new Error((data && data.error) || `HTTP ${res.status}`); err.status = res.status; throw err; }
+    return data;
+}
+
+let currentUser = null;
+let sidebarOpen = false;
+let currentStep = 0;
+let currentCourseData = null;
+let currentCourseView = null;
+let currentLessonView = null;
+let examQuestions = [];
+let catQuestions = [];
+let pendingRegUser = null;
+let rejectTargetId = null;
+let appFilterState = { search: '', status: 'all', payment: 'all', sort: 'newest' };
+
+const COUNTRIES = ['Kenya','Uganda','Tanzania','Rwanda','Burundi','South Sudan','Ethiopia','Somalia','Djibouti','Eritrea','Nigeria','Ghana','South Africa','Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Senegal','Ivory Coast','Cameroon','Zambia','Zimbabwe','Botswana','Namibia','Mozambique','Malawi','Angola','United States','United Kingdom','Canada','Australia','India','China','Japan','Germany','France','Italy','Spain','Brazil','Mexico','Argentina','Netherlands','Sweden','Norway','Denmark','Switzerland','Ireland','Belgium','Portugal','Poland','Russia','Turkey','Saudi Arabia','United Arab Emirates','Qatar','Pakistan','Bangladesh','Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam','South Korea','New Zealand','Other'];
+
+function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function fmtMoney(n) { return '$' + parseFloat(n || 0).toFixed(2); }
+function fmtDate(d) { return d ? new Date(d).toLocaleDateString() : '—'; }
+function fmtDateTime(d) { return d ? new Date(d).toLocaleString() : '—'; }
+function showFlash(id, msg, type = 'info') { const c = document.getElementById(id); if (!c) return; c.innerHTML = `<div class="flash flash-${type}">${msg}</div>`; setTimeout(() => { c.innerHTML = ''; }, 6000); }
+function setLoading(on) { document.getElementById('loadingModal').classList.toggle('active', !!on); }
+function courseDiscountActive(c) { return !!(c && c.discount_enabled && c.discount_ends_at && new Date(c.discount_ends_at) > new Date()); }
+
+function renderPriceHTML(course) {
+    const active = courseDiscountActive(course);
+    if (active) {
+        return `<div>
+            <span class="discount-badge">🔥 ${esc(course.discount_label || 'Limited Offer')}</span>
+            <div class="discount-price-row">
+                <s>${fmtMoney(course.original_price)}</s>
+                <span class="discounted">${fmtMoney(course.discount_price)}</span>
+            </div>
+        </div>`;
     }
-    const r = await db.query(
-        `INSERT INTO lessons (module_id, title, description, position, notes,
-            assignment, video_url, published)
-         VALUES ($1,$2,$3,COALESCE($4,(SELECT COALESCE(MAX(position),0)+1 FROM lessons WHERE module_id=$1)),
-                 $5,$6,$7,COALESCE($8,TRUE))
-         RETURNING *`,
-        [module_id, title, description || null, position || null,
-         notes || null, assignment || null, video_url || null, published]
-    );
-    res.status(201).json({ lesson: r.rows[0] });
-}));
+    return `<span style="color:var(--gold);font-weight:700;font-size:1.1rem">${fmtMoney(course.price)}</span>`;
+}
 
-// PUT /api/courses/lessons/:lessonId
-router.put('/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
-    const { lessonId } = req.params;
-    const fields = ['title','description','position','notes','assignment','video_url','published'];
-    const updates = [];
-    const values = [];
-    fields.forEach(f => {
-        if (f in req.body) {
-            values.push(req.body[f]);
-            updates.push(`${f} = $${values.length}`);
-        }
-    });
-    if (!updates.length) return res.status(400).json({ error: 'No fields' });
-    values.push(lessonId);
-    const r = await db.query(
-        `UPDATE lessons SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
-        values
-    );
-    if (!r.rows.length) return res.status(404).json({ error: 'Lesson not found' });
-    res.json({ lesson: r.rows[0] });
-}));
+async function bootSession() { try { const { user } = await api('/auth/me'); currentUser = user; } catch (e) { currentUser = null; } }
 
-// DELETE /api/courses/lessons/:lessonId
-router.delete('/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
-    await db.query('DELETE FROM lessons WHERE id = $1', [req.params.lessonId]);
-    res.json({ ok: true });
-}));
+async function loginUser(e) {
+    e.preventDefault();
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    try {
+        await api('/auth/login', { method: 'POST', body: { email: document.getElementById('loginEmail').value.trim(), password: document.getElementById('loginPassword').value } });
+        await bootSession();
+        if (!currentUser) throw new Error('Session lost');
+        showApp();
+    } catch (err) { showFlash('loginFlash', '❌ ' + (err.data?.error || err.message), 'danger'); }
+    finally { btn.disabled = false; }
+}
+async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); goHome(); }
 
-// POST /api/courses/:id/questions
-router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
-    const { question_type, question_text, options, correct_index, marks, position } = req.body;
-    if (!['exam','cat'].includes(question_type)) {
-        return res.status(400).json({ error: 'Invalid question_type' });
-    }
-    if (!Array.isArray(options) || options.length !== 4) {
-        return res.status(400).json({ error: 'Options must be an array of 4 strings' });
-    }
-    const r = await db.query(
-        `INSERT INTO questions (course_id, question_type, question_text, options,
-            correct_index, marks, position)
-         VALUES ($1,$2,$3,$4::jsonb,$5,$6,COALESCE($7,
-            (SELECT COALESCE(MAX(position),0)+1 FROM questions
-             WHERE course_id=$1 AND question_type=$2)))
-         RETURNING *`,
-        [req.params.id, question_type, question_text,
-         JSON.stringify(options), correct_index, marks || 1, position || null]
-    );
-    res.status(201).json({ question: r.rows[0] });
-}));
-
-module.exports = router;
-router.put('/:id/discount', requireAdmin, asyncHandler(async (req, res) => {
-    const { enabled, original_price, discount_price, label, ends_at } = req.body;
-    if (enabled && (!discount_price || discount_price >= original_price)) {
-        return res.status(400).json({ error: 'Invalid discount price' });
-    }
-    const existing = await db.query(`SELECT id FROM course_discounts WHERE course_id = $1`, [req.params.id]);
-    if (existing.rows.length) {
-        await db.query(
-            `UPDATE course_discounts SET enabled = $1, original_price = $2, discount_price = $3, label = $4, ends_at = $5, updated_at = NOW() WHERE course_id = $6`,
-            [enabled, original_price, discount_price, label, ends_at, req.params.id]
-        );
+function goHome() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-landing').classList.add('active');
+    document.getElementById('sidebarToggleBar').classList.remove('visible');
+    document.getElementById('mainContent').classList.remove('sidebar-open');
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    updateTopNav();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function showCoursesPublic() {
+    if (currentUser) { navigateTo(currentUser.role === 'admin' ? 'admin-courses' : 'student-courses'); return; }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-courses').classList.add('active');
+    document.getElementById('sidebarToggleBar').classList.remove('visible');
+    await renderPublicCourses();
+    updateTopNav();
+}
+function showVerifyPublic() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-verify').classList.add('active');
+    document.getElementById('sidebarToggleBar').classList.remove('visible');
+    document.getElementById('verifyResult').innerHTML = '';
+    document.getElementById('verifyToken').value = '';
+    updateTopNav();
+}
+function showLogin() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-login').classList.add('active');
+    document.getElementById('sidebarToggleBar').classList.remove('visible');
+    updateTopNav();
+}
+async function showRegister() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-register').classList.add('active');
+    document.getElementById('sidebarToggleBar').classList.remove('visible');
+    try { const { courses } = await api('/courses'); const sel = document.getElementById('regCourseInterest'); sel.innerHTML = '<option value="">Select a course...</option>' + courses.map(c => `<option value="${esc(c.title)}">${esc(c.title)}</option>`).join(''); } catch (e) {}
+    const dob = document.getElementById('regDob');
+    if (dob) { dob.setAttribute('max', new Date().toISOString().split('T')[0]); dob.value = ''; }
+    regGoToStep(1);
+    updateTopNav();
+}
+function updateTopNav() {
+    if (currentUser) {
+        document.getElementById('topAuthLinks').classList.add('hidden');
+        document.getElementById('topUserLinks').classList.remove('hidden');
+        document.getElementById('topUserAvatar').textContent = (currentUser.full_name || 'U').charAt(0).toUpperCase();
+        document.getElementById('topUserName').textContent = (currentUser.full_name || '').split(' ')[0];
     } else {
-        await db.query(
-            `INSERT INTO course_discounts (course_id, enabled, original_price, discount_price, label, ends_at) VALUES ($1, $2, $3, $4, $5, $6)`,
-            [req.params.id, enabled, original_price, discount_price, label, ends_at]
-        );
+        document.getElementById('topAuthLinks').classList.remove('hidden');
+        document.getElementById('topUserLinks').classList.add('hidden');
     }
-    res.json({ ok: true });
-}));
+}
+async function showApp() {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('sidebarToggleBar').classList.add('visible');
+    if (currentUser.role === 'admin') {
+        document.getElementById('adminMenu').classList.remove('hidden');
+        document.getElementById('studentMenu').classList.add('hidden');
+        document.getElementById('page-admin-dashboard').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Admin Dashboard';
+        await updateAdminDashboard();
+        updateSidebarActive('admin-dashboard');
+        updateTopNav();
+        await updateCounts();
+        return;
+    }
+    document.getElementById('adminMenu').classList.add('hidden');
+    document.getElementById('studentMenu').classList.remove('hidden');
+    let app = null;
+    try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
+    const paidYet = app && app.payment_status === 'paid';
+    const approved = app && app.status === 'approved';
+    if (!paidYet || !approved) {
+        document.getElementById('page-register').classList.add('active');
+        document.getElementById('pageIndicator').textContent = paidYet ? 'Awaiting Approval' : 'Complete Payment';
+        if (app) { const e = document.getElementById('regAppId'); if (e) e.textContent = app.application_id; }
+        regGoToStep(3);
+        if (paidYet) {
+            const st3 = document.getElementById('reg-step-3');
+            if (st3) st3.innerHTML = `<div style="text-align:center;padding:1rem 0"><i class="fas fa-hourglass-half" style="font-size:3.5rem;color:var(--blue);margin-bottom:1rem"></i><h2 style="color:var(--navy)">Awaiting Approval</h2><p style="color:var(--text-secondary);margin:1rem 0">Payment received. Awaiting admissions review.</p><div style="background:#dbeafe;padding:1rem;border-radius:12px;margin:1rem 0"><strong>Status:</strong> <span class="badge status-paid">PAID — AWAITING APPROVAL</span></div><button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button></div>`;
+        }
+        updateSidebarActive('student-dashboard');
+        updateTopNav();
+        await updateCounts();
+        return;
+    }
+    document.getElementById('page-student-dashboard').classList.add('active');
+    document.getElementById('pageIndicator').textContent = 'Student Dashboard';
+    await updateStudentDashboard();
+    updateSidebarActive('student-dashboard');
+    updateTopNav();
+    await updateCounts();
+}
+function toggleSidebar() {
+    sidebarOpen = !sidebarOpen;
+    const s = document.getElementById('sidebar'), o = document.getElementById('sidebarOverlay');
+    if (sidebarOpen) { s.classList.add('open'); o.classList.add('active'); if (window.innerWidth > 768) document.getElementById('mainContent').classList.add('sidebar-open'); document.getElementById('sidebarToggleLabel').textContent = 'CLOSE'; }
+    else { s.classList.remove('open'); o.classList.remove('active'); document.getElementById('mainContent').classList.remove('sidebar-open'); document.getElementById('sidebarToggleLabel').textContent = 'MENU'; }
+}
+function closeSidebar() {
+    sidebarOpen = false;
+    document.getElementById('sidebar').classList.remove('open');
+    document.getElementById('sidebarOverlay').classList.remove('active');
+    document.getElementById('mainContent').classList.remove('sidebar-open');
+    document.getElementById('sidebarToggleLabel').textContent = 'MENU';
+}
+function updateSidebarActive(page) {
+    document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => el.classList.remove('active'));
+    document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => { if (el.onclick && el.onclick.toString().includes(`'${page}'`)) el.classList.add('active'); });
+}
+const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-profile':'Profile' };
+async function navigateTo(page) {
+    if (!currentUser) { showLogin(); return; }
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const t = document.getElementById(`page-${page}`);
+    if (t) t.classList.add('active');
+    document.getElementById('pageIndicator').textContent = PAGE_NAMES[page] || page;
+    updateSidebarActive(page);
+    if (window.innerWidth <= 768) closeSidebar();
+    try {
+        if (page === 'admin-dashboard') await updateAdminDashboard();
+        else if (page === 'admin-students') await renderAdminStudents();
+        else if (page === 'admin-applications') await renderAdminApplications();
+        else if (page === 'admin-courses') await renderAdminCourses();
+        else if (page === 'admin-builder') initBuilder();
+        else if (page === 'admin-exams') await renderAdminExams();
+        else if (page === 'admin-certificates') await renderAdminCertificates();
+        else if (page === 'admin-revenue') await renderRevenue();
+        else if (page === 'admin-payments') await renderAdminPayments();
+        else if (page === 'student-dashboard') await updateStudentDashboard();
+        else if (page === 'student-wallet') await renderStudentWallet();
+        else if (page === 'student-courses') await renderStudentCourses();
+        else if (page === 'student-results') await renderStudentResults();
+        else if (page === 'student-exams') await renderStudentExams();
+        else if (page === 'student-certificates') await renderStudentCertificates();
+        else if (page === 'student-profile') renderStudentProfile();
+    } catch (err) { console.error(err); }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function updateCounts() {
+    if (!currentUser) return;
+    try {
+        if (currentUser.role === 'admin') {
+            const { counts } = await api('/admin/stats');
+            document.getElementById('studentCount').textContent = counts.students;
+            document.getElementById('courseCount').textContent = counts.courses;
+            const pendingApps = (counts.applications.payment_due || 0) + (counts.applications.paid || 0);
+            document.getElementById('appCount').textContent = pendingApps;
+        } else {
+            const { enrollments } = await api('/enrollments');
+            document.getElementById('studentEnrollCount').textContent = enrollments.length;
+        }
+    } catch (e) {}
+}
+function filterCountries(q) {
+    const dd = document.getElementById('countryDropdown');
+    if (!dd) return;
+    const term = (q || '').toLowerCase().trim();
+    const matches = term ? COUNTRIES.filter(c => c.toLowerCase().includes(term)) : COUNTRIES;
+    if (!matches.length) { dd.innerHTML = '<div class="country-item" style="color:var(--text-secondary)">No matches</div>'; dd.style.display = 'block'; return; }
+    dd.innerHTML = matches.slice(0, 30).map(c => `<div class="country-item" onmousedown="selectCountry('${c.replace(/'/g, "\\'")}')">${c}</div>`).join('');
+    dd.style.display = 'block';
+}
+function selectCountry(c) { document.getElementById('regCountry').value = c; document.getElementById('countryDropdown').style.display = 'none'; }
+document.addEventListener('click', e => { const dd = document.getElementById('countryDropdown'); if (dd && !dd.contains(e.target) && e.target.id !== 'regCountry') dd.style.display = 'none'; });
+function togglePassword(inputId, btn) {
+    const inp = document.getElementById(inputId);
+    if (!inp) return;
+    if (inp.type === 'password') { inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; }
+    else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; }
+}
+function checkPasswordStrength(pw) {
+    const hasLength = pw.length >= 8, hasUpper = /[A-Z]/.test(pw), hasNumber = /\d/.test(pw);
+    document.getElementById('pwReq-length').innerHTML = (hasLength ? '✓' : '✗') + ' 8+ chars';
+    document.getElementById('pwReq-length').style.color = hasLength ? 'var(--success)' : 'var(--danger)';
+    document.getElementById('pwReq-upper').innerHTML = (hasUpper ? '✓' : '✗') + ' uppercase';
+    document.getElementById('pwReq-upper').style.color = hasUpper ? 'var(--success)' : 'var(--danger)';
+    document.getElementById('pwReq-num').innerHTML = (hasNumber ? '✓' : '✗') + ' number';
+    document.getElementById('pwReq-num').style.color = hasNumber ? 'var(--success)' : 'var(--danger)';
+    const score = (hasLength ? 1 : 0) + (hasUpper ? 1 : 0) + (hasNumber ? 1 : 0) + (pw.length >= 12 ? 1 : 0);
+    const bar = document.getElementById('pwStrengthBar');
+    bar.style.width = [0, 25, 50, 75, 100][score] + '%';
+    bar.style.background = score <= 1 ? 'var(--danger)' : score === 2 ? 'var(--warning)' : 'var(--success)';
+}
+function regGoToStep(n) {
+    document.querySelectorAll('.reg-step').forEach(el => el.classList.remove('active'));
+    const s = document.getElementById('reg-step-' + n);
+    if (s) s.classList.add('active');
+    document.querySelectorAll('#regStepIndicator .si').forEach(el => {
+        const i = parseInt(el.dataset.s);
+        el.classList.remove('active', 'done');
+        if (i < n) el.classList.add('done');
+        if (i === n) el.classList.add('active');
+    });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function regGoBack(n) { regGoToStep(n); }
+function regStep1(e) {
+    e.preventDefault();
+    const pw = document.getElementById('regPassword').value;
+    const pwC = document.getElementById('regPasswordConfirm').value;
+    if (pw.length < 8 || !/[A-Z]/.test(pw) || !/\d/.test(pw)) { showFlash('registerFlash', '❌ Password needs 8+ chars, uppercase, number', 'danger'); return; }
+    if (pw !== pwC) { showFlash('registerFlash', '❌ Passwords do not match', 'danger'); return; }
+    if (!document.getElementById('regTerms').checked) { showFlash('registerFlash', '❌ Accept Terms', 'danger'); return; }
+    const dob = document.getElementById('regDob').value;
+    if (!dob || new Date(dob) >= new Date()) { showFlash('registerFlash', '❌ DOB must be in the past', 'danger'); return; }
+    pendingRegUser = { username: document.getElementById('regUsername').value.trim(), email: document.getElementById('regEmail').value.trim().toLowerCase(), password: pw, full_name: document.getElementById('regFullName').value.trim(), phone: document.getElementById('regPhone').value.trim(), date_of_birth: dob, country: document.getElementById('regCountry').value.trim(), course_interest: document.getElementById('regCourseInterest').value };
+    showFlash('registerFlash', '✅ Saved. Continue to upload documents.', 'success');
+    regGoToStep(2);
+}
+async function regStep2() {
+    if (!pendingRegUser) { showFlash('registerFlash', '⚠️ Session expired. Please start over.', 'warning'); regGoToStep(1); return; }
+    const idFront = document.getElementById('doc_national_front').files[0];
+    if (!idFront) { alert('⚠️ National ID (front) is required.'); return; }
+    setLoading(true);
+    try {
+        await api('/auth/register', { method: 'POST', body: { username: pendingRegUser.username, email: pendingRegUser.email, password: pendingRegUser.password, full_name: pendingRegUser.full_name, phone: pendingRegUser.phone, country: pendingRegUser.country, date_of_birth: pendingRegUser.date_of_birth, course_interest: pendingRegUser.course_interest } });
+        await api('/auth/login', { method: 'POST', body: { email: pendingRegUser.email, password: pendingRegUser.password } });
+        await bootSession();
+        const { application } = await api('/applications', { method: 'POST', body: { course_interest: pendingRegUser.course_interest } });
+        const files = { national_front: document.getElementById('doc_national_front').files[0], national_back: document.getElementById('doc_national_back').files[0], certificate: document.getElementById('doc_certificate').files[0], passport: document.getElementById('doc_passport').files[0] };
+        for (const [type, file] of Object.entries(files)) {
+            if (!file) continue;
+            const fd = new FormData();
+            fd.append('file', file);
+            try { await apiForm(`/uploads/application-document?application_id=${application.id}&document_type=${type}&scope=applications`, fd); } catch (e) { console.warn('Upload failed for', type, e.message); }
+        }
+        document.getElementById('regAppId').textContent = application.application_id;
+        pendingRegUser = null;
+        regGoToStep(3);
+        showFlash('registerFlash', '✅ Application submitted.', 'success');
+    } catch (err) { console.error(err); showFlash('registerFlash', '❌ ' + (err.data?.error || err.message), 'danger'); }
+    finally { setLoading(false); }
+}
+async function payActivationFee() {
+    const btn = document.getElementById('payFeeBtn');
+    btn.disabled = true;
+    showFlash('feeFlash', '<i class="fas fa-spinner fa-spin"></i> Processing payment...', 'info');
+    try {
+        await api('/payments/activation', { method: 'POST' });
+        showFlash('feeFlash', '✅ Payment received! Awaiting admin approval.', 'success');
+        setTimeout(() => location.reload(), 2000);
+    } catch (err) { showFlash('feeFlash', '❌ ' + (err.data?.error || err.message), 'danger'); btn.disabled = false; }
+}
+function goToDashboard() { showApp(); }
+
+function renderCourseCardHTML(course, mode, extra = {}) {
+    const totalLessons = course.lesson_count || 0;
+    const totalModules = course.module_count || 0;
+    const priceHTML = renderPriceHTML(course);
+    let actionBtn;
+    if (mode === 'public') actionBtn = `<button class="btn btn-primary btn-sm" onclick="showRegister()">Enroll</button>`;
+    else if (mode === 'admin') actionBtn = `<div class="course-card-actions"><button class="btn btn-primary btn-sm" onclick="editCourse('${course.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-warning btn-sm" onclick="toggleCourseStatus('${course.id}', '${course.status}')"><i class="fas fa-${course.status === 'published' ? 'eye-slash' : 'eye'}"></i></button><button class="btn btn-danger btn-sm" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button></div>`;
+    else if (mode === 'student') { actionBtn = extra.enrolled ? `<button class="btn btn-primary btn-sm" onclick="openCourseViewer('${course.id}')"><i class="fas fa-play-circle"></i> Open</button>` : `<button class="btn btn-primary btn-sm" onclick="enrollInCourse('${course.id}')">Enroll</button>`; }
+    return `<div class="course-card"><div class="course-image">${course.cover_image_url ? `<img src="${esc(course.cover_image_url)}" style="width:100%;height:100%;object-fit:cover">` : ''}</div><div class="course-body"><h3 class="course-title">${esc(course.title)}</h3><div class="course-meta"><span><i class="fas fa-user-tie"></i> ${esc(course.instructor_name || 'N/A')}</span><span><i class="fas fa-clock"></i> ${esc(course.duration || 'N/A')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
+}
+async function renderPublicCourses() {
+    const c = document.getElementById('allCoursesList');
+    c.innerHTML = '<div class="empty-state">Loading courses...</div>';
+    try {
+        const { courses } = await api('/courses');
+        if (!courses.length) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No courses available.</div>'; return; }
+        c.innerHTML = courses.map(course => renderCourseCardHTML(course, 'public')).join('');
+    } catch (err) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Failed to load courses.</div>'; }
+}
+async function updateStudentDashboard() {
+    const c = document.getElementById('studentDashboardContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { enrollments } = await api('/enrollments');
+        const { certificates } = await api('/certificates/me');
+        let totalPaid = 0;
+        enrollments.forEach(e => { totalPaid += parseFloat(e.paid || 0); });
+        c.innerHTML = `<div class="wallet-hero"><h2>Welcome, ${esc(currentUser.full_name)}!</h2><p>${esc(currentUser.email)}</p><div class="balances"><div class="bal-box"><div class="lbl">Courses</div><div class="val">${enrollments.length}</div></div><div class="bal-box"><div class="lbl">Paid</div><div class="val green">${fmtMoney(totalPaid)}</div></div><div class="bal-box"><div class="lbl">Certificates</div><div class="val">${certificates.length}</div></div></div></div><h3 style="color:var(--navy);margin:1.5rem 0 1rem">My Enrolled Courses</h3>${enrollments.length === 0 ? '<p style="color:var(--text-secondary)">No courses yet. <a onclick="navigateTo(\'student-courses\')" style="color:var(--blue);cursor:pointer;font-weight:600">Browse courses</a></p>' : enrollments.map(e => renderEnrolledCard(e)).join('')}`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load dashboard.</div>'; }
+}
+function renderEnrolledCard(e) {
+    const paid = parseFloat(e.paid || 0);
+    const price = parseFloat(e.price || 0);
+    const rem = Math.max(0, price - paid);
+    const pct = price ? Math.min(100, Math.round((paid / price) * 100)) : 0;
+    const lessonPct = e.total_lessons ? Math.round((e.completed_lessons / e.total_lessons) * 100) : 0;
+    return `<div class="enrolled-card"><h4>${esc(e.title)}</h4><div class="meta">${esc(e.instructor_name || '')} • ${esc(e.duration || '')} • ${e.total_lessons} lessons</div><div class="stats-line"><div class="stat-box"><div class="lbl">Fee</div><div class="val">${fmtMoney(price)}</div></div><div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(paid)}</div></div><div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(rem)}</div></div><div class="stat-box"><div class="lbl">Progress</div><div class="val">${lessonPct}%</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem"><button class="btn btn-primary btn-sm" onclick="openCourseViewer('${e.course_id}')"><i class="fas fa-play-circle"></i> Open</button>${rem > 0 ? `<button class="btn btn-success btn-sm" onclick="openPayCourseModal('${e.course_id}')"><i class="fas fa-credit-card"></i> Pay</button>` : '<span class="badge badge-success">✅ Paid</span>'}</div></div>`;
+}
+async function renderStudentWallet() {
+    const c = document.getElementById('studentWalletContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { transactions } = await api('/payments/me');
+        const { enrollments } = await api('/enrollments');
+        const totalFee = enrollments.reduce((s, e) => s + parseFloat(e.price || 0), 0);
+        const totalPaid = enrollments.reduce((s, e) => s + parseFloat(e.paid || 0), 0);
+        const rem = Math.max(0, totalFee - totalPaid);
+        c.innerHTML = `<div class="wallet-hero"><h2>Wallet</h2><div class="balances"><div class="bal-box"><div class="lbl">Total Fees</div><div class="val">${fmtMoney(totalFee)}</div></div><div class="bal-box"><div class="lbl">Paid</div><div class="val green">${fmtMoney(totalPaid)}</div></div><div class="bal-box"><div class="lbl">Remaining</div><div class="val red">${fmtMoney(rem)}</div></div></div></div><h3 style="color:var(--navy);margin:1.5rem 0 1rem">Transactions</h3>${transactions.length === 0 ? '<p style="color:var(--text-secondary)">No transactions yet.</p>' : `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : `📚 ${esc(t.course_title || 'Course')}`}</td><td>${fmtMoney(t.amount)}</td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`}`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load wallet.</div>'; }
+}
+async function renderStudentCourses() {
+    const c = document.getElementById('studentCoursesList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { enrollments } = await api('/enrollments');
+        const { courses } = await api('/courses');
+        const enrolledIds = new Set(enrollments.map(e => e.course_id));
+        const available = courses.filter(x => !enrolledIds.has(x.id));
+        c.innerHTML = `<h3 style="color:var(--navy);margin-bottom:1rem">Enrolled</h3>${enrollments.length === 0 ? '<p style="color:var(--text-secondary)">No courses yet.</p>' : enrollments.map(e => renderEnrolledCard(e)).join('')}<h3 style="color:var(--navy);margin:2rem 0 1rem">Available</h3><div class="courses-grid">${available.length === 0 ? '<p style="color:var(--text-secondary);grid-column:1/-1">No new courses available.</p>' : available.map(co => renderCourseCardHTML(co, 'student', { enrolled: false })).join('')}</div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load courses.</div>'; }
+}
+async function enrollInCourse(courseId) {
+    try {
+        await api('/enrollments', { method: 'POST', body: { course_id: courseId } });
+        alert('✅ Enrolled successfully!');
+        await renderStudentCourses();
+        await updateCounts();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function openCourseViewer(courseId) { currentCourseView = { courseId }; currentLessonView = null; await navigateTo('student-course-viewer'); }
+async function renderStudentCourseViewer() {
+    if (!currentCourseView) return;
+    const c = document.getElementById('studentCourseViewerContent');
+    if (currentLessonView) { await renderLessonView(currentLessonView.lessonId); return; }
+    c.innerHTML = '<div class="empty-state">Loading course...</div>';
+    try {
+        const { course, modules, lessons } = await api(`/courses/${currentCourseView.courseId}`);
+        const { completed } = await api(`/progress/${currentCourseView.courseId}`);
+        const completedSet = new Set(completed);
+        const totalLessons = lessons.length;
+        const doneCount = lessons.filter(l => completedSet.has(l.id)).length;
+        const pct = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
+        let html = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="navigateTo('student-courses')"><i class="fas fa-arrow-left"></i> Back</button><div style="font-size:0.9rem;color:var(--text-secondary)">${doneCount}/${totalLessons} • ${pct}%</div></div><h2>${esc(course.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(course.description || '')}</p><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div>`;
+        if (!modules.length) { html += '<div class="empty-state" style="margin-top:1rem">No modules yet.</div>'; }
+        else {
+            modules.forEach((mod, mi) => {
+                const modLessons = lessons.filter(l => l.module_id === mod.id);
+                html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem"><strong><i class="fas fa-folder"></i> Module ${mi + 1}: ${esc(mod.title)}</strong></div><div style="padding:1rem">${modLessons.length === 0 ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons.</p>' : modLessons.map(les => { const d = completedSet.has(les.id); return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem;border-bottom:1px solid #f0f0f0;gap:0.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px"><div style="font-weight:600;color:var(--navy);font-size:0.95rem">${d ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> ' : ''}${esc(les.title)}</div><div style="font-size:0.75rem;color:var(--text-secondary)">${esc(les.description || '')} ${les.video_url ? '🎬' : ''}</div></div><button class="btn btn-primary btn-sm" onclick="openLesson('${les.id}')"><i class="fas fa-play"></i> ${d ? 'Review' : 'Open'}</button></div>`; }).join('')}</div></div>`;
+            });
+        }
+        c.innerHTML = html;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load course.</div>'; }
+}
+async function openLesson(lessonId) { currentLessonView = { lessonId }; await renderStudentCourseViewer(); }
+async function renderLessonView(lessonId) {
+    const c = document.getElementById('studentCourseViewerContent');
+    c.innerHTML = '<div class="empty-state">Loading lesson...</div>';
+    try {
+        const { course, modules, lessons } = await api(`/courses/${currentCourseView.courseId}`);
+        const les = lessons.find(l => l.id === lessonId);
+        if (!les) { c.innerHTML = '<div class="empty-state">Lesson not found.</div>'; return; }
+        const modLessons = lessons.filter(l => l.module_id === les.module_id);
+        const idx = modLessons.findIndex(l => l.id === les.id);
+        const { completed } = await api(`/progress/${currentCourseView.courseId}`);
+        const done = completed.includes(les.id);
+        let html = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backToCourseModules()"><i class="fas fa-arrow-left"></i> Modules</button><div style="font-size:0.9rem;color:var(--text-secondary)">${esc(course.title)} • ${idx + 1}/${modLessons.length}</div></div><h2>${esc(les.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(les.description || '')}</p>`;
+        if (les.video_url) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-video" style="color:var(--gold)"></i> Video</h3><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video controls controlsList="nodownload" style="width:100%;height:100%"><source src="${esc(les.video_url)}"></video></div></div>`; }
+        if (les.notes && les.notes.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-sticky-note" style="color:var(--gold)"></i> Notes</h3><div style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.95rem">${esc(les.notes)}</div></div>`; }
+        if (les.assignment && les.assignment.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-tasks" style="color:var(--gold)"></i> Assignment</h3><div style="background:#fef3c7;border-left:4px solid var(--warning);padding:1rem;border-radius:8px;color:#78350f">${esc(les.assignment)}</div></div>`; }
+        html += `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:space-between;margin-top:1.5rem"><button class="btn ${done ? 'btn-outline' : 'btn-success'}" onclick="toggleLessonComplete('${les.id}')"><i class="fas fa-${done ? 'check-circle' : 'circle'}"></i> ${done ? 'Completed' : 'Mark Complete'}</button><div style="display:flex;gap:0.5rem">${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="openLesson('${modLessons[idx - 1].id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}${idx < modLessons.length - 1 ? `<button class="btn btn-primary btn-sm" onclick="openLesson('${modLessons[idx + 1].id}')">Next <i class="fas fa-arrow-right"></i></button>` : ''}</div></div>`;
+        c.innerHTML = html;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load lesson.</div>'; }
+}
+function backToCourseModules() { currentLessonView = null; renderStudentCourseViewer(); }
+async function toggleLessonComplete(lessonId) {
+    try {
+        const { completed } = await api(`/progress/${currentCourseView.courseId}`);
+        if (completed.includes(lessonId)) await api(`/progress/${currentCourseView.courseId}/lessons/${lessonId}`, { method: 'DELETE' });
+        else await api(`/progress/${currentCourseView.courseId}/lessons/${lessonId}`, { method: 'POST' });
+        await renderLessonView(lessonId);
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+let payCourseTarget = null;
+async function openPayCourseModal(courseId) {
+    try {
+        const { enrollments } = await api('/enrollments');
+        const e = enrollments.find(x => x.course_id === courseId);
+        if (!e) return;
+        payCourseTarget = e;
+        const paid = parseFloat(e.paid || 0);
+        const price = parseFloat(e.price || 0);
+        const rem = Math.max(0, price - paid);
+        document.getElementById('payCourseInfo').innerHTML = `<div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">${esc(e.title)}</div><div>Fee: <strong>${fmtMoney(price)}</strong></div><div>Paid: <strong style="color:var(--success)">${fmtMoney(paid)}</strong></div><div>Remaining: <strong style="color:var(--danger)">${fmtMoney(rem)}</strong></div>`;
+        const amt = document.getElementById('payAmount');
+        amt.value = rem.toFixed(2);
+        amt.max = rem;
+        document.getElementById('payCourseModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+function closePayCourseModal() { document.getElementById('payCourseModal').classList.remove('active'); payCourseTarget = null; }
+async function processCoursePayment(e) {
+    e.preventDefault();
+    if (!payCourseTarget) return;
+    const amount = parseFloat(document.getElementById('payAmount').value);
+    const method = document.getElementById('payMethod').value;
+    try {
+        await api('/payments/course', { method: 'POST', body: { course_id: payCourseTarget.course_id, amount, payment_method: method } });
+        closePayCourseModal();
+        alert('✅ Payment successful!');
+        await updateStudentDashboard();
+        await renderStudentWallet();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function renderStudentResults() {
+    const c = document.getElementById('studentResultsTable');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { results } = await api('/progress/results/all');
+        if (!results.length) { c.innerHTML = '<div class="empty-state">No results yet.</div>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Course</th><th>Type</th><th>Score</th><th>%</th><th>Status</th><th>Date</th></tr></thead><tbody>${results.map(r => `<tr><td>${esc(r.course_title)}</td><td>${r.assessment_type === 'exam' ? 'Final Exam' : 'CAT'}</td><td>${r.score}/${r.total_marks}</td><td>${parseFloat(r.percentage).toFixed(1)}%</td><td><span class="badge ${r.passed ? 'badge-success' : 'badge-danger'}">${r.passed ? 'PASSED' : 'FAILED'}</span></td><td>${fmtDate(r.submitted_at)}</td></tr>`).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load results.</div>'; }
+}
+async function renderStudentExams() {
+    const c = document.getElementById('studentExamsContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { enrollments } = await api('/enrollments');
+        if (!enrollments.length) { c.innerHTML = '<div class="empty-state">Enroll in a course first.</div>'; return; }
+        c.innerHTML = enrollments.map(e => {
+            const allDone = e.completed_lessons >= e.total_lessons && e.total_lessons > 0;
+            return `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(e.title)}</h4><div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.3rem">Lessons: ${e.completed_lessons}/${e.total_lessons}</div><div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>📝 CAT</strong></div>${allDone ? `<button class="btn btn-warning btn-sm" onclick="alert('CAT flow coming soon')">Start CAT</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div><div style="margin-top:0.5rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>🎓 Exam</strong></div>${allDone ? `<button class="btn btn-success btn-sm" onclick="alert('Exam flow coming soon')">Start Exam</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div></div>`;
+        }).join('');
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load exams.</div>'; }
+}
+async function renderStudentCertificates() {
+    const c = document.getElementById('studentCertificatesList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { certificates } = await api('/certificates/me');
+        if (!certificates.length) { c.innerHTML = '<div class="empty-state">No certificates yet.</div>'; return; }
+        c.innerHTML = certificates.map(cert => `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(cert.certificate_id)}</h4><p>${esc(cert.course_name)}</p><p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p></div>`).join('');
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>'; }
+}
+function renderStudentProfile() {
+    document.getElementById('studentProfileContent').innerHTML = `<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)"><div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem"><div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc((currentUser.full_name || 'U').charAt(0))}</div><div><h2>${esc(currentUser.full_name)}</h2><p>${esc(currentUser.email)}</p></div></div><div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${esc(currentUser.username)}" disabled></div><div class="form-group"><label>Role</label><input type="text" value="${esc(currentUser.role)}" disabled></div></div></div>`;
+}
+
+async function updateAdminDashboard() {
+    try {
+        const stats = await api('/admin/stats');
+        const { activities } = await api('/admin/activities');
+        const { applications } = await api('/applications');
+        const { transactions } = await api('/payments');
+        document.getElementById('adminStats').innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total Apps</div></div><div class="summary-card gold"><div class="num">${(stats.counts.applications.payment_due || 0) + (stats.counts.applications.paid || 0)}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${stats.counts.applications.approved || 0}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${stats.counts.applications.rejected || 0}</div><div class="lbl">Rejected</div></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${stats.counts.courses}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${stats.counts.students}</div><div class="stat-label">Students</div></div><div class="stat-card purple"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total Collected</div></div></div>`;
+        const recentApps = applications.slice(0, 5);
+        document.getElementById('recentApplications').innerHTML = recentApps.length === 0 ? '<p style="color:var(--text-secondary)">No applications.</p>' : recentApps.map(a => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(a.full_name)}</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div>`).join('');
+        const recentTxs = transactions.slice(0, 5);
+        document.getElementById('recentPayments').innerHTML = recentTxs.length === 0 ? '<p style="color:var(--text-secondary)">No payments.</p>' : recentTxs.map(t => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${fmtMoney(t.amount)}</strong> — ${esc(t.student_name || '?')}</div>`).join('');
+        document.getElementById('adminActivityFeed').innerHTML = activities.length === 0 ? '<p style="color:var(--text-secondary)">No activity.</p>' : activities.slice(0, 10).map(a => `<div class="activity-item"><div class="a-icon"><i class="fas fa-circle"></i></div><div class="a-content"><div class="a-title">${esc(a.title)}</div><div style="font-size:0.85rem;color:var(--text-secondary)">${esc(a.description || '')}</div></div></div>`).join('');
+    } catch (err) { console.error(err); }
+}
+
+async function renderAdminApplications() {
+    const c = document.getElementById('adminApplicationsList');
+    c.innerHTML = '<div class="empty-state">Loading applications...</div>';
+    try {
+        const params = new URLSearchParams();
+        if (appFilterState.status !== 'all') params.set('status', appFilterState.status);
+        if (appFilterState.payment !== 'all') params.set('payment_status', appFilterState.payment);
+        if (appFilterState.search) params.set('search', appFilterState.search);
+        if (appFilterState.sort) params.set('sort', appFilterState.sort);
+        const { applications } = await api('/applications?' + params.toString());
+        const pending = applications.filter(a => a.status === 'payment_due' || a.status === 'paid').length;
+        const approved = applications.filter(a => a.status === 'approved').length;
+        const rejected = applications.filter(a => a.status === 'rejected').length;
+        const paid = applications.filter(a => a.payment_status === 'paid').length;
+        const unpaid = applications.filter(a => a.payment_status === 'unpaid').length;
+        let tableHTML = '';
+        if (!applications.length) {
+            tableHTML = `<div class="empty-state" style="margin-top:1rem"><i class="fas fa-inbox" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>No applications yet.<br><span style="font-size:0.85rem">Applications will appear here when students register.</span></div>`;
+        } else {
+            tableHTML = `<div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Date</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => {
+                const paidOk = a.payment_status === 'paid';
+                const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected';
+                const canReject = a.status !== 'rejected' && a.status !== 'approved';
+                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="approveApplication('${a.id}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
+            }).join('')}</tbody></table></div>`;
+        }
+        c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" id="appSearch" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select><select onchange="appFilterState.sort=this.value;renderAdminApplications()"><option value="newest" ${appFilterState.sort === 'newest' ? 'selected' : ''}>Newest</option><option value="oldest" ${appFilterState.sort === 'oldest' ? 'selected' : ''}>Oldest</option><option value="name" ${appFilterState.sort === 'name' ? 'selected' : ''}>A→Z</option></select><button class="btn btn-outline btn-sm" onclick="appFilterState={search:'',status:'all',payment:'all',sort:'newest'};renderAdminApplications()"><i class="fas fa-times"></i></button></div>${tableHTML}`;
+    } catch (err) { console.error('Applications error:', err); c.innerHTML = `<div class="empty-state" style="border-color:var(--danger)"><i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--danger);display:block;margin-bottom:0.5rem"></i>Failed to load: ${esc(err.data?.error || err.message)}<div style="margin-top:1rem"><button class="btn btn-outline btn-sm" onclick="renderAdminApplications()"><i class="fas fa-sync"></i> Retry</button></div></div>`; }
+}
+
+let debounceTimer;
+function debouncedApps() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderAdminApplications, 300); }
+
+async function viewApplicationDetails(appId) {
+    try {
+        const data = await api(`/applications/${appId}`);
+        const a = data.application, docs = data.documents, history = data.history;
+        const docsHTML = docs.length === 0 ? '<p style="color:var(--text-secondary)">No documents.</p>' : docs.map(d => `<div class="doc-card ${d.status === 'verified' ? 'verified' : d.status === 'rejected' ? 'rejected' : ''}"><div class="doc-info"><div class="doc-name">${esc(d.document_type.replace('_', ' ').toUpperCase())}</div><div class="doc-meta">${esc(d.file_name)} • Status: <strong>${d.status.toUpperCase()}</strong></div></div><div class="doc-actions"><a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a></div></div>`).join('');
+        document.getElementById('appDetailsContent').innerHTML = `<div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>App ID:</strong> ${esc(a.application_id)}</div><div><strong>Name:</strong> ${esc(a.full_name)}</div><div><strong>Email:</strong> ${esc(a.email)}</div><div><strong>Course Interest:</strong> ${esc(a.course_interest || '—')}</div><div><strong>Status:</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div><div><strong>Payment:</strong> ${a.payment_status.toUpperCase()}</div></div><h3>Documents</h3>${docsHTML}<h3 style="margin-top:1.5rem">History</h3>${history.map(h => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(h.action)}</strong> — ${esc(h.note || '')} <span style="color:var(--text-secondary)">${fmtDateTime(h.created_at)}</span></div>`).join('')}`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+function closeAppDetailsModal() { document.getElementById('appDetailsModal').classList.remove('active'); }
+async function approveApplication(appId) {
+    if (!confirm('Approve this application?')) return;
+    try {
+        const r = await api(`/applications/${appId}/approve`, { method: 'POST' });
+        alert('✅ Approved! Admission Number: ' + r.admission_number);
+        await renderAdminApplications();
+        await updateAdminDashboard();
+        await updateCounts();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+function openRejectModal(appId) { rejectTargetId = appId; document.getElementById('rejectReasonText').value = ''; document.getElementById('rejectReasonModal').classList.add('active'); }
+function closeRejectModal() { document.getElementById('rejectReasonModal').classList.remove('active'); rejectTargetId = null; }
+async function confirmReject() {
+    const reason = document.getElementById('rejectReasonText').value.trim();
+    if (!reason) { alert('⚠️ Reason required'); return; }
+    try {
+        await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
+        closeRejectModal();
+        alert('❌ Rejected');
+        await renderAdminApplications();
+        await updateAdminDashboard();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+async function renderAdminStudents() {
+    const c = document.getElementById('adminStudentsList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { students } = await api('/admin/students');
+        if (!students.length) { c.innerHTML = '<div class="empty-state">No students yet.</div>'; return; }
+        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${ap === 'pending' ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}')" title="Approve"><i class="fas fa-check"></i></button><button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load students.</div>'; }
+}
+async function quickApproveStudent(studentId) {
+    if (!confirm('Approve this student?')) return;
+    try {
+        const r = await api(`/admin/students/${studentId}/approve`, { method: 'POST' });
+        alert('✅ Approved! Admission: ' + r.admission_number);
+        await renderAdminStudents();
+        await updateAdminDashboard();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function quickRejectStudent(studentId) {
+    const reason = prompt('Rejection reason:');
+    if (!reason) return;
+    try { await api(`/admin/students/${studentId}/reject`, { method: 'POST', body: { reason } }); await renderAdminStudents(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function viewStudentProfile(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) { alert('Student not found'); return; }
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Profile — ${esc(s.full_name)}</h2><div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>Name:</strong> ${esc(s.full_name)}</div><div><strong>Email:</strong> ${esc(s.email)}</div><div><strong>Phone:</strong> ${esc(s.phone || '—')}</div><div><strong>Country:</strong> ${esc(s.country || '—')}</div><div><strong>Admission #:</strong> ${esc(s.admission_number || 'N/A')}</div><div><strong>Approval:</strong> ${esc((s.approval_status || 'pending').toUpperCase())}</div><div><strong>Service Fee:</strong> ${s.activation_fee_paid ? '✅ Paid' : '❌ Unpaid'}</div><div><strong>Courses:</strong> ${s.enrollment_count}</div><div><strong>Total Paid:</strong> ${fmtMoney(s.total_paid)}</div><div><strong>Registered:</strong> ${fmtDate(s.created_at)}</div></div>`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+async function viewStudentDocuments(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        const { applications } = await api('/applications');
+        const app = applications.find(a => a.user_id === studentId);
+        let docsHTML = '<div class="empty-state">No application found</div>';
+        if (app) {
+            const data = await api(`/applications/${app.id}`);
+            const documents = data.documents || [];
+            docsHTML = documents.length === 0 ? '<div class="empty-state">No documents uploaded</div>' : documents.map(d => `<div class="doc-card"><div class="doc-info"><div class="doc-name">${esc(d.document_type.replace('_', ' ').toUpperCase())}</div><div class="doc-meta">${esc(d.file_name)} • Status: ${d.status}</div></div><a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i> View</a></div>`).join('');
+        }
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Documents — ${esc(s.full_name)}</h2>${docsHTML}`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+async function viewStudentPayments(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        const { transactions } = await api('/payments');
+        const txs = transactions.filter(t => t.student_id === studentId);
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Payments — ${esc(s.full_name)}</h2>${!txs.length ? '<div class="empty-state">No transactions</div>' : `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${txs.map(t => `<tr><td>${esc(t.transaction_id)}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : esc(t.course_title || 'Course')}</td><td>${fmtMoney(t.amount)}</td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`}`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+async function viewStudentProgress(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Progress — ${esc(s.full_name)}</h2><div class="overall-progress"><div class="big-pct">${s.enrollment_count}</div><div class="big-lbl">Enrolled Courses</div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${s.enrollment_count}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(s.total_paid)}</div><div class="stat-label">Paid</div></div></div>`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+async function issueStudentCertificate(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        const { courses } = await api('/courses?include_drafts=true');
+        if (!courses.length) { alert('No courses available'); return; }
+        const courseList = courses.map((c, i) => `${i + 1}. ${c.title}`).join('\n');
+        const pick = prompt(`Issue certificate for ${s.full_name}\n\nWhich course?\n\n${courseList}\n\nEnter number:`);
+        if (!pick) return;
+        const idx = parseInt(pick, 10) - 1;
+        if (isNaN(idx) || idx < 0 || idx >= courses.length) { alert('Invalid selection'); return; }
+        const course = courses[idx];
+        const grade = prompt('Grade (e.g., Competent, Distinction):', 'Competent') || 'Competent';
+        const r = await api('/certificates/issue', { method: 'POST', body: { user_id: studentId, course_id: course.id, grade } });
+        alert('✅ Certificate issued: ' + r.certificate.certificate_id);
+        await renderAdminStudents();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function viewStudentSponsorship(studentId) {
+    try {
+        const { students } = await api('/admin/students');
+        const s = students.find(x => x.id === studentId);
+        if (!s) return;
+        const sp = s.sponsorship || { type: 'none', amount: 0, percentage: 0 };
+        const cardClass = sp.type === 'full' ? 'full' : sp.type === 'partial' ? 'partial' : '';
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div>${sp.type !== 'none' ? `<div style="margin-top:0.5rem;font-size:0.95rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}${sp.percentage ? `<div style="margin-top:0.3rem;font-size:0.9rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}${sp.sponsor_name ? `<div style="margin-top:0.3rem;font-size:0.9rem">Sponsor: <strong>${esc(sp.sponsor_name)}</strong></div>` : ''}</div><div class="form-group"><label>Sponsorship Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount Sponsored ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage Percentage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div><div class="form-group"><label>Sponsor Name (optional)</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}" placeholder="e.g., XYZ Foundation"></div>`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button><button class="btn btn-success" onclick="saveStudentSponsorship('${studentId}')">Save</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function saveStudentSponsorship(studentId) {
+    try {
+        const type = document.getElementById('spType_' + studentId).value;
+        const amount = parseFloat(document.getElementById('spAmount_' + studentId).value) || 0;
+        const percentage = parseInt(document.getElementById('spPercentage_' + studentId).value, 10) || 0;
+        const sponsor_name = document.getElementById('spSponsor_' + studentId).value.trim() || null;
+        await api(`/admin/students/${studentId}/sponsorship`, { method: 'POST', body: { type, amount, percentage, sponsor_name } });
+        alert('✅ Sponsorship updated');
+        closeAppDetailsModal();
+        await renderAdminStudents();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+async function renderAdminCourses() {
+    const c = document.getElementById('adminCoursesList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { courses } = await api('/courses?include_drafts=true');
+        if (!courses.length) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No courses yet.</div>'; return; }
+        c.innerHTML = courses.map(co => renderCourseCardHTML(co, 'admin')).join('');
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load courses.</div>'; }
+}
+async function toggleCourseStatus(courseId, currentStatus) {
+    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
+    try { await api(`/courses/${courseId}`, { method: 'PUT', body: { status: newStatus } }); await renderAdminCourses(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function deleteCourse(courseId) {
+    if (!confirm('Delete this course? This cannot be undone.')) return;
+    try { await api(`/courses/${courseId}`, { method: 'DELETE' }); await renderAdminCourses(); await updateCounts(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function editCourse(courseId) {
+    try {
+        const { course, modules, lessons } = await api(`/courses/${courseId}`);
+        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, instructor_name: course.instructor_name, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' } };
+        examQuestions = []; catQuestions = [];
+        document.getElementById('courseTitle').value = course.title || '';
+        document.getElementById('courseCode').value = course.code || '';
+        document.getElementById('courseCategory').value = course.category || 'IT & Technology';
+        document.getElementById('courseLevel').value = course.level || 'Beginner';
+        document.getElementById('courseDescription').value = course.description || '';
+        document.getElementById('courseInstructor').value = course.instructor_name || '';
+        document.getElementById('courseDuration').value = course.duration || '';
+        document.getElementById('coursePrice').value = course.price || 0;
+        document.getElementById('initialPaymentPercent').value = course.initial_payment_percent || 25;
+        document.getElementById('examUnlockHours').value = course.exam_unlock_hours || 72;
+        document.getElementById('catUnlockHours').value = course.cat_unlock_hours || 24;
+        document.getElementById('examPassMark').value = course.exam_pass_mark || 50;
+        document.getElementById('catPassMark').value = course.cat_pass_mark || 50;
+        document.getElementById('courseStatusBadge').textContent = course.status;
+        document.getElementById('courseStatusBadge').className = 'badge badge-' + course.status;
+        document.getElementById('builderTitle').textContent = 'Edit Course';
+        if (course.cover_image_url) { document.getElementById('imagePreview').src = course.cover_image_url; document.getElementById('imagePreviewContainer').style.display = 'block'; }
+        if (course.discount_enabled) {
+            document.getElementById('discountEnabled').checked = true;
+            document.getElementById('discountFields').classList.remove('hidden');
+            document.getElementById('discountPrice').value = course.discount_price || 0;
+            document.getElementById('discountLabel').value = course.discount_label || 'Limited Time Offer';
+            if (course.discount_ends_at) {
+                const d = new Date(course.discount_ends_at);
+                document.getElementById('discountEndDate').value = d.toISOString().split('T')[0];
+                document.getElementById('discountEndTime').value = d.toTimeString().slice(0, 5);
+            }
+            updateDiscountPreview();
+        } else {
+            document.getElementById('discountEnabled').checked = false;
+            document.getElementById('discountFields').classList.add('hidden');
+        }
+        renderModules(); renderExamQuestionsBuilder(); renderCATQuestionsBuilder();
+        await navigateTo('admin-builder');
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+function initBuilder() {
+    if (!currentCourseData || !currentCourseData.id) {
+        currentCourseData = { title: '', code: '', category: 'IT & Technology', level: 'Beginner', description: '', instructor_name: '', duration: '', price: 0, initial_payment_percent: 25, status: 'draft', cat_pass_mark: 50, exam_pass_mark: 50, cat_unlock_hours: 24, exam_unlock_hours: 72, modules: [], discount: { enabled: false, originalPrice: 0, discountPrice: 0, endsAt: null, label: '' } };
+        examQuestions = []; catQuestions = [];
+        document.getElementById('builderTitle').textContent = 'Create New Course';
+        ['courseTitle','courseCode','courseDescription','courseDuration','courseInstructor'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        document.getElementById('coursePrice').value = 0;
+        document.getElementById('examUnlockHours').value = 72;
+        document.getElementById('catUnlockHours').value = 24;
+        document.getElementById('examPassMark').value = 50;
+        document.getElementById('catPassMark').value = 50;
+        document.getElementById('discountEnabled').checked = false;
+        document.getElementById('discountFields').classList.add('hidden');
+        document.getElementById('imagePreviewContainer').style.display = 'none';
+        document.getElementById('courseStatusBadge').textContent = 'Draft';
+        document.getElementById('courseStatusBadge').className = 'badge badge-draft';
+        renderModules(); renderExamQuestionsBuilder(); renderCATQuestionsBuilder();
+    }
+    goToStep(0);
+}
+function goToStep(n) {
+    currentStep = n;
+    document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
+    const t = document.getElementById('step-' + n);
+    if (t) t.classList.remove('hidden');
+    if (n === 4) buildPreview();
+    if (n === 3) { renderExamQuestionsBuilder(); renderCATQuestionsBuilder(); }
+    if (n === 2) renderModules();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+let uploadedImageFile = null;
+function saveBasicInfo() {
+    currentCourseData.title = document.getElementById('courseTitle').value;
+    currentCourseData.code = document.getElementById('courseCode').value;
+    currentCourseData.category = document.getElementById('courseCategory').value;
+    currentCourseData.level = document.getElementById('courseLevel').value;
+    currentCourseData.description = document.getElementById('courseDescription').value;
+    currentCourseData.instructor_name = document.getElementById('courseInstructor').value;
+    currentCourseData.duration = document.getElementById('courseDuration').value;
+    if (!currentCourseData.title) { alert('⚠️ Title required'); return; }
+    goToStep(1);
+}
+function handleImageUpload(e) {
+    const f = e.target.files[0];
+    if (!f) return;
+    uploadedImageFile = f;
+    const r = new FileReader();
+    r.onload = ev => { document.getElementById('imagePreview').src = ev.target.result; document.getElementById('imagePreviewContainer').style.display = 'block'; };
+    r.readAsDataURL(f);
+}
+function toggleDiscountFields() {
+    const en = document.getElementById('discountEnabled').checked;
+    const f = document.getElementById('discountFields');
+    if (en) {
+        f.classList.remove('hidden');
+        if (!document.getElementById('discountEndDate').value) { const d = new Date(); d.setDate(d.getDate() + 7); document.getElementById('discountEndDate').value = d.toISOString().split('T')[0]; }
+        updateDiscountPreview();
+    } else { f.classList.add('hidden'); document.getElementById('discountPreview').style.display = 'none'; }
+}
+function updateDiscountPreview() {
+    const en = document.getElementById('discountEnabled').checked;
+    const p = document.getElementById('discountPreview');
+    if (!en) { p.style.display = 'none'; return; }
+    const orig = parseFloat(document.getElementById('coursePrice').value) || 0;
+    const disc = parseFloat(document.getElementById('discountPrice').value) || 0;
+    const date = document.getElementById('discountEndDate').value;
+    const time = document.getElementById('discountEndTime').value || '23:59';
+    if (!date || orig <= 0 || disc <= 0 || disc >= orig) { p.style.display = 'block'; p.innerHTML = '<span style="color:var(--danger);font-size:0.85rem">⚠️ Fill valid discount</span>'; return; }
+    const ends = new Date(`${date}T${time}`).getTime();
+    if (ends <= Date.now()) { p.style.display = 'block'; p.innerHTML = '<span style="color:var(--danger);font-size:0.85rem">⚠️ Time in past</span>'; return; }
+    const pct = Math.round(((orig - disc) / orig) * 100);
+    p.style.display = 'block';
+    p.innerHTML = `<span style="background:#dc2626;color:#fff;padding:3px 10px;border-radius:50px;font-size:0.7rem;font-weight:700">🔥 ${esc(document.getElementById('discountLabel').value || 'Offer')}</span><div style="margin-top:0.5rem"><s style="color:var(--text-secondary)">${fmtMoney(orig)}</s> <strong style="color:var(--gold);font-size:1.2rem">${fmtMoney(disc)}</strong> <span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:50px;font-size:0.7rem;font-weight:700">SAVE ${pct}%</span></div>`;
+}
+function savePaymentInfo() {
+    const orig = parseFloat(document.getElementById('coursePrice').value) || 0;
+    currentCourseData.price = orig;
+    currentCourseData.initial_payment_percent = parseInt(document.getElementById('initialPaymentPercent').value) || 25;
+    const en = document.getElementById('discountEnabled').checked;
+    if (en) {
+        const disc = parseFloat(document.getElementById('discountPrice').value) || 0;
+        const date = document.getElementById('discountEndDate').value;
+        const time = document.getElementById('discountEndTime').value || '23:59';
+        const label = document.getElementById('discountLabel').value || 'Limited Time Offer';
+        if (!date || disc <= 0 || disc >= orig) { alert('⚠️ Invalid discount'); return; }
+        const ends = new Date(`${date}T${time}`).getTime();
+        if (ends <= Date.now()) { alert('⚠️ Discount end time is in the past'); return; }
+        currentCourseData.discount = { enabled: true, originalPrice: orig, discountPrice: disc, endsAt: new Date(ends).toISOString(), label };
+    } else { currentCourseData.discount = { enabled: false, originalPrice: orig, discountPrice: 0, endsAt: null, label: '' }; }
+    goToStep(2);
+}
+function addModule() { const n = prompt('Module name:'); if (!n) return; currentCourseData.modules.push({ title: n, position: currentCourseData.modules.length + 1, lessons: [] }); renderModules(); }
+function deleteModule(mi) { if (!confirm('Delete?')) return; currentCourseData.modules.splice(mi, 1); renderModules(); }
+function renderModules() {
+    const c = document.getElementById('modulesContainer');
+    if (!currentCourseData.modules || !currentCourseData.modules.length) { c.innerHTML = '<div class="empty-state">No modules yet.</div>'; return; }
+    c.innerHTML = currentCourseData.modules.map((m, mi) => `<div style="background:var(--white);border:1px solid #e2e8f0;border-radius:12px;margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem"><strong>Module ${mi + 1}: ${esc(m.title)}</strong><div><button class="btn btn-primary btn-sm" onclick="addLesson(${mi})"><i class="fas fa-plus"></i> Lesson</button> <button class="btn btn-danger btn-sm" onclick="deleteModule(${mi})"><i class="fas fa-trash"></i></button></div></div><div style="padding:1rem">${(!m.lessons || !m.lessons.length) ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons.</p>' : m.lessons.map((l, li) => `<div style="padding:0.6rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap"><div><strong>${esc(l.title)}</strong><div style="font-size:0.75rem;color:var(--text-secondary)">${l.video_url ? '🎬' : ''}</div></div><div><button class="btn btn-primary btn-sm" onclick="editLesson(${mi},${li})"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteLesson(${mi},${li})"><i class="fas fa-trash"></i></button></div></div>`).join('')}</div></div>`).join('');
+}
+function addLesson(mi) { const title = prompt('Lesson title:'); if (!title) return; currentCourseData.modules[mi].lessons = currentCourseData.modules[mi].lessons || []; currentCourseData.modules[mi].lessons.push({ title, description: '', position: currentCourseData.modules[mi].lessons.length + 1, notes: '', assignment: '', video_url: null, published: true, _new: true }); renderModules(); }
+function editLesson(mi, li) {
+    const les = currentCourseData.modules[mi].lessons[li];
+    const title = prompt('Lesson title:', les.title);
+    if (title === null) return;
+    les.title = title;
+    les.description = prompt('Description:', les.description || '') || '';
+    les.notes = prompt('Notes:', les.notes || '') || '';
+    les.assignment = prompt('Assignment:', les.assignment || '') || '';
+    les.video_url = prompt('Video URL (leave empty for none):', les.video_url || '') || null;
+    renderModules();
+}
+function deleteLesson(mi, li) { if (!confirm('Delete?')) return; currentCourseData.modules[mi].lessons.splice(li, 1); renderModules(); }
+function addExamQuestion() { examQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 2 }); renderExamQuestionsBuilder(); }
+function addCATQuestion() { catQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 5 }); renderCATQuestionsBuilder(); }
+function renderExamQuestionsBuilder() {
+    const c = document.getElementById('examQuestionsBuilder');
+    document.getElementById('examQCount').textContent = examQuestions.length;
+    if (!examQuestions.length) { c.innerHTML = '<div class="empty-state">No exam questions.</div>'; return; }
+    c.innerHTML = examQuestions.map((q, i) => `<div style="background:var(--bg);border-radius:10px;padding:1rem;margin-bottom:0.75rem;border-left:4px solid var(--success)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem"><strong>Exam Q${i + 1}</strong><button type="button" class="btn btn-danger btn-sm" onclick="examQuestions.splice(${i},1);renderExamQuestionsBuilder()"><i class="fas fa-trash"></i></button></div><textarea oninput="examQuestions[${i}].question_text=this.value" placeholder="Question" style="width:100%;padding:8px;border:2px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem">${esc(q.question_text)}</textarea>${q.options.map((o, oi) => `<div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem"><input type="radio" name="eq${i}" ${q.correct_index === oi ? 'checked' : ''} onchange="examQuestions[${i}].correct_index=${oi}"><span style="width:20px;font-weight:700">${String.fromCharCode(65 + oi)}</span><input type="text" value="${esc(o)}" oninput="examQuestions[${i}].options[${oi}]=this.value" style="flex:1;padding:6px;border:2px solid #e2e8f0;border-radius:8px"></div>`).join('')}<div style="margin-top:0.5rem"><label style="font-size:0.8rem">Marks: <input type="number" min="1" value="${q.marks}" oninput="examQuestions[${i}].marks=parseInt(this.value)||1" style="width:80px;padding:4px;border:2px solid #e2e8f0;border-radius:6px"></label></div></div>`).join('');
+}
+function renderCATQuestionsBuilder() {
+    const c = document.getElementById('catQuestionsBuilder');
+    document.getElementById('catQCount').textContent = catQuestions.length;
+    if (!catQuestions.length) { c.innerHTML = '<div class="empty-state">No CAT questions.</div>'; return; }
+    c.innerHTML = catQuestions.map((q, i) => `<div style="background:var(--bg);border-radius:10px;padding:1rem;margin-bottom:0.75rem;border-left:4px solid var(--warning)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.5rem"><strong>CAT Q${i + 1}</strong><button type="button" class="btn btn-danger btn-sm" onclick="catQuestions.splice(${i},1);renderCATQuestionsBuilder()"><i class="fas fa-trash"></i></button></div><textarea oninput="catQuestions[${i}].question_text=this.value" placeholder="Question" style="width:100%;padding:8px;border:2px solid #e2e8f0;border-radius:8px;margin-bottom:0.5rem">${esc(q.question_text)}</textarea>${q.options.map((o, oi) => `<div style="display:flex;gap:0.4rem;align-items:center;margin-bottom:0.3rem"><input type="radio" name="cq${i}" ${q.correct_index === oi ? 'checked' : ''} onchange="catQuestions[${i}].correct_index=${oi}"><span style="width:20px;font-weight:700">${String.fromCharCode(65 + oi)}</span><input type="text" value="${esc(o)}" oninput="catQuestions[${i}].options[${oi}]=this.value" style="flex:1;padding:6px;border:2px solid #e2e8f0;border-radius:8px"></div>`).join('')}<div style="margin-top:0.5rem"><label style="font-size:0.8rem">Marks: <input type="number" min="1" value="${q.marks}" oninput="catQuestions[${i}].marks=parseInt(this.value)||1" style="width:80px;padding:4px;border:2px solid #e2e8f0;border-radius:6px"></label></div></div>`).join('');
+}
+function saveExamCATAndContinue() {
+    currentCourseData.cat_unlock_hours = parseInt(document.getElementById('catUnlockHours').value) || 24;
+    currentCourseData.exam_unlock_hours = parseInt(document.getElementById('examUnlockHours').value) || 72;
+    currentCourseData.cat_pass_mark = parseInt(document.getElementById('catPassMark').value) || 50;
+    currentCourseData.exam_pass_mark = parseInt(document.getElementById('examPassMark').value) || 50;
+    goToStep(4);
+}
+function buildPreview() {
+    const c = document.getElementById('previewContent');
+    const tl = (currentCourseData.modules || []).reduce((s, m) => s + (m.lessons || []).length, 0);
+    let discountPreviewHTML = '';
+    if (currentCourseData.discount && currentCourseData.discount.enabled) {
+        discountPreviewHTML = `<div style="margin-top:0.5rem"><span class="discount-badge">🔥 ${esc(currentCourseData.discount.label)}</span><div class="discount-price-row"><s>${fmtMoney(currentCourseData.discount.originalPrice)}</s><span class="discounted">${fmtMoney(currentCourseData.discount.discountPrice)}</span></div></div>`;
+    }
+    c.innerHTML = `<div style="background:var(--bg);padding:1.5rem;border-radius:12px;margin-bottom:1rem"><h3>${esc(currentCourseData.title || 'Untitled')}</h3><p style="color:var(--text-secondary);font-size:0.9rem;margin-top:0.5rem">${esc(currentCourseData.description || '')}</p>${discountPreviewHTML}</div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${(currentCourseData.modules || []).length}</div><div class="stat-label">Modules</div></div><div class="stat-card green"><div class="stat-number">${tl}</div><div class="stat-label">Lessons</div></div><div class="stat-card gold"><div class="stat-number">${examQuestions.length}</div><div class="stat-label">Exam Qs</div></div><div class="stat-card purple"><div class="stat-number">${catQuestions.length}</div><div class="stat-label">CAT Qs</div></div></div>`;
+}
+async function saveCourseToServer(status) {
+    setLoading(true);
+    try {
+        let coverImageUrl = currentCourseData.cover_image_url || null;
+        if (uploadedImageFile) {
+            const fd = new FormData();
+            fd.append('file', uploadedImageFile);
+            const r = await apiForm('/uploads/course-cover?scope=courses', fd);
+            coverImageUrl = r.path;
+            uploadedImageFile = null;
+        }
+        const payload = { title: currentCourseData.title, code: currentCourseData.code || null, category: currentCourseData.category || null, level: currentCourseData.level || null, description: currentCourseData.description || null, instructor_name: currentCourseData.instructor_name || null, duration: currentCourseData.duration || null, cover_image_url: coverImageUrl, price: currentCourseData.price || 0, initial_payment_percent: currentCourseData.initial_payment_percent || 25, cat_pass_mark: currentCourseData.cat_pass_mark || 50, exam_pass_mark: currentCourseData.exam_pass_mark || 50, cat_unlock_hours: currentCourseData.cat_unlock_hours || 24, exam_unlock_hours: currentCourseData.exam_unlock_hours || 72, status };
+        let courseId = currentCourseData.id;
+        if (courseId) { await api(`/courses/${courseId}`, { method: 'PUT', body: payload }); }
+        else { const r = await api('/courses', { method: 'POST', body: payload }); courseId = r.course.id; currentCourseData.id = courseId; }
+        if (!currentCourseData._existingSaved) {
+            for (const mod of currentCourseData.modules) {
+                const modRes = await api(`/courses/${courseId}/modules`, { method: 'POST', body: { title: mod.title, position: mod.position } });
+                const newModuleId = modRes.module.id;
+                for (const les of (mod.lessons || [])) { await api(`/courses/${courseId}/lessons`, { method: 'POST', body: { module_id: newModuleId, title: les.title, description: les.description, position: les.position, notes: les.notes, assignment: les.assignment, video_url: les.video_url, published: les.published !== false } }); }
+            }
+            for (const q of examQuestions) { if (!q.question_text || !q.options.some(o => o)) continue; await api(`/courses/${courseId}/questions`, { method: 'POST', body: { question_type: 'exam', ...q } }); }
+            for (const q of catQuestions) { if (!q.question_text || !q.options.some(o => o)) continue; await api(`/courses/${courseId}/questions`, { method: 'POST', body: { question_type: 'cat', ...q } }); }
+            currentCourseData._existingSaved = true;
+        }
+        if (currentCourseData.discount && currentCourseData.discount.enabled) {
+            await api(`/courses/${courseId}/discount`, { method: 'PUT', body: { enabled: true, original_price: currentCourseData.discount.originalPrice || currentCourseData.price, discount_price: currentCourseData.discount.discountPrice, label: currentCourseData.discount.label || 'Limited Time Offer', ends_at: currentCourseData.discount.endsAt } });
+        } else {
+            await api(`/courses/${courseId}/discount`, { method: 'PUT', body: { enabled: false, original_price: currentCourseData.price || 0, discount_price: 0, label: '', ends_at: null } });
+        }
+        document.getElementById('courseStatusBadge').textContent = status.charAt(0).toUpperCase() + status.slice(1);
+        document.getElementById('courseStatusBadge').className = 'badge badge-' + status;
+        alert('✅ Course saved!');
+        await updateCounts();
+        await renderAdminCourses();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    finally { setLoading(false); }
+}
+function saveDraft() { saveCourseToServer('draft'); }
+function publishCourse() { saveCourseToServer('published'); }
+async function renderAdminExams() {
+    const c = document.getElementById('adminExamsList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { courses } = await api('/courses?include_drafts=true');
+        if (!courses.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No courses yet.</p>'; return; }
+        c.innerHTML = courses.map(co => `<div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(co.title)}</h4><div style="font-size:0.9rem;color:var(--text-secondary);margin-top:0.3rem">Exam & CAT questions are managed in the course builder.</div></div>`).join('');
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+async function renderAdminCertificates() {
+    const c = document.getElementById('adminCertificatesList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { certificates } = await api('/certificates');
+        if (!certificates.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No certificates issued.</p>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th><th>Status</th></tr></thead><tbody>${certificates.map(x => `<tr><td><strong>${esc(x.certificate_id)}</strong></td><td>${esc(x.student_name)}</td><td>${esc(x.course_name)}</td><td>${fmtDate(x.issued_date)}</td><td>${x.revoked ? '<span class="badge badge-danger">REVOKED</span>' : '<span class="badge badge-success">ACTIVE</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+async function renderRevenue() {
+    try {
+        const stats = await api('/admin/stats');
+        document.getElementById('revenueStats').innerHTML = `<div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.activation)}</div><div class="stat-label">Activation</div></div><div class="stat-card purple"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total</div></div><div class="stat-card"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div>`;
+    } catch (err) { document.getElementById('revenueStats').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+async function renderAdminPayments() {
+    const c = document.getElementById('adminPaymentsList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { transactions } = await api('/payments');
+        if (!transactions.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No payments.</p>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Student</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${esc(t.student_name || '?')}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : `📚 ${esc(t.course_title || 'Course')}`}</td><td><strong>${fmtMoney(t.amount)}</strong></td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+async function verifyCertificate() {
+    const token = document.getElementById('verifyToken').value.trim();
+    const r = document.getElementById('verifyResult');
+    if (!token) { r.innerHTML = ''; return; }
+    try {
+        const data = await api(`/certificates/verify/${encodeURIComponent(token)}`);
+        if (data.valid) { r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p><p>Issued: ${fmtDate(data.certificate.issued_date)}</p></div>`; }
+        else { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3><p>This certificate has been revoked.</p></div>`; }
+    } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3><p>No certificate found with that ID.</p></div>`; }
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); } });
+const _origNavigateTo = navigateTo;
+navigateTo = async function(page) {
+    if (page === 'student-course-viewer') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-student-course-viewer').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Course';
+        if (window.innerWidth <= 768) closeSidebar();
+        await renderStudentCourseViewer();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+    return _origNavigateTo(page);
+};
+(async function boot() {
+    await bootSession();
+    if (currentUser) { showApp(); } else { goHome(); }
+})();
+console.log('🎓 Nexora Academy v9.4 — API:', API_BASE);
+</script>
+
+</body>
+</html>
