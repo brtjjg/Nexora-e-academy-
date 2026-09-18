@@ -4,7 +4,6 @@ const db = require('./db');
 
 async function runMigrations() {
     try {
-        // Check if users table already exists
         const check = await db.query(`
             SELECT EXISTS (
                 SELECT FROM information_schema.tables
@@ -33,6 +32,8 @@ async function runMigrations() {
             const seed = fs.readFileSync(seedPath, 'utf8');
             await db.query(seed);
             console.log('[migrate] Seed loaded');
+        } else {
+            console.log('[migrate] seed.sql not found, skipping');
         }
     } catch (err) {
         console.error('[migrate] Error:', err.message);
