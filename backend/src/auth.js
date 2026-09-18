@@ -1,114 +1,67 @@
-const express = require('express');
-const router = express.Router();
+const bcrypt = require('bcrypt');
+const crypto = require('crypto');
 const db = require('./db');
-const { asyncHandler, isValidEmail, isStrongPassword, logActivity } = require('../utils');
-const {
-    hashPassword, verifyPassword,
-    createSession, deleteSession,
-} = require('../auth');
-const { requireAuth } = require('../middleware');
 
-const isProd = process.env.NODE_ENV === 'production';
-const COOKIE_OPTS = {
-    httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'strict' : 'lax',
-    path: '/',
+const ROUNDS = parseInt(process.env.BCRYPT_ROUNDS, 10) || 10;
+
+async function hashPassword(password) {
+    return bcrypt.hash(password, ROUNDS);
+}
+
+async function verifyPassword(password, hash) {
+    return bcrypt.compare(password, hash);
+}
+
+function generateSessionToken() {
+    return crypto.randomBytes(32).toString('hex');
+}
+
+function hashToken(token) {
+    return crypto.createHash('sha256').update(token).digest('hex');
+}
+
+async function createSession(userId, ip, userAgent) {
+    const token = generateSessionToken();
+    const tokenHash = hashToken(token);
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db.query(
+        `INSERT INTO sessions (user_id, token_hash, ip_address, user_agent, expires_at)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [userId, tokenHash, ip || null, userAgent || null, expiresAt]
+    );
+
+    return { token, expiresAt };
+}
+
+async function validateSession(token) {
+    if (!token) return null;
+    const tokenHash = hashToken(token);
+    const result = await db.query(
+        `SELECT s.user_id, u.username, u.email, u.full_name, u.role, u.status
+         FROM sessions s
+         JOIN users u ON u.id = s.user_id
+         WHERE s.token_hash = $1 AND s.expires_at > NOW()`,
+        [tokenHash]
+    );
+    return result.rows[0] || null;
+}
+
+async function deleteSession(token) {
+    if (!token) return;
+    const tokenHash = hashToken(token);
+    await db.query('DELETE FROM sessions WHERE token_hash = $1', [tokenHash]);
+}
+
+async function cleanupExpiredSessions() {
+    await db.query('DELETE FROM sessions WHERE expires_at < NOW()');
+}
+
+module.exports = {
+    hashPassword,
+    verifyPassword,
+    createSession,
+    validateSession,
+    deleteSession,
+    cleanupExpiredSessions,
 };
-
-router.post('/register', asyncHandler(async (req, res) => {
-    const { username, email, password, full_name, phone, country,
-            date_of_birth, course_interest } = req.body;
-
-    if (!username || !email || !password || !full_name) {
-        return res.status(400).json({ error: 'Missing required fields' });
-    }
-    if (!isValidEmail(email)) return res.status(400).json({ error: 'Invalid email' });
-    if (!isStrongPassword(password)) {
-        return res.status(400).json({
-            error: 'Password must be 8+ chars, contain an uppercase letter and a number'
-        });
-    }
-
-    const client = await db.getClient();
-    try {
-        await client.query('BEGIN');
-        const hash = await hashPassword(password);
-        const u = await client.query(
-            `INSERT INTO users (username, email, password_hash, full_name, phone,
-                                country, date_of_birth, role)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,'student')
-             RETURNING id, username, email, full_name, role`,
-            [username, email, hash, full_name, phone || null,
-             country || null, date_of_birth || null]
-        );
-        await client.query(
-            `INSERT INTO student_profiles (user_id, course_interest)
-             VALUES ($1, $2)`,
-            [u.rows[0].id, course_interest || null]
-        );
-        await logActivity(client, u.rows[0].id, 'account', 'Account Created', course_interest || '');
-        await client.query('COMMIT');
-        res.status(201).json({ user: u.rows[0] });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        if (err.code === '23505') {
-            return res.status(409).json({ error: 'Email or username already taken' });
-        }
-        throw err;
-    } finally {
-        client.release();
-    }
-}));
-
-router.post('/login', asyncHandler(async (req, res) => {
-    const { email, password } = req.body;
-    if (!email || !password) {
-        return res.status(400).json({ error: 'Email and password required' });
-    }
-
-    const r = await db.query(
-        `SELECT id, password_hash, role, status FROM users WHERE email = $1`,
-        [email]
-    );
-    if (!r.rows.length) return res.status(401).json({ error: 'Invalid credentials' });
-    const user = r.rows[0];
-    if (user.status !== 'active') return res.status(403).json({ error: 'Account not active' });
-
-    const ok = await verifyPassword(password, user.password_hash);
-    if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
-
-    const { token, expiresAt } = await createSession(user.id, req.ip, req.headers['user-agent']);
-    res.cookie('session', token, { ...COOKIE_OPTS, expires: expiresAt });
-    res.json({ ok: true, role: user.role });
-}));
-
-router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));
-
-router.post('/logout', asyncHandler(async (req, res) => {
-    const token = req.cookies.session;
-    if (token) await deleteSession(token);
-    res.clearCookie('session', { path: '/' });
-    res.json({ ok: true });
-}));
-
-router.post('/emergency-reset', asyncHandler(async (req, res) => {
-    const { email, newPassword, secret } = req.body;
-    if (secret !== 'nexora-reset-2026') {
-        return res.status(403).json({ error: 'Forbidden' });
-    }
-    if (!email || !newPassword || newPassword.length < 8) {
-        return res.status(400).json({ error: 'Email and password (8+ chars) required' });
-    }
-    const hash = await hashPassword(newPassword);
-    const r = await db.query(
-        'UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id, email',
-        [hash, email]
-    );
-    if (!r.rows.length) {
-        return res.status(404).json({ error: 'User not found' });
-    }
-    res.json({ ok: true, message: 'Password reset successful', user: r.rows[0] });
-}));
-
-module.exports = router;
