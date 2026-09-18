@@ -22,6 +22,16 @@ async function runMigrations() {
             console.error('[migrate] schema.sql not found at', schemaPath);
             return;
         }
+
+        // Load assignments schema if it exists
+const assignmentsPath = path.join(__dirname, '..', '..', 'database', 'assignments.sql');
+if (fs.existsSync(assignmentsPath)) {
+    console.log('[migrate] Loading assignments.sql...');
+    const assign = fs.readFileSync(assignmentsPath, 'utf8');
+    await db.query(assign);
+    console.log('[migrate] Assignments schema loaded');
+}
+        
         const schema = fs.readFileSync(schemaPath, 'utf8');
         await db.query(schema);
         console.log('[migrate] Schema loaded');
