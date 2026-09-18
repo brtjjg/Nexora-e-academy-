@@ -4,7 +4,7 @@ const db = require('../db');
 const { asyncHandler, isValidEmail, isStrongPassword, logActivity } = require('../utils');
 const {
     hashPassword, verifyPassword,
-    createSession, deleteSession, validateSession,
+    createSession, deleteSession,
 } = require('../auth');
 const { requireAuth } = require('../middleware');
 
@@ -24,12 +24,10 @@ router.post('/register', asyncHandler(async (req, res) => {
     if (!username || !email || !password || !full_name) {
         return res.status(400).json({ error: 'Missing required fields' });
     }
-    if (!isValidEmail(email)) {
-        return res.status(400).json({ error: 'Invalid email' });
-    }
+    if (!isValidEmail(email)) return res.status(400).json({ error: 'Invalid email' });
     if (!isStrongPassword(password)) {
         return res.status(400).json({
-            error: 'Password must be at least 8 characters, contain an uppercase letter and a number'
+            error: 'Password must be 8+ chars, contain an uppercase letter and a number'
         });
     }
 
@@ -50,8 +48,7 @@ router.post('/register', asyncHandler(async (req, res) => {
              VALUES ($1, $2)`,
             [u.rows[0].id, course_interest || null]
         );
-        await logActivity(client, u.rows[0].id, 'account',
-            'Account Created', `Interested in ${course_interest || 'N/A'}`);
+        await logActivity(client, u.rows[0].id, 'account', 'Account Created', course_interest || '');
         await client.query('COMMIT');
         res.status(201).json({ user: u.rows[0] });
     } catch (err) {
@@ -76,29 +73,20 @@ router.post('/login', asyncHandler(async (req, res) => {
         `SELECT id, password_hash, role, status FROM users WHERE email = $1`,
         [email]
     );
-    if (!r.rows.length) {
-        return res.status(401).json({ error: 'Invalid credentials' });
-    }
+    if (!r.rows.length) return res.status(401).json({ error: 'Invalid credentials' });
     const user = r.rows[0];
-    if (user.status !== 'active') {
-        return res.status(403).json({ error: 'Account not active' });
-    }
+    if (user.status !== 'active') return res.status(403).json({ error: 'Account not active' });
 
     const ok = await verifyPassword(password, user.password_hash);
     if (!ok) return res.status(401).json({ error: 'Invalid credentials' });
 
-    const { token, expiresAt } = await createSession(
-        user.id, req.ip, req.headers['user-agent']
-    );
-
+    const { token, expiresAt } = await createSession(user.id, req.ip, req.headers['user-agent']);
     res.cookie('session', token, { ...COOKIE_OPTS, expires: expiresAt });
     res.json({ ok: true, role: user.role });
 }));
 
 // GET /api/auth/me
-router.get('/me', requireAuth, (req, res) => {
-    res.json({ user: req.user });
-});
+router.get('/me', requireAuth, (req, res) => res.json({ user: req.user }));
 
 // POST /api/auth/logout
 router.post('/logout', asyncHandler(async (req, res) => {
@@ -106,6 +94,29 @@ router.post('/logout', asyncHandler(async (req, res) => {
     if (token) await deleteSession(token);
     res.clearCookie('session', { path: '/' });
     res.json({ ok: true });
+}));
+
+// ============================================================
+// TEMPORARY EMERGENCY PASSWORD RESET
+// Remove this endpoint after resetting the passwords.
+// ============================================================
+router.post('/emergency-reset', asyncHandler(async (req, res) => {
+    const { email, newPassword, secret } = req.body;
+    if (secret !== 'nexora-reset-2026') {
+        return res.status(403).json({ error: 'Forbidden' });
+    }
+    if (!email || !newPassword || newPassword.length < 8) {
+        return res.status(400).json({ error: 'Email and password (8+ chars) required' });
+    }
+    const hash = await hashPassword(newPassword);
+    const r = await db.query(
+        'UPDATE users SET password_hash = $1 WHERE email = $2 RETURNING id, email',
+        [hash, email]
+    );
+    if (!r.rows.length) {
+        return res.status(404).json({ error: 'User not found' });
+    }
+    res.json({ ok: true, message: 'Password reset successful', user: r.rows[0] });
 }));
 
 module.exports = router;
