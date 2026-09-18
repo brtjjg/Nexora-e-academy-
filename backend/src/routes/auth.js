@@ -8,11 +8,10 @@ const {
 } = require('../auth');
 const { requireAuth } = require('../middleware');
 
-const isProd = process.env.NODE_ENV === 'production';
 const COOKIE_OPTS = {
     httpOnly: true,
-    secure: isProd,
-    sameSite: isProd ? 'strict' : 'lax',
+    secure: true,
+    sameSite: 'none',
     path: '/',
 };
 
