@@ -124,12 +124,14 @@ a{text-decoration:none;color:inherit}
 .btn-outline:hover:not(:disabled){border-color:var(--blue);color:var(--blue)}
 .btn-sm{padding:6px 14px;font-size:0.8rem}
 .btn-block{width:100%;justify-content:center}
-.table-wrapper{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow)}
+.table-wrapper{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
 table{width:100%;border-collapse:collapse}
 table thead{background:var(--navy);color:var(--white)}
-table thead th{padding:0.9rem 1rem;text-align:left;font-weight:600;font-size:0.8rem;text-transform:uppercase}
+table thead th{padding:0.9rem 1rem;text-align:left;font-weight:600;font-size:0.8rem;text-transform:uppercase;white-space:nowrap}
 table tbody td{padding:0.9rem 1rem;border-bottom:1px solid #f0f0f0;color:var(--text-secondary);font-size:0.9rem}
 table tbody tr:hover{background:#f8fafc}
+#adminApplicationsList .table-wrapper table{min-width:1100px}
+#adminPaymentsList .table-wrapper table{min-width:900px}
 .progress-bar{width:100%;height:8px;background:#e2e8f0;border-radius:4px;overflow:hidden;margin:0.5rem 0}
 .progress-fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--gold));border-radius:4px;transition:width 0.5s}
 .courses-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:1.5rem;margin:1.5rem 0}
@@ -211,7 +213,8 @@ table tbody tr:hover{background:#f8fafc}
 .summary-card.green{border-top-color:var(--success)}
 .summary-card.red{border-top-color:var(--danger)}
 .summary-card.grey{border-top-color:#94a3b8}
-.app-filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:0.6rem;margin-bottom:1.25rem}
+.summary-card.purple{border-top-color:#8B5CF6}
+.app-filters{display:grid;grid-template-columns:2fr 1fr 1fr auto;gap:0.6rem;margin-bottom:1.25rem}
 .app-filters input,.app-filters select{padding:10px 14px;border:2px solid #e2e8f0;border-radius:10px;font-family:inherit;font-size:0.9rem}
 .status-payment_due{background:#fef3c7;color:#92400e;font-weight:700}
 .status-paid{background:#dbeafe;color:#1e40af;font-weight:700}
@@ -264,6 +267,16 @@ table tbody tr:hover{background:#f8fafc}
 .lesson-material .mat-name{flex:1;color:var(--navy);font-weight:600}
 .hidden{display:none!important}
 .text-center{text-align:center}
+
+/* GROUPS / CHAT */
+.group-msg-box{display:flex;flex-direction:column;gap:0.75rem}
+.chat-bubble{max-width:75%;padding:0.6rem 0.9rem;border-radius:12px;font-size:0.9rem;white-space:pre-wrap;word-break:break-word}
+.chat-bubble.mine{background:var(--blue);color:#fff;align-self:flex-end}
+.chat-bubble.theirs{background:var(--bg);color:var(--text-primary);align-self:flex-start}
+.chat-meta{display:flex;gap:0.5rem;align-items:center;font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.15rem}
+.chat-meta .chat-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem}
+.chat-meta .chat-avatar.admin{background:var(--gold)}
+
 @media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.footer .container{grid-template-columns:1fr 1fr}.app-filters{grid-template-columns:1fr 1fr}}
 @media(max-width:768px){.sidebar{width:280px;padding-top:60px}.main-content{margin-left:0!important}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.page-content{padding:16px}.footer .container{grid-template-columns:1fr}.top-nav .brand .tagline{display:none}.top-nav .nav-links{gap:0.8rem}.top-nav .nav-links a{font-size:0.85rem}.landing-hero h1{font-size:2.2rem}.app-filters{grid-template-columns:1fr}}
 @media(max-width:480px){.page-content{padding:12px}.stat-card .stat-number{font-size:1.8rem}.landing-hero h1{font-size:1.8rem}.top-nav .brand .brand-text{font-size:1.1rem}}
@@ -316,6 +329,8 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
+<div class="menu-label">Community</div>
+<div class="menu-item" onclick="navigateTo('admin-groups')"><i class="fas fa-users"></i><span>Groups / Discussion</span><span class="badge-count" id="adminGroupCount">0</span></div>
 <div class="menu-label">Finance</div>
 <div class="menu-item" onclick="navigateTo('admin-revenue')"><i class="fas fa-chart-line"></i><span>Revenue</span></div>
 <div class="menu-item" onclick="navigateTo('admin-payments')"><i class="fas fa-credit-card"></i><span>Payments</span></div>
@@ -329,8 +344,10 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
 <div class="menu-item" onclick="navigateTo('student-certificates')"><i class="fas fa-certificate"></i><span>My Certificates</span></div>
-<div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
+<div class="menu-label">Community</div>
+<div class="menu-item" onclick="navigateTo('student-groups')"><i class="fas fa-comments"></i><span>Groups / Discussion</span><span class="badge-count" id="studentGroupCount">0</span></div>
 <div class="menu-divider"></div>
+<div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
 <div class="menu-item" onclick="logout()" style="color:var(--danger)"><i class="fas fa-sign-out-alt"></i><span>Logout</span></div>
 </div>
 </nav>
@@ -513,6 +530,14 @@ table tbody tr:hover{background:#f8fafc}
 <div id="page-student-results" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-list" style="color:var(--gold)"></i> My Results</h2><div id="studentResultsTable"></div></div>
 <div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>
 <div id="page-student-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> My Certificates</h2><div id="studentCertificatesList"></div></div>
+<div id="page-student-groups" class="page">
+<h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-comments" style="color:var(--gold)"></i> Groups / Discussion</h2>
+<div id="studentGroupsTabs" style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+<button class="btn btn-primary btn-sm" onclick="switchStudentGroupTab('mine')">My Groups</button>
+<button class="btn btn-outline btn-sm" onclick="switchStudentGroupTab('all')">All Groups</button>
+</div>
+<div id="studentGroupsList"></div>
+</div>
 <div id="page-student-profile" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user" style="color:var(--gold)"></i> My Profile</h2><div id="studentProfileContent"></div></div>
 
 <div id="page-admin-dashboard" class="page">
@@ -599,8 +624,20 @@ table tbody tr:hover{background:#f8fafc}
 
 <div id="page-admin-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Examinations</h2><div id="adminExamsList"></div></div>
 <div id="page-admin-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> Certificates</h2><div id="adminCertificatesList"></div></div>
+
+<div id="page-admin-groups" class="page">
+<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem">
+<h2 style="color:var(--navy);margin:0"><i class="fas fa-users" style="color:var(--gold)"></i> Groups / Discussion</h2>
+<button class="btn btn-primary" onclick="openCreateGroupModal()"><i class="fas fa-plus"></i> Create Group</button>
+</div>
+<div id="adminGroupsStats" class="summary-cards"></div>
+<div id="adminGroupsList" style="margin-top:1rem"></div>
+</div>
+
 <div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
 <div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
+
+<div id="page-group-chat" class="page"><div id="groupChatContent"></div></div>
 
 </div>
 </div>
@@ -689,6 +726,52 @@ table tbody tr:hover{background:#f8fafc}
 </div>
 </div>
 
+<div class="modal-backdrop" id="groupModal">
+<div class="modal-box" style="max-width:560px">
+<h2><i class="fas fa-users" style="color:var(--gold)"></i> <span id="groupModalTitle">Create Group</span></h2>
+<input type="hidden" id="groupEditId">
+<div class="form-group">
+<label>Group Name <span class="required">*</span></label>
+<input type="text" id="groupName" placeholder="e.g., Web Development Cohort 2026">
+</div>
+<div class="form-group">
+<label>Description</label>
+<textarea id="groupDescription" rows="3" placeholder="What is this group about?"></textarea>
+</div>
+<div class="form-row">
+<div class="form-group">
+<label>Category</label>
+<select id="groupCategory">
+<option>General</option><option>Course Support</option>
+<option>Study Group</option><option>Announcements</option>
+</select>
+</div>
+<div class="form-group">
+<label>Visibility</label>
+<select id="groupVisibility">
+<option value="public">Public (anyone can join)</option>
+<option value="private">Private (invite only)</option>
+</select>
+</div>
+</div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end">
+<button type="button" class="btn btn-outline" onclick="closeGroupModal()">Cancel</button>
+<button type="button" class="btn btn-success" onclick="saveGroup()"><i class="fas fa-save"></i> Save</button>
+</div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="deleteGroupModal">
+<div class="modal-box" style="max-width:480px">
+<h2><i class="fas fa-trash" style="color:var(--danger)"></i> Delete Group</h2>
+<p style="color:var(--text-secondary);margin-bottom:1.5rem">This will permanently remove the group and all its messages. This cannot be undone.</p>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end">
+<button type="button" class="btn btn-outline" onclick="closeDeleteGroupModal()">Cancel</button>
+<button type="button" class="btn btn-danger" onclick="confirmDeleteGroup()">Delete</button>
+</div>
+</div>
+</div>
+
 <div class="modal-backdrop" id="loadingModal">
 <div class="modal-box" style="max-width:320px;text-align:center">
 <i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i>
@@ -735,7 +818,7 @@ async function apiForm(path, formData, method = 'POST') {
     let data = null;
     const ct = res.headers.get('content-type') || '';
     if (ct.includes('application/json')) data = await res.json().catch(() => null);
-    if (!res.ok) { const err = new Error((data && data.error) || `HTTP ${res.status}`); err.status = res.status; throw err; }
+    if (!res.ok) { const err = new Error((data && data.error) || `HTTP ${res.status}`); err.status = res.status; err.data = data; throw err; }
     return data;
 }
 
@@ -752,6 +835,10 @@ let rejectTargetId = null;
 let approveTargetId = null;
 let lessonDraft = { videoFile: null, pdfs: [], images: [] };
 let appFilterState = { search: '', status: 'all', payment: 'all', sort: 'newest' };
+let currentGroup = null;
+let studentGroupTab = 'mine';
+let groupsPollInterval = null;
+let deleteGroupId = null;
 
 const COUNTRIES = ['Kenya','Uganda','Tanzania','Rwanda','Burundi','South Sudan','Ethiopia','Somalia','Djibouti','Eritrea','Nigeria','Ghana','South Africa','Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Senegal','Ivory Coast','Cameroon','Zambia','Zimbabwe','Botswana','Namibia','Mozambique','Malawi','Angola','United States','United Kingdom','Canada','Australia','India','China','Japan','Germany','France','Italy','Spain','Brazil','Mexico','Argentina','Netherlands','Sweden','Norway','Denmark','Switzerland','Ireland','Belgium','Portugal','Poland','Russia','Turkey','Saudi Arabia','United Arab Emirates','Qatar','Pakistan','Bangladesh','Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam','South Korea','New Zealand','Other'];
 
@@ -781,7 +868,7 @@ async function loginUser(e) {
     } catch (err) { showFlash('loginFlash', '❌ ' + (err.data?.error || err.message), 'danger'); }
     finally { btn.disabled = false; }
 }
-async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); goHome(); }
+async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); if (groupsPollInterval) clearInterval(groupsPollInterval); goHome(); }
 
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -898,9 +985,39 @@ function updateSidebarActive(page) {
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => { if (el.onclick && el.onclick.toString().includes(`'${page}'`)) el.classList.add('active'); });
 }
-const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-profile':'Profile' };
+const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion','student-profile':'Profile','group-chat':'Group Chat' };
 async function navigateTo(page) {
     if (!currentUser) { showLogin(); return; }
+    if (page === 'student-course-viewer') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-student-course-viewer').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Course';
+        if (window.innerWidth <= 768) closeSidebar();
+        await renderStudentCourseViewer();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+    if (page === 'admin-groups') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-admin-groups').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Groups / Discussion';
+        updateSidebarActive(page);
+        if (window.innerWidth <= 768) closeSidebar();
+        await renderAdminGroups();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
+    if (page === 'student-groups') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-student-groups').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Groups / Discussion';
+        updateSidebarActive(page);
+        if (window.innerWidth <= 768) closeSidebar();
+        studentGroupTab = 'mine';
+        switchStudentGroupTab('mine');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     const t = document.getElementById(`page-${page}`);
     if (t) t.classList.add('active');
@@ -936,9 +1053,20 @@ async function updateCounts() {
             document.getElementById('courseCount').textContent = counts.courses;
             const pendingApps = (counts.applications.payment_due || 0) + (counts.applications.paid || 0);
             document.getElementById('appCount').textContent = pendingApps;
+            try {
+                const { groups } = await api('/groups');
+                const el = document.getElementById('adminGroupCount');
+                if (el) el.textContent = groups.length;
+            } catch (e) {}
         } else {
             const { enrollments } = await api('/enrollments');
             document.getElementById('studentEnrollCount').textContent = enrollments.length;
+            try {
+                const { groups } = await api('/groups');
+                const mine = groups.filter(g => g.is_member).length;
+                const el = document.getElementById('studentGroupCount');
+                if (el) el.textContent = mine;
+            } catch (e) {}
         }
     } catch (e) {}
 }
@@ -1246,7 +1374,7 @@ async function renderAdminApplications() {
         const rejected = applications.filter(a => a.status === 'rejected').length;
         const paid = applications.filter(a => a.payment_status === 'paid').length;
         const unpaid = applications.filter(a => a.payment_status === 'unpaid').length;
-        let tableHTML = !applications.length ? '<div class="empty-state">No applications yet.</div>' : `<div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => { const paidOk = a.payment_status === 'paid'; const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected'; const canReject = a.status !== 'rejected' && a.status !== 'approved'; return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td>${a.document_count || 0} 📄</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${a.id}', '${esc(a.full_name)}', 'application')"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}', 'application')"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`; }).join('')}</tbody></table></div>`;
+        let tableHTML = !applications.length ? '<div class="empty-state">No applications yet.</div>' : `<div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => { const paidOk = a.payment_status === 'paid'; const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected'; const canReject = a.status !== 'rejected' && a.status !== 'approved'; return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td>${a.document_count || 0} 📄</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${a.id}', '${esc(a.full_name)}', 'application')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}', 'application')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`; }).join('')}</tbody></table></div>`;
         c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select></div>${tableHTML}`;
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
 }
@@ -1277,7 +1405,7 @@ async function confirmApprove() {
         let r;
         if (mode === 'student') r = await api(`/admin/students/${approveTargetId}/approve`, { method: 'POST' });
         else r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
-        alert('✅ Approved! Admission: ' + r.admission_number);
+        alert('✅ Approved! Admission: ' + (r.admission_number || 'OK'));
         closeApproveModal();
         if (mode === 'student') await renderAdminStudents(); else await renderAdminApplications();
         await updateAdminDashboard();
@@ -1682,21 +1810,234 @@ async function renderRevenue() { try { const stats = await api('/admin/stats'); 
 async function renderAdminPayments() { const c = document.getElementById('adminPaymentsList'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { transactions } = await api('/payments'); if (!transactions.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No payments.</p>'; return; } c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Student</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${esc(t.student_name || '?')}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Admission' : esc(t.course_title || 'Course')}</td><td><strong>${fmtMoney(t.amount)}</strong></td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`; } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function verifyCertificate() { const token = document.getElementById('verifyToken').value.trim(); const r = document.getElementById('verifyResult'); if (!token) { r.innerHTML = ''; return; } try { const data = await api(`/certificates/verify/${encodeURIComponent(token)}`); if (data.valid) r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p></div>`; else r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3></div>`; } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3></div>`; } }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); } });
-
-const _origNavigateTo = navigateTo;
-navigateTo = async function(page) {
-    if (page === 'student-course-viewer') {
-        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-        document.getElementById('page-student-course-viewer').classList.add('active');
-        document.getElementById('pageIndicator').textContent = 'Course';
-        if (window.innerWidth <= 768) closeSidebar();
-        await renderStudentCourseViewer();
-        window.scrollTo({ top: 0, behavior: 'smooth' });
-        return;
+/* ============================================================
+   GROUPS / DISCUSSION FEATURE
+   ============================================================ */
+async function renderAdminGroups() {
+    const c = document.getElementById('adminGroupsList');
+    const statsEl = document.getElementById('adminGroupsStats');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { groups } = await api('/groups');
+        const total = groups.length;
+        const totalMembers = groups.reduce((s, g) => s + (g.member_count || 0), 0);
+        const totalMessages = groups.reduce((s, g) => s + (g.message_count || 0), 0);
+        const activeToday = groups.filter(g => g.last_activity && (Date.now() - new Date(g.last_activity).getTime()) < 86400000).length;
+        if (statsEl) statsEl.innerHTML = `
+          <div class="summary-card"><div class="num">${total}</div><div class="lbl">Total Groups</div></div>
+          <div class="summary-card gold"><div class="num">${totalMembers}</div><div class="lbl">Total Members</div></div>
+          <div class="summary-card green"><div class="num">${totalMessages}</div><div class="lbl">Messages</div></div>
+          <div class="summary-card purple"><div class="num">${activeToday}</div><div class="lbl">Active Today</div></div>`;
+        const badge = document.getElementById('adminGroupCount');
+        if (badge) badge.textContent = total;
+        if (!groups.length) { c.innerHTML = '<div class="empty-state">No groups yet. Create one to get started.</div>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table style="min-width:900px"><thead><tr><th>Group Name</th><th>Category</th><th>Visibility</th><th>Members</th><th>Messages</th><th>Created</th><th>Actions</th></tr></thead><tbody>${groups.map(g => `
+          <tr>
+            <td><strong>${esc(g.name)}</strong><div style="font-size:0.75rem;color:var(--text-secondary)">${esc((g.description || '').slice(0, 50))}${(g.description || '').length > 50 ? '…' : ''}</div></td>
+            <td><span class="badge badge-active">${esc(g.category || 'General')}</span></td>
+            <td><span class="status-pill ${g.visibility === 'private' ? 'pending' : 'approved'}">${esc(g.visibility || 'public')}</span></td>
+            <td><span class="clickable-count" onclick="viewGroupMembers('${g.id}')">${g.member_count || 0} 👥</span></td>
+            <td><strong>${g.message_count || 0}</strong></td>
+            <td>${fmtDate(g.created_at)}</td>
+            <td><div class="student-actions">
+              <button class="action-btn view" onclick="openGroupChat('${g.id}')" title="Open"><i class="fas fa-comments"></i></button>
+              <button class="action-btn documents" onclick="editGroup('${g.id}')" title="Edit"><i class="fas fa-edit"></i></button>
+              <button class="action-btn reject" onclick="openDeleteGroupModal('${g.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+            </div></td>
+          </tr>`).join('')}</tbody></table></div>`;
+    } catch (err) {
+        c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`;
     }
-    return _origNavigateTo(page);
-};
+}
+function openCreateGroupModal() {
+    document.getElementById('groupModalTitle').textContent = 'Create Group';
+    document.getElementById('groupEditId').value = '';
+    document.getElementById('groupName').value = '';
+    document.getElementById('groupDescription').value = '';
+    document.getElementById('groupCategory').value = 'General';
+    document.getElementById('groupVisibility').value = 'public';
+    document.getElementById('groupModal').classList.add('active');
+}
+function closeGroupModal() { document.getElementById('groupModal').classList.remove('active'); }
+async function editGroup(groupId) {
+    try {
+        const { group } = await api(`/groups/${groupId}`);
+        document.getElementById('groupModalTitle').textContent = 'Edit Group';
+        document.getElementById('groupEditId').value = group.id;
+        document.getElementById('groupName').value = group.name;
+        document.getElementById('groupDescription').value = group.description || '';
+        document.getElementById('groupCategory').value = group.category || 'General';
+        document.getElementById('groupVisibility').value = group.visibility || 'public';
+        document.getElementById('groupModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+async function saveGroup() {
+    const id = document.getElementById('groupEditId').value;
+    const body = { name: document.getElementById('groupName').value.trim(), description: document.getElementById('groupDescription').value.trim(), category: document.getElementById('groupCategory').value, visibility: document.getElementById('groupVisibility').value };
+    if (!body.name) { alert('⚠️ Group name required'); return; }
+    setLoading(true);
+    try {
+        if (id) await api(`/groups/${id}`, { method: 'PUT', body });
+        else await api('/groups', { method: 'POST', body });
+        closeGroupModal();
+        alert('✅ Group saved');
+        await renderAdminGroups();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    finally { setLoading(false); }
+}
+function openDeleteGroupModal(groupId) { deleteGroupId = groupId; document.getElementById('deleteGroupModal').classList.add('active'); }
+function closeDeleteGroupModal() { document.getElementById('deleteGroupModal').classList.remove('active'); deleteGroupId = null; }
+async function confirmDeleteGroup() {
+    if (!deleteGroupId) return;
+    try { await api(`/groups/${deleteGroupId}`, { method: 'DELETE' }); closeDeleteGroupModal(); alert('✅ Group deleted'); await renderAdminGroups(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function viewGroupMembers(groupId) {
+    try {
+        const { group, members } = await api(`/groups/${groupId}`);
+        const html = members.length === 0 ? '<div class="empty-state">No members yet.</div>' : `<div class="table-wrapper"><table><thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Joined</th></tr></thead><tbody>${members.map(m => `<tr><td><strong>${esc(m.full_name || m.username)}</strong></td><td>${esc(m.email)}</td><td><span class="badge ${m.role === 'admin' ? 'badge-warning' : 'badge-active'}">${esc(m.role)}</span></td><td>${fmtDate(m.joined_at)}</td></tr>`).join('')}</tbody></table></div>`;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Members — ${esc(group.name)}</h2>${html}`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+function switchStudentGroupTab(tab) {
+    studentGroupTab = tab;
+    document.querySelectorAll('#studentGroupsTabs .btn').forEach(b => {
+        const isMine = b.textContent.includes('My');
+        const isAll = b.textContent.includes('All');
+        const match = (tab === 'mine' && isMine) || (tab === 'all' && isAll);
+        b.classList.toggle('btn-primary', match);
+        b.classList.toggle('btn-outline', !match);
+    });
+    renderStudentGroups();
+}
+async function renderStudentGroups() {
+    const c = document.getElementById('studentGroupsList');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { groups } = await api('/groups');
+        const mine = groups.filter(g => g.is_member);
+        const list = studentGroupTab === 'mine' ? mine : groups;
+        const badge = document.getElementById('studentGroupCount');
+        if (badge) badge.textContent = mine.length;
+        if (!list.length) { c.innerHTML = `<div class="empty-state">${studentGroupTab === 'mine' ? "You haven't joined any groups yet. Browse All Groups to join." : 'No groups available.'}</div>`; return; }
+        c.innerHTML = `<div class="courses-grid">${list.map(g => `
+          <div class="course-card">
+            <div class="course-image" style="background:linear-gradient(135deg,var(--navy),var(--blue-dark));display:flex;align-items:center;justify-content:center">
+              <i class="fas fa-users" style="font-size:3rem;color:var(--gold)"></i>
+            </div>
+            <div class="course-body">
+              <h3 class="course-title">${esc(g.name)}</h3>
+              <div class="course-meta">
+                <span><i class="fas fa-tag"></i> ${esc(g.category || 'General')}</span>
+                <span><i class="fas fa-users"></i> ${g.member_count || 0}</span>
+                <span><i class="fas fa-comment"></i> ${g.message_count || 0}</span>
+              </div>
+              <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.5rem 0;min-height:2.5rem">${esc((g.description || '').slice(0, 90))}${(g.description || '').length > 90 ? '…' : ''}</p>
+              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
+                ${g.is_member
+                  ? `<button class="btn btn-primary btn-sm" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i> Open Chat</button>
+                     <button class="btn btn-outline btn-sm" onclick="leaveGroup('${g.id}')"><i class="fas fa-sign-out-alt"></i> Leave</button>`
+                  : `<button class="btn btn-success btn-sm" onclick="joinGroup('${g.id}')" ${g.visibility === 'private' ? 'disabled title="Private group"' : ''}><i class="fas fa-plus"></i> Join</button>`}
+              </div>
+            </div>
+          </div>`).join('')}</div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`; }
+}
+async function joinGroup(groupId) { try { await api(`/groups/${groupId}/join`, { method: 'POST' }); alert('✅ Joined group!'); await renderStudentGroups(); } catch (err) { alert('❌ ' + (err.data?.error || err.message)); } }
+async function leaveGroup(groupId) {
+    if (!confirm('Leave this group?')) return;
+    try { await api(`/groups/${groupId}/leave`, { method: 'POST' }); alert('👋 Left group'); await renderStudentGroups(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+async function openGroupChat(groupId) {
+    currentGroup = { id: groupId };
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    document.getElementById('page-group-chat').classList.add('active');
+    document.getElementById('pageIndicator').textContent = 'Group Chat';
+    if (window.innerWidth <= 768) closeSidebar();
+    await renderGroupChat();
+    if (groupsPollInterval) clearInterval(groupsPollInterval);
+    groupsPollInterval = setInterval(() => {
+        if (document.getElementById('page-group-chat').classList.contains('active')) loadGroupMessages(true);
+    }, 5000);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+async function renderGroupChat() {
+    const c = document.getElementById('groupChatContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { group, members } = await api(`/groups/${currentGroup.id}`);
+        currentGroup.data = group;
+        c.innerHTML = `
+          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+            <button class="btn btn-outline btn-sm" onclick="backFromGroupChat()"><i class="fas fa-arrow-left"></i> Back</button>
+            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+              <button class="btn btn-outline btn-sm" onclick="viewGroupMembers('${group.id}')"><i class="fas fa-users"></i> ${members.length} members</button>
+              ${currentUser.role === 'admin' ? `<button class="btn btn-outline btn-sm" onclick="editGroup('${group.id}')"><i class="fas fa-edit"></i> Edit</button>` : ''}
+            </div>
+          </div>
+          <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem">
+            <h2 style="color:var(--navy);margin-bottom:0.3rem">${esc(group.name)}</h2>
+            <p style="color:var(--text-secondary);font-size:0.9rem">${esc(group.description || 'No description')}</p>
+            <div style="margin-top:0.5rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+              <span class="badge badge-active">${esc(group.category || 'General')}</span>
+              <span class="status-pill ${group.visibility === 'private' ? 'pending' : 'approved'}">${esc(group.visibility || 'public')}</span>
+            </div>
+          </div>
+          <div id="groupMessages" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem">
+            <div class="empty-state">Loading messages...</div>
+          </div>
+          <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;display:flex;gap:0.5rem;align-items:flex-end">
+            <textarea id="groupMsgInput" placeholder="Type your message..." rows="1" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:0.95rem;resize:none;max-height:120px"></textarea>
+            <button class="btn btn-primary" onclick="sendGroupMessage()"><i class="fas fa-paper-plane"></i></button>
+          </div>`;
+        document.getElementById('groupMsgInput').addEventListener('keydown', e => {
+            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGroupMessage(); }
+        });
+        await loadGroupMessages();
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
+}
+async function loadGroupMessages(silent = false) {
+    try {
+        const { messages } = await api(`/groups/${currentGroup.id}/messages`);
+        const box = document.getElementById('groupMessages');
+        if (!box) return;
+        if (!messages.length) { box.innerHTML = '<div class="empty-state" style="margin:auto">No messages yet. Be the first to say hi! 👋</div>'; return; }
+        const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
+        box.innerHTML = messages.map(m => {
+            const isMe = m.user_id === currentUser.id;
+            const isAdmin = m.role === 'admin';
+            return `<div style="display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'}">
+              <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.2rem;flex-direction:${isMe ? 'row-reverse' : 'row'}">
+                <div style="width:28px;height:28px;border-radius:50%;background:${isAdmin ? 'var(--gold)' : 'var(--blue)'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem">${esc((m.full_name || m.username || 'U').charAt(0).toUpperCase())}</div>
+                <strong style="font-size:0.85rem;color:var(--navy)">${esc(m.full_name || m.username)}${isAdmin ? ' <span class="badge badge-warning" style="font-size:0.6rem">ADMIN</span>' : ''}</strong>
+                <span style="font-size:0.7rem;color:var(--text-secondary)">${fmtDateTime(m.created_at)}</span>
+              </div>
+              <div style="background:${isMe ? 'var(--blue)' : 'var(--bg)'};color:${isMe ? '#fff' : 'var(--text-primary)'};padding:0.6rem 0.9rem;border-radius:12px;max-width:75%;font-size:0.9rem;white-space:pre-wrap;word-break:break-word">${esc(m.content)}</div>
+            </div>`;
+        }).join('');
+        if (wasAtBottom || !silent) box.scrollTop = box.scrollHeight;
+    } catch (err) { if (!silent) console.warn('Load messages failed:', err.message); }
+}
+async function sendGroupMessage() {
+    const input = document.getElementById('groupMsgInput');
+    const content = input.value.trim();
+    if (!content) return;
+    try { await api(`/groups/${currentGroup.id}/messages`, { method: 'POST', body: { content } }); input.value = ''; await loadGroupMessages(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+function backFromGroupChat() {
+    if (groupsPollInterval) { clearInterval(groupsPollInterval); groupsPollInterval = null; }
+    currentGroup = null;
+    if (currentUser.role === 'admin') navigateTo('admin-groups');
+    else navigateTo('student-groups');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
 
 (async function boot() {
     await bootSession();
@@ -1704,7 +2045,7 @@ navigateTo = async function(page) {
     else goHome();
 })();
 
-console.log('🎓 Nexora Academy v9.8 — API:', API_BASE);
+console.log('🎓 Nexora Academy v9.9 — API:', API_BASE);
 </script>
 
 </body>
