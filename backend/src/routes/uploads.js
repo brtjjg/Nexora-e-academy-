@@ -10,6 +10,7 @@ const { requireAuth, requireAdmin } = require('../middleware');
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 const MAX_MB = parseInt(process.env.MAX_FILE_SIZE_MB, 10) || 500;
+const PUBLIC_URL = process.env.PUBLIC_URL || 'https://nexora-api-sskg.onrender.com';
 
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 
@@ -44,6 +45,10 @@ const upload = multer({
     },
 });
 
+function buildUrl(storagePath) {
+    return PUBLIC_URL + '/uploads/' + storagePath.split(path.sep).join('/');
+}
+
 // ============================================================
 // Application documents (student registration)
 // ============================================================
@@ -60,9 +65,8 @@ router.post('/application-document',
             `SELECT id FROM applications WHERE id = $1 AND user_id = $2`,
             [application_id, req.user.user_id]
         );
-        if (!a.rows.length) {
-            return res.status(403).json({ error: 'Application not found' });
-        }
+        if (!a.rows.length) return res.status(403).json({ error: 'Application not found' });
+
         const storagePath = path.relative(UPLOAD_DIR, req.file.path);
         const r = await db.query(
             `INSERT INTO application_documents
@@ -73,43 +77,15 @@ router.post('/application-document',
             [application_id, document_type, req.file.originalname,
              storagePath, req.file.mimetype, req.file.size]
         );
-        res.status(201).json({ document: r.rows[0] });
+        res.status(201).json({
+            document: r.rows[0],
+            url: buildUrl(storagePath),
+        });
     })
 );
 
 // ============================================================
-// Lesson attachments (PDFs and images) — old endpoint kept for compat
-// ============================================================
-router.post('/lesson-attachment',
-    requireAdmin,
-    upload.single('file'),
-    asyncHandler(async (req, res) => {
-        const { lesson_id, attachment_type } = req.query;
-        if (!req.file) return res.status(400).json({ error: 'No file' });
-        if (!['pdf','image'].includes(attachment_type)) {
-            return res.status(400).json({ error: 'Invalid attachment_type' });
-        }
-        const storagePath = path.relative(UPLOAD_DIR, req.file.path);
-        // If lesson_id provided, save to DB; else just return path (used by builder before lesson saved)
-        if (lesson_id) {
-            const r = await db.query(
-                `INSERT INTO lesson_attachments
-                    (lesson_id, attachment_type, file_name, storage_path,
-                     mime_type, file_size, position)
-                 VALUES ($1,$2,$3,$4,$5,$6,
-                    (SELECT COALESCE(MAX(position),0)+1 FROM lesson_attachments WHERE lesson_id=$1))
-                 RETURNING *`,
-                [lesson_id, attachment_type, req.file.originalname,
-                 storagePath, req.file.mimetype, req.file.size]
-            );
-            return res.status(201).json({ attachment: r.rows[0], path: '/uploads/' + storagePath });
-        }
-        res.status(201).json({ path: '/uploads/' + storagePath });
-    })
-);
-
-// ============================================================
-// Lesson video upload — used by course builder
+// Lesson video (course builder)
 // ============================================================
 router.post('/lesson-video',
     requireAdmin,
@@ -117,8 +93,45 @@ router.post('/lesson-video',
     asyncHandler(async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'No file' });
         const storagePath = path.relative(UPLOAD_DIR, req.file.path);
-        console.log('[upload] lesson-video saved:', storagePath, req.file.size, 'bytes');
-        res.status(201).json({ path: '/uploads/' + storagePath });
+        const url = buildUrl(storagePath);
+        console.log('[upload] lesson-video saved:', url, req.file.size, 'bytes');
+        res.status(201).json({ path: url, storage_path: storagePath });
+    })
+);
+
+// ============================================================
+// Lesson attachment (PDF / image)
+// ============================================================
+router.post('/lesson-attachment',
+    requireAdmin,
+    upload.single('file'),
+    asyncHandler(async (req, res) => {
+        const { attachment_type } = req.query;
+        if (!req.file) return res.status(400).json({ error: 'No file' });
+        if (!['pdf','image'].includes(attachment_type)) {
+            return res.status(400).json({ error: 'Invalid attachment_type' });
+        }
+        const storagePath = path.relative(UPLOAD_DIR, req.file.path);
+        res.status(201).json({ path: buildUrl(storagePath), storage_path: storagePath });
+    })
+);
+
+// ============================================================
+// Assignment submission file
+// ============================================================
+router.post('/assignment-file',
+    requireAuth,
+    upload.single('file'),
+    asyncHandler(async (req, res) => {
+        if (!req.file) return res.status(400).json({ error: 'No file' });
+        const storagePath = path.relative(UPLOAD_DIR, req.file.path);
+        res.status(201).json({
+            path: buildUrl(storagePath),
+            storage_path: storagePath,
+            file_name: req.file.originalname,
+            file_type: req.file.mimetype,
+            file_size: req.file.size,
+        });
     })
 );
 
@@ -131,12 +144,12 @@ router.post('/course-cover',
     asyncHandler(async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'No file' });
         const storagePath = path.relative(UPLOAD_DIR, req.file.path);
-        res.status(201).json({ path: '/uploads/' + storagePath });
+        res.status(201).json({ path: buildUrl(storagePath), storage_path: storagePath });
     })
 );
 
 // ============================================================
-// Generic upload (catch-all) — for anything else
+// Generic
 // ============================================================
 router.post('/generic',
     requireAdmin,
@@ -144,25 +157,7 @@ router.post('/generic',
     asyncHandler(async (req, res) => {
         if (!req.file) return res.status(400).json({ error: 'No file' });
         const storagePath = path.relative(UPLOAD_DIR, req.file.path);
-        res.status(201).json({ path: '/uploads/' + storagePath });
-    })
-);
-
-// ============================================================
-// Assignment submission file upload
-// ============================================================
-router.post('/assignment-file',
-    requireAuth,
-    upload.single('file'),
-    asyncHandler(async (req, res) => {
-        if (!req.file) return res.status(400).json({ error: 'No file' });
-        const storagePath = path.relative(UPLOAD_DIR, req.file.path);
-        res.status(201).json({
-            path: '/uploads/' + storagePath,
-            file_name: req.file.originalname,
-            file_type: req.file.mimetype,
-            file_size: req.file.size,
-        });
+        res.status(201).json({ path: buildUrl(storagePath), storage_path: storagePath });
     })
 );
 
