@@ -313,6 +313,9 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
+  <div class="menu-label">Assignments</div>
+<div class="menu-item" onclick="navigateTo('admin-assignments')"><i class="fas fa-clipboard-check"></i><span>All Assignments</span></div>
+<div class="menu-item" onclick="navigateTo('admin-submissions')"><i class="fas fa-inbox"></i><span>Submissions</span><span class="badge-count" id="submissionsCount">0</span></div>
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
@@ -328,6 +331,7 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
+<div class="menu-item" onclick="navigateTo('student-assignments')"><i class="fas fa-clipboard-check"></i><span>My Assignments</span><span class="badge-count" id="studentAssignmentsCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-certificates')"><i class="fas fa-certificate"></i><span>My Certificates</span></div>
 <div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
 <div class="menu-divider"></div>
@@ -600,7 +604,11 @@ table tbody tr:hover{background:#f8fafc}
 <div id="page-admin-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Examinations</h2><div id="adminExamsList"></div></div>
 <div id="page-admin-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> Certificates</h2><div id="adminCertificatesList"></div></div>
 <div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
-<div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
+<div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>  <div id="page-admin-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> Assignments</h2><div id="adminAssignmentsContent"></div></div>
+<div id="page-admin-submissions" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-inbox" style="color:var(--gold)"></i> Submitted Assignments</h2><div id="adminSubmissionsContent"></div></div>
+<div id="page-student-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> My Assignments</h2><div id="studentAssignmentsContent"></div></div>
+<div id="page-student-assignment-view" class="page"><div id="studentAssignmentViewContent"></div></div>
+<div id="page-notifications" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notifications</h2><div id="notificationsContent"></div></div>
 
 </div>
 </div>
@@ -700,6 +708,77 @@ table tbody tr:hover{background:#f8fafc}
 <button type="button" class="btn btn-outline" onclick="closeLessonEditor()">Cancel</button>
 <button type="button" class="btn btn-success" onclick="saveLesson()"><i class="fas fa-save"></i> Save Lesson</button>
 </div>
+</div>
+</div>
+
+  <div class="modal-backdrop" id="assignmentEditorModal">
+<div class="modal-box" style="max-width:720px">
+<h2><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> <span id="assignmentEditorTitle">Create Assignment</span></h2>
+<input type="hidden" id="assignEditId">
+<input type="hidden" id="assignCourseId">
+<input type="hidden" id="assignModuleId">
+<div class="form-group"><label>Title <span class="required">*</span></label><input type="text" id="assignTitle" placeholder="e.g., Introduction to Computers Assignment"></div>
+<div class="form-group"><label>Instructions</label><textarea id="assignInstructions" rows="4" placeholder="Explain the five major parts of a computer..."></textarea></div>
+<div class="form-row">
+<div class="form-group"><label>Maximum Marks</label><input type="number" id="assignMaxMarks" value="20" min="1"></div>
+<div class="form-group"><label>Due Date</label><input type="date" id="assignDueDate"></div>
+</div>
+<div class="form-row">
+<div class="form-group"><label>Allow Resubmission</label><select id="assignAllowResubmit"><option value="true">Yes</option><option value="false">No</option></select></div>
+<div class="form-group"><label>Maximum Attempts</label><input type="number" id="assignMaxAttempts" value="2" min="1"></div>
+</div>
+<div style="background:var(--bg);padding:1rem;border-radius:10px;margin-bottom:1rem">
+<div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">Submission Methods</div>
+<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem"><input type="checkbox" id="assignAllowText" checked style="width:18px;height:18px;accent-color:var(--blue)"> Written Text</label>
+<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem"><input type="checkbox" id="assignAllowFile" checked style="width:18px;height:18px;accent-color:var(--blue)"> File Upload (PDF, DOCX, JPG, PNG)</label>
+</div>
+<div class="form-group"><label>Status</label><select id="assignStatus"><option value="draft">Draft</option><option value="published">Published</option></select></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeAssignmentEditor()">Cancel</button><button type="button" class="btn btn-success" onclick="saveAssignment()"><i class="fas fa-save"></i> Save Assignment</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="markAssignmentModal">
+<div class="modal-box" style="max-width:640px">
+<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Mark Assignment</h2>
+<div id="markSubmissionInfo" style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem"></div>
+<div class="form-row">
+<div class="form-group"><label>Marks Awarded</label><input type="number" id="markMarks" step="0.5" min="0" required></div>
+<div class="form-group"><label>Percentage</label><input type="text" id="markPercentage" disabled></div>
+</div>
+<div class="form-group"><label>Feedback</label><textarea id="markFeedback" rows="4" placeholder="Good work. Your explanation is clear..."></textarea></div>
+<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem"><input type="checkbox" id="markRelease" checked style="width:18px;height:18px;accent-color:var(--success)"> Release result to student</label>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeMarkModal()">Cancel</button><button type="button" class="btn btn-warning" onclick="returnSubmission()"><i class="fas fa-undo"></i> Return for Resubmission</button><button type="button" class="btn btn-success" onclick="submitMarks()"><i class="fas fa-save"></i> Save Marks & Release</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="returnAssignmentModal">
+<div class="modal-box" style="max-width:520px">
+<h2><i class="fas fa-undo" style="color:var(--warning)"></i> Return for Resubmission</h2>
+<div class="form-group"><label>Reason for Resubmission <span class="required">*</span></label><textarea id="returnReason" rows="4" placeholder="Please expand your explanation of..."></textarea></div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeReturnModal()">Cancel</button><button type="button" class="btn btn-warning" onclick="confirmReturn()"><i class="fas fa-undo"></i> Return to Student</button></div>
+</div>
+</div>
+
+<div class="modal-backdrop" id="submitAssignmentModal">
+<div class="modal-box" style="max-width:640px">
+<h2><i class="fas fa-paper-plane" style="color:var(--blue)"></i> Submit Assignment</h2>
+<div id="submitAssignmentInfo" style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem"></div>
+<div id="submitTextBlock">
+<label style="display:block;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Your Answer</label>
+<textarea id="submitTextAnswer" rows="8" placeholder="Type your answer here..." oninput="updateSubmitWordCount()"></textarea>
+<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem">Words: <span id="submitWordCount">0</span></div>
+</div>
+<div id="submitFileBlock" style="margin-top:1rem">
+<label style="display:block;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Attach File</label>
+<div class="file-upload-container" onclick="document.getElementById('submitFileInput').click()">
+<div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+<div class="upload-text">Tap to choose a file</div>
+<div class="upload-hint">PDF, DOCX, JPG, PNG — up to <span id="submitMaxFileMb">10</span> MB</div>
+<input type="file" id="submitFileInput" onchange="handleSubmitFile(event)">
+</div>
+<div id="submitFilePreview" style="margin-top:0.5rem;display:none"></div>
+</div>
+<div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem"><button type="button" class="btn btn-outline" onclick="closeSubmitModal()">Cancel</button><button type="button" class="btn btn-success" onclick="sendSubmission()"><i class="fas fa-paper-plane"></i> Submit Assignment</button></div>
 </div>
 </div>
 
@@ -1930,6 +2009,330 @@ confirmApprove = async function() {
     await bootSession();
     if (currentUser) { showApp(); } else { goHome(); }
 })();
+// ============================================================
+// ASSIGNMENTS — FRONTEND
+// ============================================================
+let currentAssignment = null;
+let currentSubmission = null;
+let submitFileData = null;
+
+async function renderAdminAssignments() {
+    const c = document.getElementById('adminAssignmentsContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { assignments } = await api('/assignments');
+        if (!assignments.length) {
+            c.innerHTML = `<div class="empty-state">
+                <i class="fas fa-clipboard-check" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>
+                No assignments yet.<br>
+                <span style="font-size:0.85rem">Create one inside a course's module.</span>
+            </div>`;
+            return;
+        }
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr><th>Title</th><th>Course</th><th>Module</th><th>Max Marks</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>${assignments.map(a => `
+                <tr>
+                    <td><strong>${esc(a.title)}</strong></td>
+                    <td>${esc(a.course_title || '—')}</td>
+                    <td>${esc(a.module_title || '—')}</td>
+                    <td>${a.max_marks}</td>
+                    <td><span class="clickable-count" onclick="navigateTo('admin-submissions');setTimeout(()=>filterSubmissionsByAssignment('${a.id}'),300)">${a.submission_count} 📄</span></td>
+                    <td><span class="badge badge-${a.status === 'published' ? 'published' : 'draft'}">${a.status.toUpperCase()}</span></td>
+                    <td>
+                        <div class="student-actions">
+                            <button class="action-btn view" onclick="navigateTo('admin-submissions')" title="View submissions"><i class="fas fa-inbox"></i></button>
+                            <button class="action-btn reject" onclick="deleteAssignment('${a.id}')" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>`).join('')}</tbody>
+        </table></div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
+}
+
+async function deleteAssignment(id) {
+    if (!confirm('Delete this assignment and all its submissions?')) return;
+    try {
+        await api('/assignments/' + id, { method: 'DELETE' });
+        await renderAdminAssignments();
+    } catch (err) { alert('❌ ' + err.message); }
+}
+
+function openAssignmentEditor(opts = {}) {
+    document.getElementById('assignmentEditorTitle').textContent = opts.id ? 'Edit Assignment' : 'Create Assignment';
+    document.getElementById('assignEditId').value = opts.id || '';
+    document.getElementById('assignCourseId').value = opts.course_id || '';
+    document.getElementById('assignModuleId').value = opts.module_id || '';
+    document.getElementById('assignTitle').value = opts.title || '';
+    document.getElementById('assignInstructions').value = opts.instructions || '';
+    document.getElementById('assignMaxMarks').value = opts.max_marks || 20;
+    document.getElementById('assignDueDate').value = opts.due_date ? new Date(opts.due_date).toISOString().split('T')[0] : '';
+    document.getElementById('assignAllowResubmit').value = opts.allow_resubmission !== false ? 'true' : 'false';
+    document.getElementById('assignMaxAttempts').value = opts.max_attempts || 2;
+    document.getElementById('assignAllowText').checked = opts.allow_text !== false;
+    document.getElementById('assignAllowFile').checked = opts.allow_file !== false;
+    document.getElementById('assignStatus').value = opts.status || 'draft';
+    document.getElementById('assignmentEditorModal').classList.add('active');
+}
+function closeAssignmentEditor() { document.getElementById('assignmentEditorModal').classList.remove('active'); }
+
+async function saveAssignment() {
+    const id = document.getElementById('assignEditId').value;
+    const payload = {
+        course_id: document.getElementById('assignCourseId').value,
+        module_id: document.getElementById('assignModuleId').value || null,
+        title: document.getElementById('assignTitle').value.trim(),
+        instructions: document.getElementById('assignInstructions').value,
+        max_marks: parseInt(document.getElementById('assignMaxMarks').value) || 20,
+        due_date: document.getElementById('assignDueDate').value || null,
+        allow_resubmission: document.getElementById('assignAllowResubmit').value === 'true',
+        max_attempts: parseInt(document.getElementById('assignMaxAttempts').value) || 2,
+        allow_text: document.getElementById('assignAllowText').checked,
+        allow_file: document.getElementById('assignAllowFile').checked,
+        status: document.getElementById('assignStatus').value,
+    };
+    if (!payload.title) { alert('⚠️ Title required'); return; }
+    if (!payload.course_id) { alert('⚠️ Course required'); return; }
+    if (!payload.allow_text && !payload.allow_file) { alert('⚠️ Enable at least one submission method'); return; }
+    try {
+        if (id) await api('/assignments/' + id, { method: 'PUT', body: payload });
+        else await api('/assignments', { method: 'POST', body: payload });
+        closeAssignmentEditor();
+        alert('✅ Assignment saved');
+        if (document.getElementById('page-admin-assignments').classList.contains('active')) await renderAdminAssignments();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+async function renderAdminSubmissions(filterAssignmentId) {
+    const c = document.getElementById('adminSubmissionsContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const url = '/assignments/submissions/list' + (filterAssignmentId ? '?assignment_id=' + filterAssignmentId : '');
+        const { submissions } = await api(url);
+        if (!submissions.length) {
+            c.innerHTML = '<div class="empty-state">No submissions yet.</div>';
+            return;
+        }
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr><th>Student</th><th>Assignment</th><th>Course</th><th>Attempt</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
+            <tbody>${submissions.map(s => `
+                <tr>
+                    <td><strong>${esc(s.student_name)}</strong><br><span style="font-size:0.75rem;color:var(--text-secondary)">${esc(s.admission_number || '')}</span></td>
+                    <td>${esc(s.assignment_title)}</td>
+                    <td>${esc(s.course_title || '—')}</td>
+                    <td>${s.attempt_number}</td>
+                    <td>${fmtDate(s.submitted_at)}</td>
+                    <td><span class="badge badge-${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'active'}">${s.status.toUpperCase()}</span></td>
+                    <td><button class="action-btn view" onclick="openMarkModal('${s.id}')" title="Open"><i class="fas fa-eye"></i></button></td>
+                </tr>`).join('')}</tbody>
+        </table></div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
+}
+
+function filterSubmissionsByAssignment(id) { renderAdminSubmissions(id); }
+
+async function openMarkModal(submissionId) {
+    try {
+        const data = await api('/assignments/submissions/' + submissionId);
+        const s = data.submission;
+        currentSubmission = s;
+
+        const fileBlock = s.file_path
+            ? `<div style="margin-top:0.5rem"><strong>Attachment:</strong><br><a href="${esc(s.file_path)}" target="_blank" style="color:var(--blue)">📎 ${esc(s.file_name || 'View file')}</a></div>`
+            : '';
+        const textBlock = s.text_answer
+            ? `<div style="margin-top:0.5rem"><strong>Written Answer:</strong><div style="background:#fff;padding:0.75rem;border-radius:8px;margin-top:0.3rem;white-space:pre-wrap">${esc(s.text_answer)}</div></div>`
+            : '';
+
+        document.getElementById('markSubmissionInfo').innerHTML = `
+            <div><strong>Student:</strong> ${esc(s.student_name)} (${esc(s.admission_number || 'N/A')})</div>
+            <div><strong>Course:</strong> ${esc(s.course_title)}</div>
+            <div><strong>Module:</strong> ${esc(s.module_title || '—')}</div>
+            <div><strong>Assignment:</strong> ${esc(s.assignment_title)}</div>
+            <div><strong>Max Marks:</strong> ${s.max_marks}</div>
+            <div><strong>Submitted:</strong> ${fmtDateTime(s.submitted_at)}</div>
+            ${textBlock}${fileBlock}`;
+        document.getElementById('markMarks').value = s.marks || '';
+        document.getElementById('markMarks').max = s.max_marks;
+        document.getElementById('markFeedback').value = s.feedback || '';
+        document.getElementById('markRelease').checked = true;
+        updateMarkPercentage();
+        document.getElementById('markMarks').oninput = updateMarkPercentage;
+        document.getElementById('markAssignmentModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+function updateMarkPercentage() {
+    const m = parseFloat(document.getElementById('markMarks').value) || 0;
+    const max = currentSubmission?.max_marks || 20;
+    const pct = max ? (m / max) * 100 : 0;
+    document.getElementById('markPercentage').value = pct.toFixed(1) + '%';
+}
+function closeMarkModal() { document.getElementById('markAssignmentModal').classList.remove('active'); currentSubmission = null; }
+
+async function submitMarks() {
+    if (!currentSubmission) return;
+    const marks = parseFloat(document.getElementById('markMarks').value);
+    const feedback = document.getElementById('markFeedback').value;
+    const release = document.getElementById('markRelease').checked;
+    if (isNaN(marks) || marks < 0 || marks > currentSubmission.max_marks) {
+        alert(`⚠️ Marks must be between 0 and ${currentSubmission.max_marks}`); return;
+    }
+    try {
+        await api('/assignments/submissions/' + currentSubmission.id + '/mark', {
+            method: 'POST',
+            body: { marks, feedback, release },
+        });
+        closeMarkModal();
+        alert('✅ Marks saved');
+        await renderAdminSubmissions();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+function returnSubmission() {
+    if (!currentSubmission) return;
+    closeMarkModal();
+    document.getElementById('returnReason').value = '';
+    document.getElementById('returnAssignmentModal').classList.add('active');
+}
+function closeReturnModal() { document.getElementById('returnAssignmentModal').classList.remove('active'); }
+async function confirmReturn() {
+    const reason = document.getElementById('returnReason').value.trim();
+    if (!reason) { alert('⚠️ Reason required'); return; }
+    try {
+        await api('/assignments/submissions/' + currentSubmission.id + '/return', {
+            method: 'POST', body: { reason },
+        });
+        closeReturnModal();
+        currentSubmission = null;
+        alert('✅ Returned to student');
+        await renderAdminSubmissions();
+    } catch (err) { alert('❌ ' + err.message); }
+}
+
+// ============================================================
+// STUDENT: MY ASSIGNMENTS
+// ============================================================
+async function renderStudentAssignments() {
+    const c = document.getElementById('studentAssignmentsContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { summary, assignments } = await api('/assignments/me/summary');
+        const countEl = document.getElementById('studentAssignmentsCount');
+        if (countEl) countEl.textContent = summary.pending;
+
+        if (!assignments.length) {
+            c.innerHTML = '<div class="empty-state">No assignments yet.</div>';
+            return;
+        }
+
+        c.innerHTML = `
+            <div class="summary-cards">
+                <div class="summary-card"><div class="num">${summary.total}</div><div class="lbl">Total</div></div>
+                <div class="summary-card gold"><div class="num">${summary.submitted}</div><div class="lbl">Submitted</div></div>
+                <div class="summary-card green"><div class="num">${summary.marked}</div><div class="lbl">Marked</div></div>
+                <div class="summary-card grey"><div class="num">${summary.pending}</div><div class="lbl">Pending</div></div>
+                <div class="summary-card purple"><div class="num">${summary.average_percentage}%</div><div class="lbl">Average</div></div>
+            </div>
+            <div class="table-wrapper" style="margin-top:1rem"><table>
+                <thead><tr><th>Assignment</th><th>Course</th><th>Due</th><th>Status</th><th>Score</th><th>Actions</th></tr></thead>
+                <tbody>${assignments.map(a => {
+                    let statusBadge = '<span class="badge badge-active">NOT SUBMITTED</span>';
+                    let scoreText = '—';
+                    if (a.submission_status === 'submitted' || a.submission_status === 'resubmitted') {
+                        statusBadge = '<span class="badge badge-warning">AWAITING MARKING</span>';
+                    } else if (a.submission_status === 'marked') {
+                        statusBadge = '<span class="badge badge-success">✅ MARKED</span>';
+                        scoreText = `${a.marks}/${a.max_marks} (${parseFloat(a.percentage).toFixed(1)}%)`;
+                    } else if (a.submission_status === 'returned') {
+                        statusBadge = '<span class="badge badge-danger">RETURNED</span>';
+                    }
+                    return `<tr>
+                        <td><strong>${esc(a.title)}</strong></td>
+                        <td>${esc(a.course_title)}</td>
+                        <td>${a.due_date ? fmtDate(a.due_date) : '—'}</td>
+                        <td>${statusBadge}</td>
+                        <td><strong>${scoreText}</strong></td>
+                        <td><button class="btn btn-primary btn-sm" onclick="openAssignmentView('${a.id}')">Open</button></td>
+                    </tr>`;
+                }).join('')}</tbody>
+            </table></div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
+}
+
+async function openAssignmentView(assignmentId) {
+    currentAssignment = { id: assignmentId };
+    await navigateTo('student-assignment-view');
+    await renderAssignmentView();
+}
+
+async function renderAssignmentView() {
+    const c = document.getElementById('studentAssignmentViewContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { assignment, submissions } = await api('/assignments/' + currentAssignment.id);
+        const latest = submissions[0];
+        const attemptsUsed = submissions.length;
+        const canSubmit = assignment.allow_resubmission || !latest;
+        const maxReached = attemptsUsed >= assignment.max_attempts;
+
+        let submissionBlock = '';
+        if (latest) {
+            if (latest.status === 'marked') {
+                submissionBlock = `<div class="certificate-status-card issued" style="text-align:left;margin-bottom:1rem">
+                    <div style="font-size:1.5rem;font-weight:800;color:var(--success)">✅ Marked</div>
+                    <div style="font-size:2rem;font-weight:900;color:var(--navy);margin-top:0.5rem">${latest.marks} / ${assignment.max_marks}</div>
+                    <div style="font-size:1.1rem;color:var(--text-secondary)">${parseFloat(latest.percentage).toFixed(1)}%</div>
+                    ${latest.feedback ? `<div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px"><strong>Feedback:</strong><div style="margin-top:0.3rem">${esc(latest.feedback)}</div></div>` : ''}
+                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem">Marked: ${fmtDateTime(latest.marked_at)}</div>
+                </div>`;
+            } else if (latest.status === 'returned') {
+                submissionBlock = `<div class="flash flash-warning" style="margin-bottom:1rem">
+                    <strong>🔔 Assignment Returned</strong>
+                    <div style="margin-top:0.5rem">Reason: ${esc(latest.return_reason || '')}</div>
+                    <div style="font-size:0.85rem;margin-top:0.5rem">Attempt: ${latest.attempt_number} of ${assignment.max_attempts}</div>
+                </div>`;
+            } else {
+                submissionBlock = `<div class="flash flash-info" style="margin-bottom:1rem">
+                    <strong>✅ Assignment Submitted</strong>
+                    <div style="margin-top:0.3rem">Submitted: ${fmtDateTime(latest.submitted_at)} • Attempt ${latest.attempt_number} of ${assignment.max_attempts}</div>
+                    <div style="margin-top:0.3rem">Status: 🟡 Awaiting Admin Marking</div>
+                </div>`;
+            }
+        }
+
+        let attemptsHTML = '';
+        if (submissions.length > 1) {
+            attemptsHTML = `<h3 style="margin-top:1.5rem;color:var(--navy)">Attempt History</h3>
+                ${submissions.map(s => `<div style="padding:0.75rem;background:var(--white);border-radius:8px;margin-bottom:0.5rem;border-left:4px solid var(--${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'blue'})">
+                    <div><strong>Attempt ${s.attempt_number}</strong> — <span class="badge badge-${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'active'}">${s.status.toUpperCase()}</span></div>
+                    <div style="font-size:0.85rem;color:var(--text-secondary)">${fmtDateTime(s.submitted_at)}${s.marks != null ? ` • ${s.marks}/${assignment.max_marks}` : ''}</div>
+                </div>`).join('')}`;
+        }
+
+        const canSubmitNow = assignment.allow_resubmission && !maxReached || (!latest && !maxReached);
+
+        c.innerHTML = `
+            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
+                <button class="btn btn-outline btn-sm" onclick="navigateTo('student-assignments')"><i class="fas fa-arrow-left"></i> Back</button>
+            </div>
+            <h2>${esc(assignment.title)}</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin:1rem 0;font-size:0.85rem">
+                <div class="progress-item"><div class="pct">${assignment.max_marks}</div><div class="lbl">Max Marks</div></div>
+                <div class="progress-item"><div class="pct">${assignment.due_date ? fmtDate(assignment.due_date) : '—'}</div><div class="lbl">Due Date</div></div>
+                <div class="progress-item"><div class="pct">${assignment.max_attempts}</div><div class="lbl">Attempts Allowed</div></div>
+                <div class="progress-item"><div class="pct">${attemptsUsed}</div><div class="lbl">Attempts Used</div></div>
+            </div>
+            ${submissionBlock}
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem">
+                <h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-list-ol" style="color:var(--gold)"></i> Instructions</h3>
+                <div style="white-space:pre-wrap;color:var(--text-secondary)">${esc(assignment.instructions || 'No instructions provided.')}</div>
+                <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-secondary)">
+                    <strong>Allowed submission:</strong>
+                    ${assignment.allow_text ? '📝 Written Text ' : ''}
+                    ${assignment.allow_file ? '📎 File Upload' : ''}
+                </div>
+            </div>
+            ${canSubmitNow ? `<button class="btn btn-success btn-block" onclick="openSubmitModal()"><i class="fas fa-paper-plane"></i> ${latest ? 'Resubm
 console.log('🎓 Nexora Academy v9.5 — API:', API_BASE);
 </script>
 
