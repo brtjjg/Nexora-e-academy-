@@ -8,24 +8,31 @@ const { requireAuth, requireAdmin } = require('../middleware');
 // HELPERS
 // ============================================================
 async function notify(client, userId, type, title, body, link) {
-    await client.query(
-        `INSERT INTO notifications (user_id, type, title, body, link)
-         VALUES ($1, $2, $3, $4, $5)`,
-        [userId, type, title, body || null, link || null]
-    );
+    try {
+        await client.query(
+            `INSERT INTO notifications (user_id, type, title, body, link)
+             VALUES ($1, $2, $3, $4, $5)`,
+            [userId, type, title, body || null, link || null]
+        );
+    } catch (e) {
+        console.warn('[notify] Failed:', e.message);
+    }
 }
 
 async function logAssignmentHistory(client, submissionId, action, note, userId) {
-    await client.query(
-        `INSERT INTO assignment_history (submission_id, action, note, performed_by)
-         VALUES ($1, $2, $3, $4)`,
-        [submissionId, action, note || null, userId || null]
-    );
+    try {
+        await client.query(
+            `INSERT INTO assignment_history (submission_id, action, note, performed_by)
+             VALUES ($1, $2, $3, $4)`,
+            [submissionId, action, note || null, userId || null]
+        );
+    } catch (e) {
+        console.warn('[logAssignmentHistory] Failed:', e.message);
+    }
 }
 
 // ============================================================
 // ADMIN: CREATE ASSIGNMENT
-// POST /api/assignments
 // ============================================================
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const {
@@ -72,7 +79,6 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
 
 // ============================================================
 // ADMIN: UPDATE ASSIGNMENT
-// PUT /api/assignments/:id
 // ============================================================
 router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const fields = [
@@ -107,8 +113,7 @@ router.delete('/:id', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 // ============================================================
-// ADMIN: LIST ALL ASSIGNMENTS
-// GET /api/assignments?course_id=...
+// LIST ASSIGNMENTS
 // ============================================================
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
     const { course_id, module_id, status } = req.query;
@@ -134,8 +139,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 // ============================================================
-// STUDENT: GET ASSIGNMENTS FOR A COURSE
-// GET /api/assignments/course/:courseId
+// STUDENT: ASSIGNMENTS FOR A COURSE
 // ============================================================
 router.get('/course/:courseId', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -161,117 +165,49 @@ router.get('/course/:courseId', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 // ============================================================
-// GET SINGLE ASSIGNMENT (with all my attempts)
-// GET /api/assignments/:id
+// STUDENT: SUMMARY (dashboard)
 // ============================================================
-router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
-    const a = await db.query(
-        `SELECT a.*, c.title AS course_title, m.title AS module_title
+router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
+    const r = await db.query(
+        `SELECT a.id, a.title, a.max_marks, a.due_date,
+                c.title AS course_title,
+                s.marks, s.percentage, s.status AS submission_status,
+                s.feedback, s.submitted_at, s.marked_at,
+                s.attempt_number
          FROM assignments a
-         LEFT JOIN courses c ON c.id = a.course_id
-         LEFT JOIN modules m ON m.id = a.module_id
-         WHERE a.id = $1`,
-        [req.params.id]
+         JOIN courses c ON c.id = a.course_id
+         JOIN enrollments e ON e.course_id = a.course_id AND e.user_id = $1
+         LEFT JOIN assignment_submissions s
+            ON s.assignment_id = a.id AND s.student_id = $1
+            AND s.attempt_number = (
+                SELECT MAX(attempt_number) FROM assignment_submissions s3
+                WHERE s3.assignment_id = a.id AND s3.student_id = $1
+            )
+         WHERE a.status = 'published'
+         ORDER BY c.title, a.position`,
+        [req.user.user_id]
     );
-    if (!a.rows.length) return res.status(404).json({ error: 'Not found' });
+    const assignments = r.rows;
+    const total = assignments.length;
+    const submitted = assignments.filter(a => a.submission_status).length;
+    const marked = assignments.filter(a => a.submission_status === 'marked').length;
+    const pending = submitted - marked;
+    const markedList = assignments.filter(a => a.submission_status === 'marked' && a.percentage != null);
+    const average = markedList.length
+        ? markedList.reduce((s, a) => s + parseFloat(a.percentage), 0) / markedList.length
+        : 0;
 
-    const subs = await db.query(
-        `SELECT s.*, u.full_name AS marked_by_name
-         FROM assignment_submissions s
-         LEFT JOIN users u ON u.id = s.marked_by
-         WHERE s.assignment_id = $1 AND s.student_id = $2
-         ORDER BY s.attempt_number DESC`,
-        [req.params.id, req.user.user_id]
-    );
-
-    res.json({ assignment: a.rows[0], submissions: subs.rows });
+    res.json({
+        summary: {
+            total, submitted, marked, pending,
+            average_percentage: parseFloat(average.toFixed(2)),
+        },
+        assignments,
+    });
 }));
 
 // ============================================================
-// STUDENT: SUBMIT ASSIGNMENT
-// POST /api/assignments/:id/submit
-// Body: { text_answer, file_path, file_name, file_type, file_size }
-// ============================================================
-router.post('/:id/submit', requireAuth, asyncHandler(async (req, res) => {
-    const { text_answer, file_path, file_name, file_type, file_size } = req.body;
-    const client = await db.getClient();
-    try {
-        await client.query('BEGIN');
-
-        const a = await client.query(`SELECT * FROM assignments WHERE id = $1 FOR UPDATE`, [req.params.id]);
-        if (!a.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Assignment not found' }); }
-        const assignment = a.rows[0];
-
-        if (assignment.status !== 'published') {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Assignment is not open for submissions' });
-        }
-        if (assignment.allow_text && !assignment.allow_file && !text_answer) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Text answer required' });
-        }
-        if (assignment.allow_file && !assignment.allow_text && !file_path) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'File required' });
-        }
-        if (!text_answer && !file_path) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: 'Provide a text answer or upload a file' });
-        }
-
-        // Check attempts
-        const used = await client.query(
-            `SELECT COUNT(*)::int AS c FROM assignment_submissions
-             WHERE assignment_id = $1 AND student_id = $2`,
-            [req.params.id, req.user.user_id]
-        );
-        const attemptsUsed = used.rows[0].c;
-        if (attemptsUsed >= assignment.max_attempts) {
-            await client.query('ROLLBACK');
-            return res.status(400).json({ error: `Maximum attempts reached (${assignment.max_attempts})` });
-        }
-
-        // Due date check (soft warning, not blocking)
-        const pastDue = assignment.due_date && new Date(assignment.due_date) < new Date();
-
-        const attemptNumber = attemptsUsed + 1;
-
-        const s = await client.query(
-            `INSERT INTO assignment_submissions
-                (assignment_id, student_id, attempt_number, text_answer,
-                 file_path, file_name, file_type, file_size, status)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'submitted')
-             RETURNING *`,
-            [req.params.id, req.user.user_id, attemptNumber,
-             text_answer || null, file_path || null, file_name || null,
-             file_type || null, file_size || null]
-        );
-
-        await logAssignmentHistory(client, s.rows[0].id, 'submitted',
-            `Attempt ${attemptNumber}${pastDue ? ' (late)' : ''}`, req.user.user_id);
-
-        // Notify admins
-        const admins = await client.query(`SELECT id FROM users WHERE role = 'admin'`);
-        for (const adm of admins.rows) {
-            await notify(client, adm.id, 'assignment_submitted',
-                'New assignment submitted',
-                `${req.user.full_name} submitted ${assignment.title}`,
-                `/admin/assignments/${req.params.id}`);
-        }
-
-        await client.query('COMMIT');
-        res.status(201).json({ submission: s.rows[0], late: pastDue });
-    } catch (err) {
-        await client.query('ROLLBACK');
-        throw err;
-    } finally {
-        client.release();
-    }
-}));
-
-// ============================================================
-// ADMIN: LIST ALL SUBMISSIONS
-// GET /api/assignments/submissions?status=pending|marked|returned
+// ADMIN: LIST SUBMISSIONS
 // ============================================================
 router.get('/submissions/list', requireAdmin, asyncHandler(async (req, res) => {
     const { status, assignment_id } = req.query;
@@ -303,7 +239,7 @@ router.get('/submissions/list', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 // ============================================================
-// ADMIN: GET SINGLE SUBMISSION
+// ADMIN: SINGLE SUBMISSION
 // ============================================================
 router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -337,9 +273,76 @@ router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 // ============================================================
+// STUDENT: SUBMIT ASSIGNMENT
+// ============================================================
+router.post('/:id/submit', requireAuth, asyncHandler(async (req, res) => {
+    const { text_answer, file_path, file_name, file_type, file_size } = req.body;
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+        const a = await client.query(`SELECT * FROM assignments WHERE id = $1 FOR UPDATE`, [req.params.id]);
+        if (!a.rows.length) { await client.query('ROLLBACK'); return res.status(404).json({ error: 'Assignment not found' }); }
+        const assignment = a.rows[0];
+
+        if (assignment.status !== 'published') {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Assignment is not open for submissions' });
+        }
+        if (!text_answer && !file_path) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: 'Provide a text answer or upload a file' });
+        }
+
+        const used = await client.query(
+            `SELECT COUNT(*)::int AS c FROM assignment_submissions
+             WHERE assignment_id = $1 AND student_id = $2`,
+            [req.params.id, req.user.user_id]
+        );
+        const attemptsUsed = used.rows[0].c;
+        if (attemptsUsed >= assignment.max_attempts) {
+            await client.query('ROLLBACK');
+            return res.status(400).json({ error: `Maximum attempts reached (${assignment.max_attempts})` });
+        }
+
+        const pastDue = assignment.due_date && new Date(assignment.due_date) < new Date();
+        const attemptNumber = attemptsUsed + 1;
+
+        const s = await client.query(
+            `INSERT INTO assignment_submissions
+                (assignment_id, student_id, attempt_number, text_answer,
+                 file_path, file_name, file_type, file_size, status)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'submitted')
+             RETURNING *`,
+            [req.params.id, req.user.user_id, attemptNumber,
+             text_answer || null, file_path || null, file_name || null,
+             file_type || null, file_size || null]
+        );
+
+        await logAssignmentHistory(client, s.rows[0].id, 'submitted',
+            `Attempt ${attemptNumber}${pastDue ? ' (late)' : ''}`, req.user.user_id);
+
+        try {
+            const admins = await client.query(`SELECT id FROM users WHERE role = 'admin'`);
+            for (const adm of admins.rows) {
+                await notify(client, adm.id, 'assignment_submitted',
+                    'New assignment submitted',
+                    `${req.user.full_name} submitted ${assignment.title}`,
+                    `/admin/assignments/${req.params.id}`);
+            }
+        } catch (e) {}
+
+        await client.query('COMMIT');
+        res.status(201).json({ submission: s.rows[0], late: pastDue });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+    } finally {
+        client.release();
+    }
+}));
+
+// ============================================================
 // ADMIN: MARK SUBMISSION
-// POST /api/assignments/submissions/:id/mark
-// Body: { marks, feedback, release }
 // ============================================================
 router.post('/submissions/:id/mark', requireAdmin, asyncHandler(async (req, res) => {
     const { marks, feedback, release } = req.body;
@@ -394,8 +397,6 @@ router.post('/submissions/:id/mark', requireAdmin, asyncHandler(async (req, res)
 
 // ============================================================
 // ADMIN: RETURN FOR RESUBMISSION
-// POST /api/assignments/submissions/:id/return
-// Body: { reason }
 // ============================================================
 router.post('/submissions/:id/return', requireAdmin, asyncHandler(async (req, res) => {
     const { reason } = req.body;
@@ -422,10 +423,13 @@ router.post('/submissions/:id/return', requireAdmin, asyncHandler(async (req, re
         );
 
         await logAssignmentHistory(client, req.params.id, 'returned', reason, req.user.user_id);
-        await notify(client, sub.student_id, 'assignment_returned',
-            'Your assignment requires correction',
-            `${sub.assignment_title}: ${reason}`,
-            `/student/assignments/${sub.assignment_id}`);
+
+        try {
+            await notify(client, sub.student_id, 'assignment_returned',
+                'Your assignment requires correction',
+                `${sub.assignment_title}: ${reason}`,
+                `/student/assignments/${sub.assignment_id}`);
+        } catch (e) {}
 
         await client.query('COMMIT');
         res.json({ ok: true });
@@ -438,48 +442,44 @@ router.post('/submissions/:id/return', requireAdmin, asyncHandler(async (req, re
 }));
 
 // ============================================================
-// STUDENT: GET MY ASSIGNMENTS SUMMARY (dashboard)
+// STUDENT: COURSE GRADE (weighted)
 // ============================================================
-router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
-    const r = await db.query(
-        `SELECT a.id, a.title, a.max_marks, a.due_date,
-                c.title AS course_title,
-                s.marks, s.percentage, s.status AS submission_status,
-                s.feedback, s.submitted_at, s.marked_at,
-                s.attempt_number
+router.get('/course/:courseId/grade', requireAuth, asyncHandler(async (req, res) => {
+    const courseId = req.params.courseId;
+    const userId = req.user.user_id;
+
+    const assignments = await db.query(
+        `SELECT a.id, a.title, a.max_marks, a.weight_percent,
+                s.marks, s.percentage, s.status
          FROM assignments a
-         JOIN courses c ON c.id = a.course_id
-         JOIN enrollments e ON e.course_id = a.course_id AND e.user_id = $1
          LEFT JOIN assignment_submissions s
-            ON s.assignment_id = a.id AND s.student_id = $1
+            ON s.assignment_id = a.id AND s.student_id = $2
             AND s.attempt_number = (
                 SELECT MAX(attempt_number) FROM assignment_submissions s3
-                WHERE s3.assignment_id = a.id AND s3.student_id = $1
+                WHERE s3.assignment_id = a.id AND s3.student_id = $2
             )
-         WHERE a.status = 'published'
-         ORDER BY c.title, a.position`,
-        [req.user.user_id]
+         WHERE a.course_id = $1 AND a.status = 'published'`,
+        [courseId, userId]
     );
 
-    const assignments = r.rows;
-    const total = assignments.length;
-    const submitted = assignments.filter(a => a.submission_status).length;
-    const marked = assignments.filter(a => a.submission_status === 'marked').length;
-    const pending = submitted - marked;
-    const markedList = assignments.filter(a => a.submission_status === 'marked' && a.percentage != null);
-    const average = markedList.length
-        ? markedList.reduce((s, a) => s + parseFloat(a.percentage), 0) / markedList.length
-        : 0;
+    let totalWeight = 0, weighted = 0;
+    const details = assignments.rows.map(a => {
+        const w = parseFloat(a.weight_percent || 0);
+        totalWeight += w;
+        const pct = a.status === 'marked' && a.percentage != null ? parseFloat(a.percentage) : null;
+        const contrib = pct != null ? (pct * w) / 100 : 0;
+        weighted += contrib;
+        return { ...a, pct, weight: w, contribution: contrib };
+    });
+
+    const overall = totalWeight > 0 ? (weighted / totalWeight) * 100 : 0;
 
     res.json({
-        summary: {
-            total,
-            submitted,
-            marked,
-            pending,
-            average_percentage: parseFloat(average.toFixed(2)),
-        },
-        assignments,
+        course_id: courseId,
+        total_weight: totalWeight,
+        assignments: details,
+        weighted_score: parseFloat(weighted.toFixed(2)),
+        overall_percentage: parseFloat(overall.toFixed(2)),
     });
 }));
 
