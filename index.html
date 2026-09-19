@@ -313,9 +313,6 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
-  <div class="menu-label">Assignments</div>
-<div class="menu-item" onclick="navigateTo('admin-assignments')"><i class="fas fa-clipboard-check"></i><span>All Assignments</span></div>
-<div class="menu-item" onclick="navigateTo('admin-submissions')"><i class="fas fa-inbox"></i><span>Submissions</span><span class="badge-count" id="submissionsCount">0</span></div>
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
@@ -331,7 +328,6 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
-<div class="menu-item" onclick="navigateTo('student-assignments')"><i class="fas fa-clipboard-check"></i><span>My Assignments</span><span class="badge-count" id="studentAssignmentsCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-certificates')"><i class="fas fa-certificate"></i><span>My Certificates</span></div>
 <div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
 <div class="menu-divider"></div>
@@ -481,16 +477,16 @@ table tbody tr:hover{background:#f8fafc}
 <div style="text-align:center;padding:1rem 0">
 <i class="fas fa-receipt" style="font-size:3.5rem;color:var(--gold);margin-bottom:1rem"></i>
 <h2 style="color:var(--navy)">Application Received!</h2>
-<p style="color:var(--text-secondary);margin:1rem 0">Pay the processing fee of <strong>$0.50</strong>.</p>
+<p style="color:var(--text-secondary);margin:1rem 0">Pay the admission processing fee of <strong>$0.75</strong>.</p>
 <div style="background:var(--bg);padding:1rem;border-radius:12px;margin:1rem 0;text-align:left;font-size:0.9rem">
 <div><strong>Application ID:</strong> <span id="regAppId" style="color:var(--gold);font-weight:700">—</span></div>
 <div style="margin-top:0.3rem"><strong>Status:</strong> <span class="badge status-payment_due">AWAITING PAYMENT</span></div>
 </div>
 <div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:12px;margin:1rem 0">
-<div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Processing Fee</div>
-<div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.50</div>
+<div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Admission Fee</div>
+<div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.75</div>
 </div>
-<button class="btn btn-success btn-block" id="payFeeBtn" onclick="payActivationFee()"><i class="fas fa-credit-card"></i> Pay $0.50 Now</button>
+<button class="btn btn-success btn-block" id="payFeeBtn" onclick="payActivationFee()"><i class="fas fa-credit-card"></i> Pay $0.75 Now</button>
 <div id="feeFlash" style="margin-top:1rem"></div>
 </div>
 </div>
@@ -558,7 +554,7 @@ table tbody tr:hover{background:#f8fafc}
 </div>
 <div id="step-1" class="step-content hidden">
 <div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> Payment Configuration</div>
-<div class="form-row"><div class="form-group"><label>Regular Price ($) <span class="required">*</span></label><input type="number" id="coursePrice" step="0.01" value="0.00" min="0" oninput="updateDiscountPreview()"></div><div class="form-group"><label>Initial Payment (%)</label><input type="number" id="initialPaymentPercent" value="25" min="0" max="100"></div></div>
+<div class="form-row"><div class="form-group"><label>Regular Price ($) <span class="required">*</span></label><input type="number" id="coursePrice" step="0.01" value="0.00" min="0" oninput="updateDiscountPreview()"></div><div class="form-group"><label>Initial Payment (%)</label><input type="number" id="initialPaymentPercent" value="25" min="0" max="100" disabled><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.3rem">Fixed at 25% — balance 75%</div></div></div>
 <div style="background:linear-gradient(135deg,#fff7ed,#fef2f2);border:2px solid #fed7aa;border-radius:12px;padding:1.25rem;margin:1rem 0">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><h4 style="color:var(--navy);margin:0"><i class="fas fa-tags" style="color:#dc2626"></i> Limited-Time Offer</h4><label style="display:flex;align-items:center;gap:0.5rem;font-size:0.9rem;cursor:pointer;font-weight:600;color:var(--navy)"><input type="checkbox" id="discountEnabled" onchange="toggleDiscountFields()" style="width:18px;height:18px;accent-color:var(--gold)"> Enable Discount</label></div>
 <div id="discountFields" class="hidden">
@@ -604,11 +600,7 @@ table tbody tr:hover{background:#f8fafc}
 <div id="page-admin-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Examinations</h2><div id="adminExamsList"></div></div>
 <div id="page-admin-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> Certificates</h2><div id="adminCertificatesList"></div></div>
 <div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
-<div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>  <div id="page-admin-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> Assignments</h2><div id="adminAssignmentsContent"></div></div>
-<div id="page-admin-submissions" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-inbox" style="color:var(--gold)"></i> Submitted Assignments</h2><div id="adminSubmissionsContent"></div></div>
-<div id="page-student-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> My Assignments</h2><div id="studentAssignmentsContent"></div></div>
-<div id="page-student-assignment-view" class="page"><div id="studentAssignmentViewContent"></div></div>
-<div id="page-notifications" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notifications</h2><div id="notificationsContent"></div></div>
+<div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
 
 </div>
 </div>
@@ -623,7 +615,7 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="rejectReasonModal">
 <div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject Application</h2>
+<h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject</h2>
 <div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="4" placeholder="Enter the reason for rejection (e.g., unclear ID document, ineligible age, incorrect details)..."></textarea></div>
 <div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()"><i class="fas fa-times-circle"></i> Confirm Reject</button></div>
 </div>
@@ -631,8 +623,8 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="approveConfirmModal">
 <div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve Student</h2>
-<p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Are you sure you want to approve this student?</p>
+<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2>
+<p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Are you sure you want to approve?</p>
 <div class="form-group"><label>Optional Note</label><input type="text" id="approveNoteText" placeholder="Any notes (optional)"></div>
 <div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()"><i class="fas fa-check-circle"></i> Confirm Approve</button></div>
 </div>
@@ -666,7 +658,7 @@ table tbody tr:hover{background:#f8fafc}
 <div class="file-upload-container" onclick="document.getElementById('lesVideoInput').click()">
 <div class="upload-icon"><i class="fas fa-video"></i></div>
 <div class="upload-text">Tap to choose a video file</div>
-<div class="upload-hint">MP4, WebM, MOV — up to 100MB</div>
+<div class="upload-hint">MP4, WebM, MOV — up to 500MB</div>
 <input type="file" id="lesVideoInput" accept="video/*" onchange="handleLesVideo(event)">
 </div>
 <div id="lesVideoPreview" style="margin-top:0.75rem;display:none">
@@ -711,77 +703,6 @@ table tbody tr:hover{background:#f8fafc}
 </div>
 </div>
 
-  <div class="modal-backdrop" id="assignmentEditorModal">
-<div class="modal-box" style="max-width:720px">
-<h2><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> <span id="assignmentEditorTitle">Create Assignment</span></h2>
-<input type="hidden" id="assignEditId">
-<input type="hidden" id="assignCourseId">
-<input type="hidden" id="assignModuleId">
-<div class="form-group"><label>Title <span class="required">*</span></label><input type="text" id="assignTitle" placeholder="e.g., Introduction to Computers Assignment"></div>
-<div class="form-group"><label>Instructions</label><textarea id="assignInstructions" rows="4" placeholder="Explain the five major parts of a computer..."></textarea></div>
-<div class="form-row">
-<div class="form-group"><label>Maximum Marks</label><input type="number" id="assignMaxMarks" value="20" min="1"></div>
-<div class="form-group"><label>Due Date</label><input type="date" id="assignDueDate"></div>
-</div>
-<div class="form-row">
-<div class="form-group"><label>Allow Resubmission</label><select id="assignAllowResubmit"><option value="true">Yes</option><option value="false">No</option></select></div>
-<div class="form-group"><label>Maximum Attempts</label><input type="number" id="assignMaxAttempts" value="2" min="1"></div>
-</div>
-<div style="background:var(--bg);padding:1rem;border-radius:10px;margin-bottom:1rem">
-<div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">Submission Methods</div>
-<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem"><input type="checkbox" id="assignAllowText" checked style="width:18px;height:18px;accent-color:var(--blue)"> Written Text</label>
-<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:0.5rem"><input type="checkbox" id="assignAllowFile" checked style="width:18px;height:18px;accent-color:var(--blue)"> File Upload (PDF, DOCX, JPG, PNG)</label>
-</div>
-<div class="form-group"><label>Status</label><select id="assignStatus"><option value="draft">Draft</option><option value="published">Published</option></select></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeAssignmentEditor()">Cancel</button><button type="button" class="btn btn-success" onclick="saveAssignment()"><i class="fas fa-save"></i> Save Assignment</button></div>
-</div>
-</div>
-
-<div class="modal-backdrop" id="markAssignmentModal">
-<div class="modal-box" style="max-width:640px">
-<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Mark Assignment</h2>
-<div id="markSubmissionInfo" style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem"></div>
-<div class="form-row">
-<div class="form-group"><label>Marks Awarded</label><input type="number" id="markMarks" step="0.5" min="0" required></div>
-<div class="form-group"><label>Percentage</label><input type="text" id="markPercentage" disabled></div>
-</div>
-<div class="form-group"><label>Feedback</label><textarea id="markFeedback" rows="4" placeholder="Good work. Your explanation is clear..."></textarea></div>
-<label style="display:flex;align-items:center;gap:0.5rem;margin-bottom:1rem"><input type="checkbox" id="markRelease" checked style="width:18px;height:18px;accent-color:var(--success)"> Release result to student</label>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeMarkModal()">Cancel</button><button type="button" class="btn btn-warning" onclick="returnSubmission()"><i class="fas fa-undo"></i> Return for Resubmission</button><button type="button" class="btn btn-success" onclick="submitMarks()"><i class="fas fa-save"></i> Save Marks & Release</button></div>
-</div>
-</div>
-
-<div class="modal-backdrop" id="returnAssignmentModal">
-<div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-undo" style="color:var(--warning)"></i> Return for Resubmission</h2>
-<div class="form-group"><label>Reason for Resubmission <span class="required">*</span></label><textarea id="returnReason" rows="4" placeholder="Please expand your explanation of..."></textarea></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeReturnModal()">Cancel</button><button type="button" class="btn btn-warning" onclick="confirmReturn()"><i class="fas fa-undo"></i> Return to Student</button></div>
-</div>
-</div>
-
-<div class="modal-backdrop" id="submitAssignmentModal">
-<div class="modal-box" style="max-width:640px">
-<h2><i class="fas fa-paper-plane" style="color:var(--blue)"></i> Submit Assignment</h2>
-<div id="submitAssignmentInfo" style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem"></div>
-<div id="submitTextBlock">
-<label style="display:block;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Your Answer</label>
-<textarea id="submitTextAnswer" rows="8" placeholder="Type your answer here..." oninput="updateSubmitWordCount()"></textarea>
-<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem">Words: <span id="submitWordCount">0</span></div>
-</div>
-<div id="submitFileBlock" style="margin-top:1rem">
-<label style="display:block;font-weight:600;color:var(--navy);margin-bottom:0.4rem">Attach File</label>
-<div class="file-upload-container" onclick="document.getElementById('submitFileInput').click()">
-<div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div>
-<div class="upload-text">Tap to choose a file</div>
-<div class="upload-hint">PDF, DOCX, JPG, PNG — up to <span id="submitMaxFileMb">10</span> MB</div>
-<input type="file" id="submitFileInput" onchange="handleSubmitFile(event)">
-</div>
-<div id="submitFilePreview" style="margin-top:0.5rem;display:none"></div>
-</div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem"><button type="button" class="btn btn-outline" onclick="closeSubmitModal()">Cancel</button><button type="button" class="btn btn-success" onclick="sendSubmission()"><i class="fas fa-paper-plane"></i> Submit Assignment</button></div>
-</div>
-</div>
-
 <div class="modal-backdrop" id="loadingModal">
 <div class="modal-box" style="max-width:320px;text-align:center">
 <i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i>
@@ -811,6 +732,7 @@ table tbody tr:hover{background:#f8fafc}
 
 <script>
 const API_BASE = 'https://nexora-api-sskg.onrender.com/api';
+const ACTIVATION_FEE_DISPLAY = 0.75;
 
 async function api(path, options = {}) {
     const opts = { credentials: 'include', headers: { 'Content-Type': 'application/json', ...(options.headers || {}) }, ...options };
@@ -1143,37 +1065,117 @@ async function renderPublicCourses() {
         c.innerHTML = courses.map(course => renderCourseCardHTML(course, 'public')).join('');
     } catch (err) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Failed to load courses.</div>'; }
 }
+
+function renderEnrolledCard(e) {
+    const paid = parseFloat(e.total_course_paid || 0);
+    const price = parseFloat(e.course_price || e.price || 0);
+    const rem = parseFloat(e.remaining_balance || Math.max(price - paid, 0));
+    const unlockPct = parseFloat(e.payment_percentage || (price ? (paid / price) * 100 : 0));
+    const lessonPct = e.total_lessons ? Math.round((e.completed_lessons / e.total_lessons) * 100) : 0;
+    return `<div class="enrolled-card">
+        <h4>${esc(e.title)}</h4>
+        <div class="meta">${esc(e.instructor_name || '')} • ${esc(e.duration || '')} • ${e.total_lessons} lessons</div>
+        <div class="stats-line">
+            <div class="stat-box"><div class="lbl">Course Price</div><div class="val">${fmtMoney(price)}</div></div>
+            <div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(paid)}</div></div>
+            <div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(rem)}</div></div>
+            <div class="stat-box"><div class="lbl">Unlocked</div><div class="val">${unlockPct.toFixed(0)}%</div></div>
+        </div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${unlockPct}%"></div></div>
+        <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem">Lessons completed: ${e.completed_lessons || 0}/${e.total_lessons || 0} (${lessonPct}%)</div>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
+            <button class="btn btn-primary btn-sm" onclick="openCourseViewer('${e.course_id}')"><i class="fas fa-play-circle"></i> Open</button>
+            ${rem > 0 ? `<button class="btn btn-success btn-sm" onclick="openPayCourseModal('${e.course_id}')"><i class="fas fa-credit-card"></i> Pay ${fmtMoney(Math.min(rem, e.initial_payment || rem))}</button>` : '<span class="badge badge-success">✅ Fully Paid</span>'}
+        </div>
+    </div>`;
+}
+
 async function updateStudentDashboard() {
     const c = document.getElementById('studentDashboardContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
+        const summary = await api('/payments/me/summary');
         const { enrollments } = await api('/enrollments');
         const { certificates } = await api('/certificates/me');
-        let totalPaid = 0;
-        enrollments.forEach(e => { totalPaid += parseFloat(e.paid || 0); });
-        c.innerHTML = `<div class="wallet-hero"><h2>Welcome, ${esc(currentUser.full_name)}!</h2><p>${esc(currentUser.email)}</p><div class="balances"><div class="bal-box"><div class="lbl">Courses</div><div class="val">${enrollments.length}</div></div><div class="bal-box"><div class="lbl">Paid</div><div class="val green">${fmtMoney(totalPaid)}</div></div><div class="bal-box"><div class="lbl">Certificates</div><div class="val">${certificates.length}</div></div></div></div><h3 style="color:var(--navy);margin:1.5rem 0 1rem">My Enrolled Courses</h3>${enrollments.length === 0 ? '<p style="color:var(--text-secondary)">No courses yet. <a onclick="navigateTo(\'student-courses\')" style="color:var(--blue);cursor:pointer;font-weight:600">Browse courses</a></p>' : enrollments.map(e => renderEnrolledCard(e)).join('')}`;
-    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load dashboard.</div>'; }
+        c.innerHTML = `
+            <div class="wallet-hero">
+                <h2>Welcome, ${esc(currentUser.full_name)}!</h2>
+                <p>${esc(currentUser.email)}</p>
+                <div class="balances">
+                    <div class="bal-box"><div class="lbl">Courses</div><div class="val">${enrollments.length}</div></div>
+                    <div class="bal-box"><div class="lbl">Total Paid</div><div class="val green">${fmtMoney(summary.total_money_paid)}</div></div>
+                    <div class="bal-box"><div class="lbl">Remaining</div><div class="val red">${fmtMoney(summary.totals.remaining_balance)}</div></div>
+                    <div class="bal-box"><div class="lbl">Certificates</div><div class="val">${certificates.length}</div></div>
+                </div>
+            </div>
+            <div class="flash flash-info" style="margin-bottom:1rem">
+                <strong>Admission Fee:</strong> ${fmtMoney(summary.activation_fee_paid)} — separate and non-refundable. It does not reduce your course balance.
+            </div>
+            <h3 style="color:var(--navy);margin:1.5rem 0 1rem">My Enrolled Courses</h3>
+            ${enrollments.length === 0 ? '<p style="color:var(--text-secondary)">No courses yet. <a onclick="navigateTo(\'student-courses\')" style="color:var(--blue);cursor:pointer;font-weight:600">Browse courses</a></p>' : enrollments.map(e => renderEnrolledCard(e)).join('')}`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load dashboard: ' + esc(err.message) + '</div>'; }
 }
-function renderEnrolledCard(e) {
-    const paid = parseFloat(e.paid || 0);
-    const price = parseFloat(e.price || 0);
-    const rem = Math.max(0, price - paid);
-    const pct = price ? Math.min(100, Math.round((paid / price) * 100)) : 0;
-    const lessonPct = e.total_lessons ? Math.round((e.completed_lessons / e.total_lessons) * 100) : 0;
-    return `<div class="enrolled-card"><h4>${esc(e.title)}</h4><div class="meta">${esc(e.instructor_name || '')} • ${esc(e.duration || '')} • ${e.total_lessons} lessons</div><div class="stats-line"><div class="stat-box"><div class="lbl">Fee</div><div class="val">${fmtMoney(price)}</div></div><div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(paid)}</div></div><div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(rem)}</div></div><div class="stat-box"><div class="lbl">Progress</div><div class="val">${lessonPct}%</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${pct}%"></div></div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem"><button class="btn btn-primary btn-sm" onclick="openCourseViewer('${e.course_id}')"><i class="fas fa-play-circle"></i> Open</button>${rem > 0 ? `<button class="btn btn-success btn-sm" onclick="openPayCourseModal('${e.course_id}')"><i class="fas fa-credit-card"></i> Pay</button>` : '<span class="badge badge-success">✅ Paid</span>'}</div></div>`;
-}
+
 async function renderStudentWallet() {
     const c = document.getElementById('studentWalletContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
+        const summary = await api('/payments/me/summary');
         const { transactions } = await api('/payments/me');
-        const { enrollments } = await api('/enrollments');
-        const totalFee = enrollments.reduce((s, e) => s + parseFloat(e.price || 0), 0);
-        const totalPaid = enrollments.reduce((s, e) => s + parseFloat(e.paid || 0), 0);
-        const rem = Math.max(0, totalFee - totalPaid);
-        c.innerHTML = `<div class="wallet-hero"><h2>Wallet</h2><div class="balances"><div class="bal-box"><div class="lbl">Total Fees</div><div class="val">${fmtMoney(totalFee)}</div></div><div class="bal-box"><div class="lbl">Paid</div><div class="val green">${fmtMoney(totalPaid)}</div></div><div class="bal-box"><div class="lbl">Remaining</div><div class="val red">${fmtMoney(rem)}</div></div></div></div><h3 style="color:var(--navy);margin:1.5rem 0 1rem">Transactions</h3>${transactions.length === 0 ? '<p style="color:var(--text-secondary)">No transactions yet.</p>' : `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : `📚 ${esc(t.course_title || 'Course')}`}</td><td>${fmtMoney(t.amount)}</td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`}`;
-    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load wallet.</div>'; }
+        const actPaid = summary.activation_fee_paid;
+        const courseTotals = summary.totals;
+        let breakdownHTML = '';
+        if (summary.courses.length === 0) {
+            breakdownHTML = '<p style="color:var(--text-secondary)">No enrolled courses yet.</p>';
+        } else {
+            breakdownHTML = summary.courses.map(co => `
+                <div class="enrolled-card" style="margin-bottom:0.75rem">
+                    <h4>${esc(co.title)}</h4>
+                    <div class="stats-line">
+                        <div class="stat-box"><div class="lbl">Course Price</div><div class="val">${fmtMoney(co.course_price)}</div></div>
+                        <div class="stat-box"><div class="lbl">Initial (25%)</div><div class="val">${fmtMoney(co.initial_payment)}</div></div>
+                        <div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(co.total_course_paid)}</div></div>
+                        <div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${co.remaining_balance > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(co.remaining_balance)}</div></div>
+                        <div class="stat-box"><div class="lbl">Unlocked</div><div class="val">${co.payment_percentage}%</div></div>
+                    </div>
+                    <div class="progress-bar"><div class="progress-fill" style="width:${co.payment_percentage}%"></div></div>
+                </div>`).join('');
+        }
+        c.innerHTML = `
+            <div class="wallet-hero">
+                <h2>My Wallet</h2>
+                <div class="balances">
+                    <div class="bal-box"><div class="lbl">Admission Fee</div><div class="val">${fmtMoney(actPaid)}</div></div>
+                    <div class="bal-box"><div class="lbl">Course Fees</div><div class="val">${fmtMoney(courseTotals.course_price)}</div></div>
+                    <div class="bal-box"><div class="lbl">Total Paid</div><div class="val green">${fmtMoney(summary.total_money_paid)}</div></div>
+                    <div class="bal-box"><div class="lbl">Remaining</div><div class="val red">${fmtMoney(courseTotals.remaining_balance)}</div></div>
+                </div>
+            </div>
+            <div class="flash flash-info" style="margin-bottom:1rem">
+                <strong>Important:</strong> The admission fee of ${fmtMoney(ACTIVATION_FEE_DISPLAY)} is separate and does <em>not</em> reduce your course balance.
+            </div>
+            <h3 style="color:var(--navy);margin:1.5rem 0 1rem">Course Breakdown</h3>
+            ${breakdownHTML}
+            <h3 style="color:var(--navy);margin:2rem 0 1rem">Transaction History</h3>
+            ${transactions.length === 0
+                ? '<p style="color:var(--text-secondary)">No transactions yet.</p>'
+                : `<div class="table-wrapper"><table>
+                    <thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                    <tbody>${transactions.map(t => `
+                        <tr>
+                            <td><strong>${esc(t.transaction_id)}</strong></td>
+                            <td>${t.payment_type === 'ACTIVATION_FEE' ? 'Admission Fee' : `📚 ${esc(t.course_title || 'Course')}`}</td>
+                            <td>${fmtMoney(t.amount)}</td>
+                            <td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td>
+                            <td>${fmtDate(t.created_at)}</td>
+                        </tr>`).join('')}</tbody>
+                </table></div>`}
+        `;
+    } catch (err) {
+        c.innerHTML = '<div class="empty-state">Failed to load wallet: ' + esc(err.message) + '</div>';
+    }
 }
+
 async function renderStudentCourses() {
     const c = document.getElementById('studentCoursesList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1194,6 +1196,7 @@ async function enrollInCourse(courseId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 async function openCourseViewer(courseId) { currentCourseView = { courseId }; currentLessonView = null; await navigateTo('student-course-viewer'); }
+
 async function renderStudentCourseViewer() {
     if (!currentCourseView) return;
     const c = document.getElementById('studentCourseViewerContent');
@@ -1217,6 +1220,7 @@ async function renderStudentCourseViewer() {
         c.innerHTML = html;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load course.</div>'; }
 }
+
 async function openLesson(lessonId) { currentLessonView = { lessonId }; await renderStudentCourseViewer(); }
 async function renderLessonView(lessonId) {
     const c = document.getElementById('studentCourseViewerContent');
@@ -1255,10 +1259,20 @@ async function openPayCourseModal(courseId) {
         const e = enrollments.find(x => x.course_id === courseId);
         if (!e) return;
         payCourseTarget = e;
-        const paid = parseFloat(e.paid || 0);
-        const price = parseFloat(e.price || 0);
-        const rem = Math.max(0, price - paid);
-        document.getElementById('payCourseInfo').innerHTML = `<div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">${esc(e.title)}</div><div>Fee: <strong>${fmtMoney(price)}</strong></div><div>Paid: <strong style="color:var(--success)">${fmtMoney(paid)}</strong></div><div>Remaining: <strong style="color:var(--danger)">${fmtMoney(rem)}</strong></div>`;
+        const paid = parseFloat(e.total_course_paid || 0);
+        const price = parseFloat(e.course_price || e.price || 0);
+        const rem = parseFloat(e.remaining_balance || Math.max(price - paid, 0));
+        const initial = parseFloat(e.initial_payment || (price * 0.25));
+        document.getElementById('payCourseInfo').innerHTML = `
+            <div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">${esc(e.title)}</div>
+            <div>Course Price: <strong>${fmtMoney(price)}</strong></div>
+            <div>Initial Payment (25%): <strong>${fmtMoney(initial)}</strong></div>
+            <div>Already Paid: <strong style="color:var(--success)">${fmtMoney(paid)}</strong></div>
+            <div>Remaining Balance: <strong style="color:var(--danger)">${fmtMoney(rem)}</strong></div>
+            <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem">
+                Course unlock: ${((paid / price) * 100).toFixed(0)}% →
+                after this payment: ${((Math.min(paid + rem, price) / price) * 100).toFixed(0)}%
+            </div>`;
         const amt = document.getElementById('payAmount');
         amt.value = rem.toFixed(2);
         amt.max = rem;
@@ -1272,13 +1286,15 @@ async function processCoursePayment(e) {
     const amount = parseFloat(document.getElementById('payAmount').value);
     const method = document.getElementById('payMethod').value;
     try {
-        await api('/payments/course', { method: 'POST', body: { course_id: payCourseTarget.course_id, amount, payment_method: method } });
+        const r = await api('/payments/course', { method: 'POST', body: { course_id: payCourseTarget.course_id, amount, payment_method: method } });
         closePayCourseModal();
-        alert('✅ Payment successful!');
+        const b = r.balances || {};
+        alert(`✅ Payment successful!\n\nPaid: ${fmtMoney(amount)}\nTotal Paid: ${fmtMoney(b.total_course_paid || 0)}\nRemaining: ${fmtMoney(b.remaining_balance || 0)}\nUnlocked: ${(b.payment_percentage || 0).toFixed(0)}%`);
         await updateStudentDashboard();
         await renderStudentWallet();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
+
 async function renderStudentResults() {
     const c = document.getElementById('studentResultsTable');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1319,7 +1335,7 @@ async function updateAdminDashboard() {
         const { activities } = await api('/admin/activities');
         const { applications } = await api('/applications');
         const { transactions } = await api('/payments');
-        document.getElementById('adminStats').innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total Apps</div></div><div class="summary-card gold"><div class="num">${(stats.counts.applications.payment_due || 0) + (stats.counts.applications.paid || 0)}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${stats.counts.applications.approved || 0}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${stats.counts.applications.rejected || 0}</div><div class="lbl">Rejected</div></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${stats.counts.courses}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${stats.counts.students}</div><div class="stat-label">Students</div></div><div class="stat-card purple"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total Collected</div></div></div>`;
+        document.getElementById('adminStats').innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total Apps</div></div><div class="summary-card gold"><div class="num">${(stats.counts.applications.payment_due || 0) + (stats.counts.applications.paid || 0)}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${stats.counts.applications.approved || 0}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${stats.counts.applications.rejected || 0}</div><div class="lbl">Rejected</div></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${stats.counts.courses}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${stats.counts.students}</div><div class="stat-label">Students</div></div><div class="stat-card purple"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.activation)}</div><div class="stat-label">Admission Fees</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total Collected</div></div></div>`;
         const recentApps = applications.slice(0, 5);
         document.getElementById('recentApplications').innerHTML = recentApps.length === 0 ? '<p style="color:var(--text-secondary)">No applications.</p>' : recentApps.map(a => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(a.full_name)}</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div>`).join('');
         const recentTxs = transactions.slice(0, 5);
@@ -1345,19 +1361,18 @@ async function renderAdminApplications() {
         const unpaid = applications.filter(a => a.payment_status === 'unpaid').length;
         let tableHTML = '';
         if (!applications.length) {
-            tableHTML = `<div class="empty-state" style="margin-top:1rem"><i class="fas fa-inbox" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>No applications yet.<br><span style="font-size:0.85rem">Applications will appear here when students register.</span></div>`;
+            tableHTML = `<div class="empty-state" style="margin-top:1rem"><i class="fas fa-inbox" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>No applications yet.</div>`;
         } else {
             tableHTML = `<div class="table-wrapper"><table><thead><tr><th>App ID</th><th>Name</th><th>Email</th><th>Course</th><th>Docs</th><th>Date</th><th>Status</th><th>Payment</th><th>Actions</th></tr></thead><tbody>${applications.map(a => {
                 const paidOk = a.payment_status === 'paid';
                 const canApprove = paidOk && a.status !== 'approved' && a.status !== 'rejected';
                 const canReject = a.status !== 'rejected' && a.status !== 'approved';
-                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')" title="View"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${a.id}', '${esc(a.full_name)}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
+                return `<tr><td><strong>${esc(a.application_id)}</strong></td><td><strong>${esc(a.full_name)}</strong></td><td>${esc(a.email)}</td><td>${esc(a.course_interest || '—')}</td><td><span class="badge badge-active">${a.document_count || 0} 📄</span></td><td>${fmtDate(a.created_at)}</td><td><span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></td><td><span class="badge badge-${paidOk ? 'paid' : 'unpaid'}">${paidOk ? 'PAID' : 'UNPAID'}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="viewApplicationDetails('${a.id}')"><i class="fas fa-eye"></i></button>${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${a.id}', '${esc(a.full_name)}', 'application')"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${a.id}', 'application')"><i class="fas fa-times"></i></button>` : ''}</div></td></tr>`;
             }).join('')}</tbody></table></div>`;
         }
-        c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" id="appSearch" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select><select onchange="appFilterState.sort=this.value;renderAdminApplications()"><option value="newest" ${appFilterState.sort === 'newest' ? 'selected' : ''}>Newest</option><option value="oldest" ${appFilterState.sort === 'oldest' ? 'selected' : ''}>Oldest</option><option value="name" ${appFilterState.sort === 'name' ? 'selected' : ''}>A→Z</option></select><button class="btn btn-outline btn-sm" onclick="appFilterState={search:'',status:'all',payment:'all',sort:'newest'};renderAdminApplications()"><i class="fas fa-times"></i></button></div>${tableHTML}`;
-    } catch (err) { console.error('Applications error:', err); c.innerHTML = `<div class="empty-state" style="border-color:var(--danger)"><i class="fas fa-exclamation-triangle" style="font-size:2rem;color:var(--danger);display:block;margin-bottom:0.5rem"></i>Failed to load: ${esc(err.data?.error || err.message)}<div style="margin-top:1rem"><button class="btn btn-outline btn-sm" onclick="renderAdminApplications()"><i class="fas fa-sync"></i> Retry</button></div></div>`; }
+        c.innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${approved}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${rejected}</div><div class="lbl">Rejected</div></div><div class="summary-card green"><div class="num">${paid}</div><div class="lbl">Paid</div></div><div class="summary-card grey"><div class="num">${unpaid}</div><div class="lbl">Unpaid</div></div></div><div class="app-filters"><input type="text" placeholder="🔍 Search..." value="${esc(appFilterState.search)}" oninput="appFilterState.search=this.value;debouncedApps()"><select onchange="appFilterState.status=this.value;renderAdminApplications()"><option value="all" ${appFilterState.status === 'all' ? 'selected' : ''}>All Status</option><option value="payment_due" ${appFilterState.status === 'payment_due' ? 'selected' : ''}>Payment Due</option><option value="paid" ${appFilterState.status === 'paid' ? 'selected' : ''}>Paid</option><option value="approved" ${appFilterState.status === 'approved' ? 'selected' : ''}>Approved</option><option value="rejected" ${appFilterState.status === 'rejected' ? 'selected' : ''}>Rejected</option></select><select onchange="appFilterState.payment=this.value;renderAdminApplications()"><option value="all" ${appFilterState.payment === 'all' ? 'selected' : ''}>All Payments</option><option value="paid" ${appFilterState.payment === 'paid' ? 'selected' : ''}>Paid</option><option value="unpaid" ${appFilterState.payment === 'unpaid' ? 'selected' : ''}>Unpaid</option></select></div>${tableHTML}`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
 }
-
 let debounceTimer;
 function debouncedApps() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderAdminApplications, 300); }
 
@@ -1365,47 +1380,62 @@ async function viewApplicationDetails(appId) {
     try {
         const data = await api(`/applications/${appId}`);
         const a = data.application, docs = data.documents, history = data.history;
-        const docsHTML = docs.length === 0 ? '<p style="color:var(--text-secondary)">No documents.</p>' : docs.map(d => `<div class="doc-card ${d.status === 'verified' ? 'verified' : d.status === 'rejected' ? 'rejected' : ''}"><div class="doc-info"><div class="doc-name">${esc(d.document_type.replace('_', ' ').toUpperCase())}</div><div class="doc-meta">${esc(d.file_name)} • Status: <strong>${d.status.toUpperCase()}</strong></div></div><div class="doc-actions"><a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a></div></div>`).join('');
-        document.getElementById('appDetailsContent').innerHTML = `<div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>App ID:</strong> ${esc(a.application_id)}</div><div><strong>Name:</strong> ${esc(a.full_name)}</div><div><strong>Email:</strong> ${esc(a.email)}</div><div><strong>Course Interest:</strong> ${esc(a.course_interest || '—')}</div><div><strong>Status:</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div><div><strong>Payment:</strong> ${a.payment_status.toUpperCase()}</div></div><h3>Documents</h3>${docsHTML}<h3 style="margin-top:1.5rem">History</h3>${history.map(h => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(h.action)}</strong> — ${esc(h.note || '')} <span style="color:var(--text-secondary)">${fmtDateTime(h.created_at)}</span></div>`).join('')}`;
+        const docsHTML = docs.length === 0 ? '<p style="color:var(--text-secondary)">No documents.</p>' : docs.map(d => `<div class="doc-card"><div class="doc-info"><div class="doc-name">${esc(d.document_type.replace('_', ' ').toUpperCase())}</div><div class="doc-meta">${esc(d.file_name)}</div></div><a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i></a></div>`).join('');
+        document.getElementById('appDetailsContent').innerHTML = `<div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>App ID:</strong> ${esc(a.application_id)}</div><div><strong>Name:</strong> ${esc(a.full_name)}</div><div><strong>Email:</strong> ${esc(a.email)}</div><div><strong>Course:</strong> ${esc(a.course_interest || '—')}</div><div><strong>Status:</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div><div><strong>Payment:</strong> ${a.payment_status.toUpperCase()}</div></div><h3>Documents</h3>${docsHTML}`;
         document.getElementById('appDetailsModal').classList.add('active');
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    } catch (err) { alert('❌ ' + err.message); }
 }
 function closeAppDetailsModal() { document.getElementById('appDetailsModal').classList.remove('active'); }
 
-function openApproveModal(appId, studentName) {
+function openApproveModal(appId, studentName, mode) {
     approveTargetId = appId;
     document.getElementById('approveConfirmText').textContent = `Approve application for ${studentName}? An admission number will be auto-generated.`;
-    document.getElementById('approveNoteText').value = '';
+    document.getElementById('approveConfirmModal').dataset.mode = mode || 'application';
     document.getElementById('approveConfirmModal').classList.add('active');
 }
 function closeApproveModal() { document.getElementById('approveConfirmModal').classList.remove('active'); approveTargetId = null; }
 async function confirmApprove() {
-    if (!approveTargetId) return;
+    const mode = document.getElementById('approveConfirmModal').dataset.mode || 'application';
     try {
-        const r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
-        closeApproveModal();
-        alert('✅ Approved! Admission Number: ' + r.admission_number);
-        await renderAdminApplications();
+        if (mode === 'student') {
+            const r = await api(`/admin/students/${approveTargetId}/approve`, { method: 'POST' });
+            alert('✅ Approved! Admission: ' + r.admission_number);
+            closeApproveModal();
+            await renderAdminStudents();
+        } else {
+            const r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
+            alert('✅ Approved! Admission: ' + r.admission_number);
+            closeApproveModal();
+            await renderAdminApplications();
+        }
         await updateAdminDashboard();
         await updateCounts();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-function openRejectModal(appId) {
+function openRejectModal(appId, mode) {
     rejectTargetId = appId;
+    document.getElementById('rejectReasonModal').dataset.mode = mode || 'application';
     document.getElementById('rejectReasonText').value = '';
     document.getElementById('rejectReasonModal').classList.add('active');
 }
 function closeRejectModal() { document.getElementById('rejectReasonModal').classList.remove('active'); rejectTargetId = null; }
 async function confirmReject() {
     const reason = document.getElementById('rejectReasonText').value.trim();
-    if (!reason) { alert('⚠️ Rejection reason is required'); return; }
+    if (!reason) { alert('⚠️ Reason required'); return; }
+    const mode = document.getElementById('rejectReasonModal').dataset.mode || 'application';
     try {
-        await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
-        closeRejectModal();
-        alert('❌ Rejected. Reason saved.');
-        await renderAdminApplications();
-        await updateAdminDashboard();
+        if (mode === 'student') {
+            await api(`/admin/students/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
+            closeRejectModal();
+            alert('❌ Rejected');
+            await renderAdminStudents();
+        } else {
+            await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
+            closeRejectModal();
+            alert('❌ Rejected');
+            await renderAdminApplications();
+        }
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
@@ -1415,47 +1445,16 @@ async function renderAdminStudents() {
     try {
         const { students } = await api('/admin/students');
         if (!students.length) { c.innerHTML = '<div class="empty-state">No students yet.</div>'; return; }
-        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; const canApprove = ap !== 'approved'; const canReject = ap !== 'rejected'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${canApprove ? `<button class="action-btn approve" onclick="quickApproveStudent('${s.id}', '${esc(s.full_name)}')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="quickRejectStudent('${s.id}')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn documents" onclick="viewStudentDocuments('${s.id}')" title="Documents"><i class="fas fa-file-alt"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn progress" onclick="viewStudentProgress('${s.id}')" title="Progress"><i class="fas fa-chart-line"></i></button><button class="action-btn certificate" onclick="issueStudentCertificate('${s.id}')" title="Certificate"><i class="fas fa-certificate"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally to see all actions.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const apIcon = ap === 'approved' ? '✅' : ap === 'rejected' ? '❌' : '⏳'; const canApprove = ap !== 'approved'; const canReject = ap !== 'rejected'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${apIcon} ${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${s.id}', '${esc(s.full_name)}', 'student')"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${s.id}', 'student')"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')"><i class="fas fa-eye"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')"><i class="fas fa-credit-card"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load students.</div>'; }
 }
-async function quickApproveStudent(studentId, name) {
-    openApproveModal(studentId, name);
-    approveTargetId = studentId;
-    // The approveConfirm modal calls /applications/:id/approve — for students we need a different route
-    // We'll override confirmApprove temporarily by using a flag
-    document.getElementById('approveConfirmModal').dataset.mode = 'student';
-}
-async function quickRejectStudent(studentId) {
-    rejectTargetId = studentId;
-    document.getElementById('rejectReasonText').value = '';
-    document.getElementById('rejectReasonModal').dataset.mode = 'student';
-    document.getElementById('rejectReasonModal').classList.add('active');
-}
+
 async function viewStudentProfile(studentId) {
     try {
         const { students } = await api('/admin/students');
         const s = students.find(x => x.id === studentId);
-        if (!s) { alert('Student not found'); return; }
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Profile — ${esc(s.full_name)}</h2><div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>Name:</strong> ${esc(s.full_name)}</div><div><strong>Email:</strong> ${esc(s.email)}</div><div><strong>Phone:</strong> ${esc(s.phone || '—')}</div><div><strong>Country:</strong> ${esc(s.country || '—')}</div><div><strong>Admission #:</strong> ${esc(s.admission_number || 'N/A')}</div><div><strong>Approval:</strong> ${esc((s.approval_status || 'pending').toUpperCase())}</div><div><strong>Service Fee:</strong> ${s.activation_fee_paid ? '✅ Paid' : '❌ Unpaid'}</div><div><strong>Courses:</strong> ${s.enrollment_count}</div><div><strong>Total Paid:</strong> ${fmtMoney(s.total_paid)}</div><div><strong>Registered:</strong> ${fmtDate(s.created_at)}</div></div>`;
-        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
-        document.getElementById('appDetailsModal').classList.add('active');
-    } catch (err) { alert('❌ ' + err.message); }
-}
-async function viewStudentDocuments(studentId) {
-    try {
-        const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
         if (!s) return;
-        const { applications } = await api('/applications');
-        const app = applications.find(a => a.user_id === studentId);
-        let docsHTML = '<div class="empty-state">No application found</div>';
-        if (app) {
-            const data = await api(`/applications/${app.id}`);
-            const documents = data.documents || [];
-            docsHTML = documents.length === 0 ? '<div class="empty-state">No documents uploaded</div>' : documents.map(d => `<div class="doc-card"><div class="doc-info"><div class="doc-name">${esc(d.document_type.replace('_', ' ').toUpperCase())}</div><div class="doc-meta">${esc(d.file_name)} • Status: ${d.status}</div></div><a href="https://nexora-api-sskg.onrender.com/uploads/${esc(d.storage_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-eye"></i> View</a></div>`).join('');
-        }
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Documents — ${esc(s.full_name)}</h2>${docsHTML}`;
-        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Profile — ${esc(s.full_name)}</h2><div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1rem"><div><strong>Name:</strong> ${esc(s.full_name)}</div><div><strong>Email:</strong> ${esc(s.email)}</div><div><strong>Phone:</strong> ${esc(s.phone || '—')}</div><div><strong>Country:</strong> ${esc(s.country || '—')}</div><div><strong>Admission #:</strong> ${esc(s.admission_number || 'N/A')}</div><div><strong>Approval:</strong> ${esc((s.approval_status || 'pending').toUpperCase())}</div><div><strong>Courses:</strong> ${s.enrollment_count}</div><div><strong>Total Paid:</strong> ${fmtMoney(s.total_paid)}</div></div>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + err.message); }
 }
@@ -1467,38 +1466,8 @@ async function viewStudentPayments(studentId) {
         const { transactions } = await api('/payments');
         const txs = transactions.filter(t => t.student_id === studentId);
         document.getElementById('appDetailsContent').innerHTML = `<h2>Payments — ${esc(s.full_name)}</h2>${!txs.length ? '<div class="empty-state">No transactions</div>' : `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${txs.map(t => `<tr><td>${esc(t.transaction_id)}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : esc(t.course_title || 'Course')}</td><td>${fmtMoney(t.amount)}</td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`}`;
-        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + err.message); }
-}
-async function viewStudentProgress(studentId) {
-    try {
-        const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
-        if (!s) return;
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Progress — ${esc(s.full_name)}</h2><div class="overall-progress"><div class="big-pct">${s.enrollment_count}</div><div class="big-lbl">Enrolled Courses</div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${s.enrollment_count}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(s.total_paid)}</div><div class="stat-label">Paid</div></div></div>`;
-        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
-        document.getElementById('appDetailsModal').classList.add('active');
-    } catch (err) { alert('❌ ' + err.message); }
-}
-async function issueStudentCertificate(studentId) {
-    try {
-        const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
-        if (!s) return;
-        const { courses } = await api('/courses?include_drafts=true');
-        if (!courses.length) { alert('No courses available'); return; }
-        const courseList = courses.map((c, i) => `${i + 1}. ${c.title}`).join('\n');
-        const pick = prompt(`Issue certificate for ${s.full_name}\n\nWhich course?\n\n${courseList}\n\nEnter number:`);
-        if (!pick) return;
-        const idx = parseInt(pick, 10) - 1;
-        if (isNaN(idx) || idx < 0 || idx >= courses.length) { alert('Invalid selection'); return; }
-        const course = courses[idx];
-        const grade = prompt('Grade (e.g., Competent, Distinction):', 'Competent') || 'Competent';
-        const r = await api('/certificates/issue', { method: 'POST', body: { user_id: studentId, course_id: course.id, grade } });
-        alert('✅ Certificate issued: ' + r.certificate.certificate_id);
-        await renderAdminStudents();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 async function viewStudentSponsorship(studentId) {
     try {
@@ -1507,22 +1476,21 @@ async function viewStudentSponsorship(studentId) {
         if (!s) return;
         const sp = s.sponsorship || { type: 'none', amount: 0, percentage: 0 };
         const cardClass = sp.type === 'full' ? 'full' : sp.type === 'partial' ? 'partial' : '';
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div>${sp.type !== 'none' ? `<div style="margin-top:0.5rem;font-size:0.95rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}${sp.percentage ? `<div style="margin-top:0.3rem;font-size:0.9rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}${sp.sponsor_name ? `<div style="margin-top:0.3rem;font-size:0.9rem">Sponsor: <strong>${esc(sp.sponsor_name)}</strong></div>` : ''}</div><div class="form-group"><label>Sponsorship Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount Sponsored ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage Percentage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div><div class="form-group"><label>Sponsor Name (optional)</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}" placeholder="e.g., XYZ Foundation"></div>`;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div></div><div class="form-group"><label>Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount ($)</label><input type="number" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage (%)</label><input type="number" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div>`;
         document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button><button class="btn btn-success" onclick="saveStudentSponsorship('${studentId}')">Save</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    } catch (err) { alert('❌ ' + err.message); }
 }
 async function saveStudentSponsorship(studentId) {
     try {
         const type = document.getElementById('spType_' + studentId).value;
         const amount = parseFloat(document.getElementById('spAmount_' + studentId).value) || 0;
         const percentage = parseInt(document.getElementById('spPercentage_' + studentId).value, 10) || 0;
-        const sponsor_name = document.getElementById('spSponsor_' + studentId).value.trim() || null;
-        await api(`/admin/students/${studentId}/sponsorship`, { method: 'POST', body: { type, amount, percentage, sponsor_name } });
+        await api(`/admin/students/${studentId}/sponsorship`, { method: 'POST', body: { type, amount, percentage } });
         alert('✅ Sponsorship updated');
         closeAppDetailsModal();
         await renderAdminStudents();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    } catch (err) { alert('❌ ' + err.message); }
 }
 
 async function renderAdminCourses() {
@@ -1535,19 +1503,27 @@ async function renderAdminCourses() {
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load courses.</div>'; }
 }
 async function toggleCourseStatus(courseId, currentStatus) {
-    const newStatus = currentStatus === 'published' ? 'draft' : 'published';
-    try { await api(`/courses/${courseId}`, { method: 'PUT', body: { status: newStatus } }); await renderAdminCourses(); }
+    try { await api(`/courses/${courseId}`, { method: 'PUT', body: { status: currentStatus === 'published' ? 'draft' : 'published' } }); await renderAdminCourses(); }
     catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 async function deleteCourse(courseId) {
-    if (!confirm('Delete this course? This cannot be undone.')) return;
+    if (!confirm('Delete this course? Cannot be undone.')) return;
     try { await api(`/courses/${courseId}`, { method: 'DELETE' }); await renderAdminCourses(); await updateCounts(); }
     catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 async function editCourse(courseId) {
     try {
         const { course, modules, lessons } = await api(`/courses/${courseId}`);
-        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, instructor_name: course.instructor_name, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' }, _existingSaved: true };
+        currentCourseData = {
+            id: course.id, title: course.title, code: course.code, category: course.category, level: course.level,
+            description: course.description, instructor_name: course.instructor_name, duration: course.duration,
+            price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status,
+            cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark,
+            cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours,
+            modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })),
+            discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' },
+            _existingSaved: true,
+        };
         examQuestions = []; catQuestions = [];
         document.getElementById('courseTitle').value = course.title || '';
         document.getElementById('courseCode').value = course.code || '';
@@ -1557,7 +1533,6 @@ async function editCourse(courseId) {
         document.getElementById('courseInstructor').value = course.instructor_name || '';
         document.getElementById('courseDuration').value = course.duration || '';
         document.getElementById('coursePrice').value = course.price || 0;
-        document.getElementById('initialPaymentPercent').value = course.initial_payment_percent || 25;
         document.getElementById('examUnlockHours').value = course.exam_unlock_hours || 72;
         document.getElementById('catUnlockHours').value = course.cat_unlock_hours || 24;
         document.getElementById('examPassMark').value = course.exam_pass_mark || 50;
@@ -1638,11 +1613,8 @@ function handleImageUpload(e) {
 function toggleDiscountFields() {
     const en = document.getElementById('discountEnabled').checked;
     const f = document.getElementById('discountFields');
-    if (en) {
-        f.classList.remove('hidden');
-        if (!document.getElementById('discountEndDate').value) { const d = new Date(); d.setDate(d.getDate() + 7); document.getElementById('discountEndDate').value = d.toISOString().split('T')[0]; }
-        updateDiscountPreview();
-    } else { f.classList.add('hidden'); document.getElementById('discountPreview').style.display = 'none'; }
+    if (en) { f.classList.remove('hidden'); if (!document.getElementById('discountEndDate').value) { const d = new Date(); d.setDate(d.getDate() + 7); document.getElementById('discountEndDate').value = d.toISOString().split('T')[0]; } updateDiscountPreview(); }
+    else { f.classList.add('hidden'); document.getElementById('discountPreview').style.display = 'none'; }
 }
 function updateDiscountPreview() {
     const en = document.getElementById('discountEnabled').checked;
@@ -1662,7 +1634,7 @@ function updateDiscountPreview() {
 function savePaymentInfo() {
     const orig = parseFloat(document.getElementById('coursePrice').value) || 0;
     currentCourseData.price = orig;
-    currentCourseData.initial_payment_percent = parseInt(document.getElementById('initialPaymentPercent').value) || 25;
+    currentCourseData.initial_payment_percent = 25;
     const en = document.getElementById('discountEnabled').checked;
     if (en) {
         const disc = parseFloat(document.getElementById('discountPrice').value) || 0;
@@ -1676,21 +1648,13 @@ function savePaymentInfo() {
     } else { currentCourseData.discount = { enabled: false, originalPrice: orig, discountPrice: 0, endsAt: null, label: '' }; }
     goToStep(2);
 }
-function addModule() {
-    const n = prompt('Module name:');
-    if (!n) return;
-    currentCourseData.modules.push({ title: n, position: currentCourseData.modules.length + 1, lessons: [] });
-    renderModules();
-}
+function addModule() { const n = prompt('Module name:'); if (!n) return; currentCourseData.modules.push({ title: n, position: currentCourseData.modules.length + 1, lessons: [] }); renderModules(); }
 function deleteModule(mi) { if (!confirm('Delete this module and all its lessons?')) return; currentCourseData.modules.splice(mi, 1); renderModules(); }
 function renderModules() {
     const c = document.getElementById('modulesContainer');
     if (!currentCourseData.modules || !currentCourseData.modules.length) { c.innerHTML = '<div class="empty-state">No modules yet. Click "Add Module" to begin.</div>'; return; }
     c.innerHTML = currentCourseData.modules.map((m, mi) => `<div style="background:var(--white);border:1px solid #e2e8f0;border-radius:12px;margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem"><strong>Module ${mi + 1}: ${esc(m.title)}</strong><div><button class="btn btn-primary btn-sm" onclick="addLesson(${mi})"><i class="fas fa-plus"></i> Lesson</button> <button class="btn btn-danger btn-sm" onclick="deleteModule(${mi})"><i class="fas fa-trash"></i></button></div></div><div style="padding:1rem">${(!m.lessons || !m.lessons.length) ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons yet.</p>' : m.lessons.map((l, li) => `<div style="padding:0.75rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem;display:flex;justify-content:space-between;align-items:center;gap:0.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px"><strong>${esc(l.title)}</strong><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:2px">${l.video_url ? '🎬 Video ' : ''}${(l.pdfs && l.pdfs.length) ? l.pdfs.length + ' PDF ' : ''}${(l.images && l.images.length) ? l.images.length + ' img ' : ''}${l.published === 'draft' ? '• 📝 Draft' : ''}</div></div><div><button class="btn btn-primary btn-sm" onclick="editLesson(${mi},${li})"><i class="fas fa-edit"></i></button> <button class="btn btn-danger btn-sm" onclick="deleteLesson(${mi},${li})"><i class="fas fa-trash"></i></button></div></div>`).join('')}</div></div>`).join('');
 }
-function deleteLesson(mi, li) { if (!confirm('Delete this lesson?')) return; currentCourseData.modules[mi].lessons.splice(li, 1); renderModules(); }
-
-// === Lesson Editor ===
 function addLesson(mi) {
     lessonDraft = { videoFile: null, pdfs: [], images: [] };
     document.getElementById('lessonEditorTitle').textContent = 'Add Lesson';
@@ -1720,21 +1684,16 @@ function editLesson(mi, li) {
     document.getElementById('lesNotes').value = les.notes || '';
     document.getElementById('lesAssignment').value = les.assignment || '';
     document.getElementById('lesPublished').value = les.published === 'draft' ? 'draft' : 'published';
-    if (les.video_url) {
-        document.getElementById('lesVideoEl').src = les.video_url;
-        document.getElementById('lesVideoPreview').style.display = 'block';
-    } else {
-        document.getElementById('lesVideoPreview').style.display = 'none';
-    }
-    renderLesPdfs();
-    renderLesImgs();
+    if (les.video_url) { document.getElementById('lesVideoEl').src = les.video_url; document.getElementById('lesVideoPreview').style.display = 'block'; }
+    else { document.getElementById('lesVideoPreview').style.display = 'none'; }
+    renderLesPdfs(); renderLesImgs();
     document.getElementById('lessonEditorModal').classList.add('active');
 }
 function closeLessonEditor() { document.getElementById('lessonEditorModal').classList.remove('active'); }
 async function handleLesVideo(e) {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 100 * 1024 * 1024) { alert('⚠️ Max 100 MB'); e.target.value = ''; return; }
+    if (file.size > 500 * 1024 * 1024) { alert('⚠️ Max 500 MB'); e.target.value = ''; return; }
     document.getElementById('lesVideoEl').src = URL.createObjectURL(file);
     document.getElementById('lesVideoPreview').style.display = 'block';
     try {
@@ -1749,90 +1708,40 @@ async function handleLesVideo(e) {
         lessonDraft.videoFile = null;
     } finally { setLoading(false); }
 }
-function removeLesVideo() {
-    lessonDraft.videoFile = null;
-    document.getElementById('lesVideoEl').src = '';
-    document.getElementById('lesVideoPreview').style.display = 'none';
-    document.getElementById('lesVideoInput').value = '';
-}
-function handleLesPdfs(e) {
-    const files = Array.from(e.target.files || []);
-    files.forEach(f => lessonDraft.pdfs.push({ name: f.name, _file: f }));
-    e.target.value = '';
-    renderLesPdfs();
-}
-function renderLesPdfs() {
-    const c = document.getElementById('lesPdfList');
-    c.innerHTML = lessonDraft.pdfs.map((p, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">📄 ${esc(p.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesPdf(${i})">✕</span></span>`).join('');
-}
+function removeLesVideo() { lessonDraft.videoFile = null; document.getElementById('lesVideoEl').src = ''; document.getElementById('lesVideoPreview').style.display = 'none'; document.getElementById('lesVideoInput').value = ''; }
+function handleLesPdfs(e) { const files = Array.from(e.target.files || []); files.forEach(f => lessonDraft.pdfs.push({ name: f.name, _file: f })); e.target.value = ''; renderLesPdfs(); }
+function renderLesPdfs() { document.getElementById('lesPdfList').innerHTML = lessonDraft.pdfs.map((p, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">📄 ${esc(p.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesPdf(${i})">✕</span></span>`).join(''); }
 function removeLesPdf(i) { lessonDraft.pdfs.splice(i, 1); renderLesPdfs(); }
-function handleLesImages(e) {
-    const files = Array.from(e.target.files || []);
-    files.forEach(f => lessonDraft.images.push({ name: f.name, _file: f }));
-    e.target.value = '';
-    renderLesImgs();
-}
-function renderLesImgs() {
-    const c = document.getElementById('lesImgList');
-    c.innerHTML = lessonDraft.images.map((im, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">🖼️ ${esc(im.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesImg(${i})">✕</span></span>`).join('');
-}
+function handleLesImages(e) { const files = Array.from(e.target.files || []); files.forEach(f => lessonDraft.images.push({ name: f.name, _file: f })); e.target.value = ''; renderLesImgs(); }
+function renderLesImgs() { document.getElementById('lesImgList').innerHTML = lessonDraft.images.map((im, i) => `<span style="background:#eff6ff;color:var(--blue-dark);padding:4px 10px;border-radius:50px;font-size:0.8rem;margin:0.2rem 0.3rem 0 0;display:inline-block">🖼️ ${esc(im.name)} <span style="cursor:pointer;color:var(--danger);font-weight:700" onclick="removeLesImg(${i})">✕</span></span>`).join(''); }
 function removeLesImg(i) { lessonDraft.images.splice(i, 1); renderLesImgs(); }
 async function saveLesson() {
     const mi = parseInt(document.getElementById('lessonEditModuleIdx').value);
     const li = document.getElementById('lessonEditLessonIdx').value;
     const title = document.getElementById('lesTitle').value.trim();
     if (!title) { alert('⚠️ Lesson title required'); return; }
-
-    const uploadedPdfs = [];
-    const uploadedImgs = [];
+    const uploadedPdfs = [], uploadedImgs = [];
     try {
         setLoading(true);
         for (const p of lessonDraft.pdfs) {
-            if (p._file) {
-                const fd = new FormData();
-                fd.append('file', p._file);
-                const r = await apiForm('/uploads/lesson-attachment?attachment_type=pdf&scope=lessons', fd);
-                uploadedPdfs.push({ name: p.name, path: r.path });
-            } else { uploadedPdfs.push(p); }
+            if (p._file) { const fd = new FormData(); fd.append('file', p._file); const r = await apiForm('/uploads/lesson-attachment?attachment_type=pdf&scope=lessons', fd); uploadedPdfs.push({ name: p.name, path: r.path }); }
+            else uploadedPdfs.push(p);
         }
         for (const im of lessonDraft.images) {
-            if (im._file) {
-                const fd = new FormData();
-                fd.append('file', im._file);
-                const r = await apiForm('/uploads/lesson-attachment?attachment_type=image&scope=lessons', fd);
-                uploadedImgs.push({ name: im.name, path: r.path });
-            } else { uploadedImgs.push(im); }
+            if (im._file) { const fd = new FormData(); fd.append('file', im._file); const r = await apiForm('/uploads/lesson-attachment?attachment_type=image&scope=lessons', fd); uploadedImgs.push({ name: im.name, path: r.path }); }
+            else uploadedImgs.push(im);
         }
-    } catch (err) {
-        setLoading(false);
-        alert('❌ Attachment upload failed: ' + (err.data?.error || err.message));
-        return;
-    }
+    } catch (err) { setLoading(false); alert('❌ Attachment upload failed: ' + (err.data?.error || err.message)); return; }
     setLoading(false);
-
-    const lessonObj = {
-        title,
-        description: document.getElementById('lesDescription').value,
-        position: parseInt(document.getElementById('lesOrder').value) || 1,
-        notes: document.getElementById('lesNotes').value,
-        assignment: document.getElementById('lesAssignment').value,
-        video_url: lessonDraft.videoFile || null,
-        pdfs: uploadedPdfs,
-        images: uploadedImgs,
-        published: document.getElementById('lesPublished').value,
-    };
-
+    const lessonObj = { title, description: document.getElementById('lesDescription').value, position: parseInt(document.getElementById('lesOrder').value) || 1, notes: document.getElementById('lesNotes').value, assignment: document.getElementById('lesAssignment').value, video_url: lessonDraft.videoFile || null, pdfs: uploadedPdfs, images: uploadedImgs, published: document.getElementById('lesPublished').value };
     const lessons = currentCourseData.modules[mi].lessons = currentCourseData.modules[mi].lessons || [];
-    if (li !== '') {
-        lessons[parseInt(li)] = { ...lessons[parseInt(li)], ...lessonObj };
-    } else {
-        lessons.push(lessonObj);
-    }
+    if (li !== '') lessons[parseInt(li)] = { ...lessons[parseInt(li)], ...lessonObj };
+    else lessons.push(lessonObj);
     lessons.forEach((x, i) => x.position = i + 1);
     closeLessonEditor();
     renderModules();
 }
-
+function deleteLesson(mi, li) { if (!confirm('Delete this lesson?')) return; currentCourseData.modules[mi].lessons.splice(li, 1); renderModules(); }
 function addExamQuestion() { examQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 2 }); renderExamQuestionsBuilder(); }
 function addCATQuestion() { catQuestions.push({ question_text: '', options: ['', '', '', ''], correct_index: 0, marks: 5 }); renderCATQuestionsBuilder(); }
 function renderExamQuestionsBuilder() {
@@ -1874,9 +1783,9 @@ async function saveCourseToServer(status) {
             coverImageUrl = r.path;
             uploadedImageFile = null;
         }
-        const payload = { title: currentCourseData.title, code: currentCourseData.code || null, category: currentCourseData.category || null, level: currentCourseData.level || null, description: currentCourseData.description || null, instructor_name: currentCourseData.instructor_name || null, duration: currentCourseData.duration || null, cover_image_url: coverImageUrl, price: currentCourseData.price || 0, initial_payment_percent: currentCourseData.initial_payment_percent || 25, cat_pass_mark: currentCourseData.cat_pass_mark || 50, exam_pass_mark: currentCourseData.exam_pass_mark || 50, cat_unlock_hours: currentCourseData.cat_unlock_hours || 24, exam_unlock_hours: currentCourseData.exam_unlock_hours || 72, status };
+        const payload = { title: currentCourseData.title, code: currentCourseData.code || null, category: currentCourseData.category || null, level: currentCourseData.level || null, description: currentCourseData.description || null, instructor_name: currentCourseData.instructor_name || null, duration: currentCourseData.duration || null, cover_image_url: coverImageUrl, price: currentCourseData.price || 0, initial_payment_percent: 25, cat_pass_mark: currentCourseData.cat_pass_mark || 50, exam_pass_mark: currentCourseData.exam_pass_mark || 50, cat_unlock_hours: currentCourseData.cat_unlock_hours || 24, exam_unlock_hours: currentCourseData.exam_unlock_hours || 72, status };
         let courseId = currentCourseData.id;
-        if (courseId) { await api(`/courses/${courseId}`, { method: 'PUT', body: payload }); }
+        if (courseId) await api(`/courses/${courseId}`, { method: 'PUT', body: payload });
         else { const r = await api('/courses', { method: 'POST', body: payload }); courseId = r.course.id; currentCourseData.id = courseId; }
         if (!currentCourseData._existingSaved) {
             for (const mod of currentCourseData.modules) {
@@ -1922,13 +1831,13 @@ async function renderAdminCertificates() {
     try {
         const { certificates } = await api('/certificates');
         if (!certificates.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No certificates issued.</p>'; return; }
-        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th><th>Status</th></tr></thead><tbody>${certificates.map(x => `<tr><td><strong>${esc(x.certificate_id)}</strong></td><td>${esc(x.student_name)}</td><td>${esc(x.course_name)}</td><td>${fmtDate(x.issued_date)}</td><td>${x.revoked ? '<span class="badge badge-danger">REVOKED</span>' : '<span class="badge badge-success">ACTIVE</span>'}</td></tr>`).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th></tr></thead><tbody>${certificates.map(x => `<tr><td><strong>${esc(x.certificate_id)}</strong></td><td>${esc(x.student_name)}</td><td>${esc(x.course_name)}</td><td>${fmtDate(x.issued_date)}</td></tr>`).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }
 async function renderRevenue() {
     try {
         const stats = await api('/admin/stats');
-        document.getElementById('revenueStats').innerHTML = `<div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.activation)}</div><div class="stat-label">Activation</div></div><div class="stat-card purple"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total</div></div><div class="stat-card"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div>`;
+        document.getElementById('revenueStats').innerHTML = `<div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.activation)}</div><div class="stat-label">Admission Fees</div></div><div class="stat-card purple"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total</div></div><div class="stat-card"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div>`;
     } catch (err) { document.getElementById('revenueStats').innerHTML = '<div class="empty-state">Failed to load.</div>'; }
 }
 async function renderAdminPayments() {
@@ -1946,9 +1855,9 @@ async function verifyCertificate() {
     if (!token) { r.innerHTML = ''; return; }
     try {
         const data = await api(`/certificates/verify/${encodeURIComponent(token)}`);
-        if (data.valid) { r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p><p>Issued: ${fmtDate(data.certificate.issued_date)}</p></div>`; }
-        else { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3><p>This certificate has been revoked.</p></div>`; }
-    } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3><p>No certificate found with that ID.</p></div>`; }
+        if (data.valid) { r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p></div>`; }
+        else { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3></div>`; }
+    } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3></div>`; }
 }
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); } });
 const _origNavigateTo = navigateTo;
@@ -1964,376 +1873,12 @@ navigateTo = async function(page) {
     }
     return _origNavigateTo(page);
 };
-// Fix confirmReject to handle both applications and students
-const _origConfirmReject = confirmReject;
-confirmReject = async function() {
-    const reason = document.getElementById('rejectReasonText').value.trim();
-    if (!reason) { alert('⚠️ Rejection reason is required'); return; }
-    const mode = document.getElementById('rejectReasonModal').dataset.mode || 'application';
-    try {
-        if (mode === 'student') {
-            await api(`/admin/students/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
-        } else {
-            await api(`/applications/${rejectTargetId}/reject`, { method: 'POST', body: { reason } });
-        }
-        closeRejectModal();
-        document.getElementById('rejectReasonModal').dataset.mode = 'application';
-        alert('❌ Rejected. Reason saved.');
-        if (mode === 'student') await renderAdminStudents();
-        else { await renderAdminApplications(); await updateAdminDashboard(); }
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-};
-const _origConfirmApprove = confirmApprove;
-confirmApprove = async function() {
-    const mode = document.getElementById('approveConfirmModal').dataset.mode || 'application';
-    try {
-        if (mode === 'student') {
-            const r = await api(`/admin/students/${approveTargetId}/approve`, { method: 'POST' });
-            alert('✅ Approved! Admission: ' + r.admission_number);
-            closeApproveModal();
-            document.getElementById('approveConfirmModal').dataset.mode = 'application';
-            await renderAdminStudents();
-            await updateAdminDashboard();
-        } else {
-            const r = await api(`/applications/${approveTargetId}/approve`, { method: 'POST' });
-            alert('✅ Approved! Admission: ' + r.admission_number);
-            closeApproveModal();
-            await renderAdminApplications();
-            await updateAdminDashboard();
-            await updateCounts();
-        }
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-};
-
 (async function boot() {
     await bootSession();
-    if (currentUser) { showApp(); } else { goHome(); }
+    if (currentUser) showApp();
+    else goHome();
 })();
-// ============================================================
-// ASSIGNMENTS — FRONTEND
-// ============================================================
-let currentAssignment = null;
-let currentSubmission = null;
-let submitFileData = null;
-
-async function renderAdminAssignments() {
-    const c = document.getElementById('adminAssignmentsContent');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
-    try {
-        const { assignments } = await api('/assignments');
-        if (!assignments.length) {
-            c.innerHTML = `<div class="empty-state">
-                <i class="fas fa-clipboard-check" style="font-size:2rem;color:var(--gold);display:block;margin-bottom:0.5rem"></i>
-                No assignments yet.<br>
-                <span style="font-size:0.85rem">Create one inside a course's module.</span>
-            </div>`;
-            return;
-        }
-        c.innerHTML = `<div class="table-wrapper"><table>
-            <thead><tr><th>Title</th><th>Course</th><th>Module</th><th>Max Marks</th><th>Submissions</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>${assignments.map(a => `
-                <tr>
-                    <td><strong>${esc(a.title)}</strong></td>
-                    <td>${esc(a.course_title || '—')}</td>
-                    <td>${esc(a.module_title || '—')}</td>
-                    <td>${a.max_marks}</td>
-                    <td><span class="clickable-count" onclick="navigateTo('admin-submissions');setTimeout(()=>filterSubmissionsByAssignment('${a.id}'),300)">${a.submission_count} 📄</span></td>
-                    <td><span class="badge badge-${a.status === 'published' ? 'published' : 'draft'}">${a.status.toUpperCase()}</span></td>
-                    <td>
-                        <div class="student-actions">
-                            <button class="action-btn view" onclick="navigateTo('admin-submissions')" title="View submissions"><i class="fas fa-inbox"></i></button>
-                            <button class="action-btn reject" onclick="deleteAssignment('${a.id}')" title="Delete"><i class="fas fa-trash"></i></button>
-                        </div>
-                    </td>
-                </tr>`).join('')}</tbody>
-        </table></div>`;
-    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
-}
-
-async function deleteAssignment(id) {
-    if (!confirm('Delete this assignment and all its submissions?')) return;
-    try {
-        await api('/assignments/' + id, { method: 'DELETE' });
-        await renderAdminAssignments();
-    } catch (err) { alert('❌ ' + err.message); }
-}
-
-function openAssignmentEditor(opts = {}) {
-    document.getElementById('assignmentEditorTitle').textContent = opts.id ? 'Edit Assignment' : 'Create Assignment';
-    document.getElementById('assignEditId').value = opts.id || '';
-    document.getElementById('assignCourseId').value = opts.course_id || '';
-    document.getElementById('assignModuleId').value = opts.module_id || '';
-    document.getElementById('assignTitle').value = opts.title || '';
-    document.getElementById('assignInstructions').value = opts.instructions || '';
-    document.getElementById('assignMaxMarks').value = opts.max_marks || 20;
-    document.getElementById('assignDueDate').value = opts.due_date ? new Date(opts.due_date).toISOString().split('T')[0] : '';
-    document.getElementById('assignAllowResubmit').value = opts.allow_resubmission !== false ? 'true' : 'false';
-    document.getElementById('assignMaxAttempts').value = opts.max_attempts || 2;
-    document.getElementById('assignAllowText').checked = opts.allow_text !== false;
-    document.getElementById('assignAllowFile').checked = opts.allow_file !== false;
-    document.getElementById('assignStatus').value = opts.status || 'draft';
-    document.getElementById('assignmentEditorModal').classList.add('active');
-}
-function closeAssignmentEditor() { document.getElementById('assignmentEditorModal').classList.remove('active'); }
-
-async function saveAssignment() {
-    const id = document.getElementById('assignEditId').value;
-    const payload = {
-        course_id: document.getElementById('assignCourseId').value,
-        module_id: document.getElementById('assignModuleId').value || null,
-        title: document.getElementById('assignTitle').value.trim(),
-        instructions: document.getElementById('assignInstructions').value,
-        max_marks: parseInt(document.getElementById('assignMaxMarks').value) || 20,
-        due_date: document.getElementById('assignDueDate').value || null,
-        allow_resubmission: document.getElementById('assignAllowResubmit').value === 'true',
-        max_attempts: parseInt(document.getElementById('assignMaxAttempts').value) || 2,
-        allow_text: document.getElementById('assignAllowText').checked,
-        allow_file: document.getElementById('assignAllowFile').checked,
-        status: document.getElementById('assignStatus').value,
-    };
-    if (!payload.title) { alert('⚠️ Title required'); return; }
-    if (!payload.course_id) { alert('⚠️ Course required'); return; }
-    if (!payload.allow_text && !payload.allow_file) { alert('⚠️ Enable at least one submission method'); return; }
-    try {
-        if (id) await api('/assignments/' + id, { method: 'PUT', body: payload });
-        else await api('/assignments', { method: 'POST', body: payload });
-        closeAssignmentEditor();
-        alert('✅ Assignment saved');
-        if (document.getElementById('page-admin-assignments').classList.contains('active')) await renderAdminAssignments();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-}
-
-async function renderAdminSubmissions(filterAssignmentId) {
-    const c = document.getElementById('adminSubmissionsContent');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
-    try {
-        const url = '/assignments/submissions/list' + (filterAssignmentId ? '?assignment_id=' + filterAssignmentId : '');
-        const { submissions } = await api(url);
-        if (!submissions.length) {
-            c.innerHTML = '<div class="empty-state">No submissions yet.</div>';
-            return;
-        }
-        c.innerHTML = `<div class="table-wrapper"><table>
-            <thead><tr><th>Student</th><th>Assignment</th><th>Course</th><th>Attempt</th><th>Date</th><th>Status</th><th>Actions</th></tr></thead>
-            <tbody>${submissions.map(s => `
-                <tr>
-                    <td><strong>${esc(s.student_name)}</strong><br><span style="font-size:0.75rem;color:var(--text-secondary)">${esc(s.admission_number || '')}</span></td>
-                    <td>${esc(s.assignment_title)}</td>
-                    <td>${esc(s.course_title || '—')}</td>
-                    <td>${s.attempt_number}</td>
-                    <td>${fmtDate(s.submitted_at)}</td>
-                    <td><span class="badge badge-${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'active'}">${s.status.toUpperCase()}</span></td>
-                    <td><button class="action-btn view" onclick="openMarkModal('${s.id}')" title="Open"><i class="fas fa-eye"></i></button></td>
-                </tr>`).join('')}</tbody>
-        </table></div>`;
-    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
-}
-
-function filterSubmissionsByAssignment(id) { renderAdminSubmissions(id); }
-
-async function openMarkModal(submissionId) {
-    try {
-        const data = await api('/assignments/submissions/' + submissionId);
-        const s = data.submission;
-        currentSubmission = s;
-
-        const fileBlock = s.file_path
-            ? `<div style="margin-top:0.5rem"><strong>Attachment:</strong><br><a href="${esc(s.file_path)}" target="_blank" style="color:var(--blue)">📎 ${esc(s.file_name || 'View file')}</a></div>`
-            : '';
-        const textBlock = s.text_answer
-            ? `<div style="margin-top:0.5rem"><strong>Written Answer:</strong><div style="background:#fff;padding:0.75rem;border-radius:8px;margin-top:0.3rem;white-space:pre-wrap">${esc(s.text_answer)}</div></div>`
-            : '';
-
-        document.getElementById('markSubmissionInfo').innerHTML = `
-            <div><strong>Student:</strong> ${esc(s.student_name)} (${esc(s.admission_number || 'N/A')})</div>
-            <div><strong>Course:</strong> ${esc(s.course_title)}</div>
-            <div><strong>Module:</strong> ${esc(s.module_title || '—')}</div>
-            <div><strong>Assignment:</strong> ${esc(s.assignment_title)}</div>
-            <div><strong>Max Marks:</strong> ${s.max_marks}</div>
-            <div><strong>Submitted:</strong> ${fmtDateTime(s.submitted_at)}</div>
-            ${textBlock}${fileBlock}`;
-        document.getElementById('markMarks').value = s.marks || '';
-        document.getElementById('markMarks').max = s.max_marks;
-        document.getElementById('markFeedback').value = s.feedback || '';
-        document.getElementById('markRelease').checked = true;
-        updateMarkPercentage();
-        document.getElementById('markMarks').oninput = updateMarkPercentage;
-        document.getElementById('markAssignmentModal').classList.add('active');
-    } catch (err) { alert('❌ ' + err.message); }
-}
-function updateMarkPercentage() {
-    const m = parseFloat(document.getElementById('markMarks').value) || 0;
-    const max = currentSubmission?.max_marks || 20;
-    const pct = max ? (m / max) * 100 : 0;
-    document.getElementById('markPercentage').value = pct.toFixed(1) + '%';
-}
-function closeMarkModal() { document.getElementById('markAssignmentModal').classList.remove('active'); currentSubmission = null; }
-
-async function submitMarks() {
-    if (!currentSubmission) return;
-    const marks = parseFloat(document.getElementById('markMarks').value);
-    const feedback = document.getElementById('markFeedback').value;
-    const release = document.getElementById('markRelease').checked;
-    if (isNaN(marks) || marks < 0 || marks > currentSubmission.max_marks) {
-        alert(`⚠️ Marks must be between 0 and ${currentSubmission.max_marks}`); return;
-    }
-    try {
-        await api('/assignments/submissions/' + currentSubmission.id + '/mark', {
-            method: 'POST',
-            body: { marks, feedback, release },
-        });
-        closeMarkModal();
-        alert('✅ Marks saved');
-        await renderAdminSubmissions();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-}
-
-function returnSubmission() {
-    if (!currentSubmission) return;
-    closeMarkModal();
-    document.getElementById('returnReason').value = '';
-    document.getElementById('returnAssignmentModal').classList.add('active');
-}
-function closeReturnModal() { document.getElementById('returnAssignmentModal').classList.remove('active'); }
-async function confirmReturn() {
-    const reason = document.getElementById('returnReason').value.trim();
-    if (!reason) { alert('⚠️ Reason required'); return; }
-    try {
-        await api('/assignments/submissions/' + currentSubmission.id + '/return', {
-            method: 'POST', body: { reason },
-        });
-        closeReturnModal();
-        currentSubmission = null;
-        alert('✅ Returned to student');
-        await renderAdminSubmissions();
-    } catch (err) { alert('❌ ' + err.message); }
-}
-
-// ============================================================
-// STUDENT: MY ASSIGNMENTS
-// ============================================================
-async function renderStudentAssignments() {
-    const c = document.getElementById('studentAssignmentsContent');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
-    try {
-        const { summary, assignments } = await api('/assignments/me/summary');
-        const countEl = document.getElementById('studentAssignmentsCount');
-        if (countEl) countEl.textContent = summary.pending;
-
-        if (!assignments.length) {
-            c.innerHTML = '<div class="empty-state">No assignments yet.</div>';
-            return;
-        }
-
-        c.innerHTML = `
-            <div class="summary-cards">
-                <div class="summary-card"><div class="num">${summary.total}</div><div class="lbl">Total</div></div>
-                <div class="summary-card gold"><div class="num">${summary.submitted}</div><div class="lbl">Submitted</div></div>
-                <div class="summary-card green"><div class="num">${summary.marked}</div><div class="lbl">Marked</div></div>
-                <div class="summary-card grey"><div class="num">${summary.pending}</div><div class="lbl">Pending</div></div>
-                <div class="summary-card purple"><div class="num">${summary.average_percentage}%</div><div class="lbl">Average</div></div>
-            </div>
-            <div class="table-wrapper" style="margin-top:1rem"><table>
-                <thead><tr><th>Assignment</th><th>Course</th><th>Due</th><th>Status</th><th>Score</th><th>Actions</th></tr></thead>
-                <tbody>${assignments.map(a => {
-                    let statusBadge = '<span class="badge badge-active">NOT SUBMITTED</span>';
-                    let scoreText = '—';
-                    if (a.submission_status === 'submitted' || a.submission_status === 'resubmitted') {
-                        statusBadge = '<span class="badge badge-warning">AWAITING MARKING</span>';
-                    } else if (a.submission_status === 'marked') {
-                        statusBadge = '<span class="badge badge-success">✅ MARKED</span>';
-                        scoreText = `${a.marks}/${a.max_marks} (${parseFloat(a.percentage).toFixed(1)}%)`;
-                    } else if (a.submission_status === 'returned') {
-                        statusBadge = '<span class="badge badge-danger">RETURNED</span>';
-                    }
-                    return `<tr>
-                        <td><strong>${esc(a.title)}</strong></td>
-                        <td>${esc(a.course_title)}</td>
-                        <td>${a.due_date ? fmtDate(a.due_date) : '—'}</td>
-                        <td>${statusBadge}</td>
-                        <td><strong>${scoreText}</strong></td>
-                        <td><button class="btn btn-primary btn-sm" onclick="openAssignmentView('${a.id}')">Open</button></td>
-                    </tr>`;
-                }).join('')}</tbody>
-            </table></div>`;
-    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
-}
-
-async function openAssignmentView(assignmentId) {
-    currentAssignment = { id: assignmentId };
-    await navigateTo('student-assignment-view');
-    await renderAssignmentView();
-}
-
-async function renderAssignmentView() {
-    const c = document.getElementById('studentAssignmentViewContent');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
-    try {
-        const { assignment, submissions } = await api('/assignments/' + currentAssignment.id);
-        const latest = submissions[0];
-        const attemptsUsed = submissions.length;
-        const canSubmit = assignment.allow_resubmission || !latest;
-        const maxReached = attemptsUsed >= assignment.max_attempts;
-
-        let submissionBlock = '';
-        if (latest) {
-            if (latest.status === 'marked') {
-                submissionBlock = `<div class="certificate-status-card issued" style="text-align:left;margin-bottom:1rem">
-                    <div style="font-size:1.5rem;font-weight:800;color:var(--success)">✅ Marked</div>
-                    <div style="font-size:2rem;font-weight:900;color:var(--navy);margin-top:0.5rem">${latest.marks} / ${assignment.max_marks}</div>
-                    <div style="font-size:1.1rem;color:var(--text-secondary)">${parseFloat(latest.percentage).toFixed(1)}%</div>
-                    ${latest.feedback ? `<div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:8px"><strong>Feedback:</strong><div style="margin-top:0.3rem">${esc(latest.feedback)}</div></div>` : ''}
-                    <div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.5rem">Marked: ${fmtDateTime(latest.marked_at)}</div>
-                </div>`;
-            } else if (latest.status === 'returned') {
-                submissionBlock = `<div class="flash flash-warning" style="margin-bottom:1rem">
-                    <strong>🔔 Assignment Returned</strong>
-                    <div style="margin-top:0.5rem">Reason: ${esc(latest.return_reason || '')}</div>
-                    <div style="font-size:0.85rem;margin-top:0.5rem">Attempt: ${latest.attempt_number} of ${assignment.max_attempts}</div>
-                </div>`;
-            } else {
-                submissionBlock = `<div class="flash flash-info" style="margin-bottom:1rem">
-                    <strong>✅ Assignment Submitted</strong>
-                    <div style="margin-top:0.3rem">Submitted: ${fmtDateTime(latest.submitted_at)} • Attempt ${latest.attempt_number} of ${assignment.max_attempts}</div>
-                    <div style="margin-top:0.3rem">Status: 🟡 Awaiting Admin Marking</div>
-                </div>`;
-            }
-        }
-
-        let attemptsHTML = '';
-        if (submissions.length > 1) {
-            attemptsHTML = `<h3 style="margin-top:1.5rem;color:var(--navy)">Attempt History</h3>
-                ${submissions.map(s => `<div style="padding:0.75rem;background:var(--white);border-radius:8px;margin-bottom:0.5rem;border-left:4px solid var(--${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'blue'})">
-                    <div><strong>Attempt ${s.attempt_number}</strong> — <span class="badge badge-${s.status === 'marked' ? 'success' : s.status === 'returned' ? 'warning' : 'active'}">${s.status.toUpperCase()}</span></div>
-                    <div style="font-size:0.85rem;color:var(--text-secondary)">${fmtDateTime(s.submitted_at)}${s.marks != null ? ` • ${s.marks}/${assignment.max_marks}` : ''}</div>
-                </div>`).join('')}`;
-        }
-
-        const canSubmitNow = assignment.allow_resubmission && !maxReached || (!latest && !maxReached);
-
-        c.innerHTML = `
-            <div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
-                <button class="btn btn-outline btn-sm" onclick="navigateTo('student-assignments')"><i class="fas fa-arrow-left"></i> Back</button>
-            </div>
-            <h2>${esc(assignment.title)}</h2>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:0.6rem;margin:1rem 0;font-size:0.85rem">
-                <div class="progress-item"><div class="pct">${assignment.max_marks}</div><div class="lbl">Max Marks</div></div>
-                <div class="progress-item"><div class="pct">${assignment.due_date ? fmtDate(assignment.due_date) : '—'}</div><div class="lbl">Due Date</div></div>
-                <div class="progress-item"><div class="pct">${assignment.max_attempts}</div><div class="lbl">Attempts Allowed</div></div>
-                <div class="progress-item"><div class="pct">${attemptsUsed}</div><div class="lbl">Attempts Used</div></div>
-            </div>
-            ${submissionBlock}
-            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem">
-                <h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-list-ol" style="color:var(--gold)"></i> Instructions</h3>
-                <div style="white-space:pre-wrap;color:var(--text-secondary)">${esc(assignment.instructions || 'No instructions provided.')}</div>
-                <div style="margin-top:1rem;font-size:0.85rem;color:var(--text-secondary)">
-                    <strong>Allowed submission:</strong>
-                    ${assignment.allow_text ? '📝 Written Text ' : ''}
-                    ${assignment.allow_file ? '📎 File Upload' : ''}
-                </div>
-            </div>
-            ${canSubmitNow ? `<button class="btn btn-success btn-block" onclick="openSubmitModal()"><i class="fas fa-paper-plane"></i> ${latest ? 'Resubm
-console.log('🎓 Nexora Academy v9.5 — API:', API_BASE);
+console.log('🎓 Nexora Academy v9.6 — API:', API_BASE);
 </script>
 
 </body>
