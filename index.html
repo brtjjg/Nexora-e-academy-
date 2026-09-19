@@ -316,6 +316,9 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
+<div class="menu-label">Assignments</div>
+<div class="menu-item" onclick="navigateTo('admin-assignments')"><i class="fas fa-clipboard-check"></i><span>All Assignments</span></div>
+<div class="menu-item" onclick="navigateTo('admin-submissions')"><i class="fas fa-inbox"></i><span>Submissions</span><span class="badge-count" id="submissionsCount">0</span></div>
 <div class="menu-label">Finance</div>
 <div class="menu-item" onclick="navigateTo('admin-revenue')"><i class="fas fa-chart-line"></i><span>Revenue</span></div>
 <div class="menu-item" onclick="navigateTo('admin-payments')"><i class="fas fa-credit-card"></i><span>Payments</span></div>
@@ -328,6 +331,7 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
+<div class="menu-item" onclick="navigateTo('student-assignments')"><i class="fas fa-clipboard-check"></i><span>My Assignments</span><span class="badge-count" id="studentAssignmentsCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-certificates')"><i class="fas fa-certificate"></i><span>My Certificates</span></div>
 <div class="menu-item" onclick="navigateTo('student-profile')"><i class="fas fa-user"></i><span>Profile</span></div>
 <div class="menu-divider"></div>
@@ -511,7 +515,8 @@ table tbody tr:hover{background:#f8fafc}
 <div id="page-student-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> My Courses</h2><div id="studentCoursesList"></div></div>
 <div id="page-student-course-viewer" class="page"><div id="studentCourseViewerContent"></div></div>
 <div id="page-student-results" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-list" style="color:var(--gold)"></i> My Results</h2><div id="studentResultsTable"></div></div>
-<div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>
+<div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>  <div id="page-student-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> My Assignments</h2><div id="studentAssignmentsContent"></div></div>
+<div id="page-student-assignment-view" class="page"><div id="studentAssignmentViewContent"></div></div>
 <div id="page-student-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> My Certificates</h2><div id="studentCertificatesList"></div></div>
 <div id="page-student-profile" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user" style="color:var(--gold)"></i> My Profile</h2><div id="studentProfileContent"></div></div>
 
@@ -599,7 +604,9 @@ table tbody tr:hover{background:#f8fafc}
 
 <div id="page-admin-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> Examinations</h2><div id="adminExamsList"></div></div>
 <div id="page-admin-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> Certificates</h2><div id="adminCertificatesList"></div></div>
-<div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
+<div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>  
+<div id="page-admin-assignments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-check" style="color:var(--gold)"></i> All Assignments</h2><div id="adminAssignmentsContent"></div></div>
+<div id="page-admin-submissions" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-inbox" style="color:var(--gold)"></i> Submitted Assignments</h2><div id="adminSubmissionsContent"></div></div>
 <div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
 
 </div>
@@ -868,23 +875,35 @@ async function showApp() {
     }
     document.getElementById('adminMenu').classList.add('hidden');
     document.getElementById('studentMenu').classList.remove('hidden');
-    let app = null;
-    try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
-    const paidYet = app && app.payment_status === 'paid';
-    const approved = app && app.status === 'approved';
-    if (!paidYet || !approved) {
-        document.getElementById('page-register').classList.add('active');
-        document.getElementById('pageIndicator').textContent = paidYet ? 'Awaiting Approval' : 'Complete Payment';
-        if (app) { const e = document.getElementById('regAppId'); if (e) e.textContent = app.application_id; }
-        regGoToStep(3);
-        if (paidYet) {
-            const st3 = document.getElementById('reg-step-3');
-            if (st3) st3.innerHTML = `<div style="text-align:center;padding:1rem 0"><i class="fas fa-hourglass-half" style="font-size:3.5rem;color:var(--blue);margin-bottom:1rem"></i><h2 style="color:var(--navy)">Awaiting Approval</h2><p style="color:var(--text-secondary);margin:1rem 0">Payment received. Awaiting admissions review.</p><div style="background:#dbeafe;padding:1rem;border-radius:12px;margin:1rem 0"><strong>Status:</strong> <span class="badge status-paid">PAID — AWAITING APPROVAL</span></div><button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button></div>`;
-        }
-        updateSidebarActive('student-dashboard');
-        updateTopNav();
-        await updateCounts();
-        return;
+let app = null;
+try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
+
+const paidYet = (app && app.payment_status === 'paid')
+             || (currentUser && currentUser.activationFeePaid === true)
+             || (currentUser && currentUser.admissionStatus && currentUser.admissionStatus !== 'pending_payment');
+
+const approved = (app && app.status === 'approved')
+              || (currentUser && currentUser.approvals && currentUser.approvals.status === 'approved')
+              || (currentUser && currentUser.admissionStatus === 'approved');
+
+if (!paidYet || !approved) {
+    document.getElementById('page-register').classList.add('active');
+    document.getElementById('pageIndicator').textContent = paidYet ? 'Awaiting Approval' : 'Complete Payment';
+    if (app) { const e = document.getElementById('regAppId'); if (e) e.textContent = app.application_id; }
+    regGoToStep(3);
+    if (paidYet && app && app.status === 'rejected') {
+        document.getElementById('pageIndicator').textContent = 'Application Rejected';
+        const st3 = document.getElementById('reg-step-3');
+        if (st3) st3.innerHTML = `<div style="text-align:center;padding:1rem 0"><i class="fas fa-times-circle" style="font-size:3.5rem;color:var(--danger);margin-bottom:1rem"></i><h2 style="color:var(--navy)">Application Rejected</h2><div style="background:#fee2e2;border-left:4px solid var(--danger);padding:1rem;border-radius:8px;margin:1rem 0;text-align:left"><strong>Reason:</strong><div style="margin-top:0.5rem">${esc(app.rejection_reason || 'No reason provided')}</div></div><p style="color:var(--text-secondary);margin:1rem 0">You can update your profile and resubmit.</p><button class="btn btn-primary" onclick="regGoToStep(1)"><i class="fas fa-edit"></i> Edit Profile</button><div style="margin-top:1rem"><button class="btn btn-outline btn-sm" onclick="logout()">Logout</button></div></div>`;
+    } else if (paidYet) {
+        const st3 = document.getElementById('reg-step-3');
+        if (st3) st3.innerHTML = `<div style="text-align:center;padding:1rem 0"><i class="fas fa-hourglass-half" style="font-size:3.5rem;color:var(--blue);margin-bottom:1rem"></i><h2 style="color:var(--navy)">Awaiting Approval</h2><p style="color:var(--text-secondary);margin:1rem 0">Payment received. Awaiting admissions review.</p><div style="background:#dbeafe;padding:1rem;border-radius:12px;margin:1rem 0"><strong>Status:</strong> <span class="badge status-paid">PAID — AWAITING APPROVAL</span></div><button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button><div style="margin-top:1rem"><button class="btn btn-outline btn-sm" onclick="logout()">Logout</button></div></div>`;
+    }
+    updateSidebarActive('student-dashboard');
+    updateTopNav();
+    await updateCounts();
+    return;
+}
     }
     document.getElementById('page-student-dashboard').classList.add('active');
     document.getElementById('pageIndicator').textContent = 'Student Dashboard';
@@ -1878,6 +1897,181 @@ navigateTo = async function(page) {
     if (currentUser) showApp();
     else goHome();
 })();
+  // ============================================================
+// STUDENT ASSIGNMENTS
+// ============================================================
+let currentAssignment = null;
+let submitFileData = null;
+
+async function renderStudentAssignments() {
+    const c = document.getElementById('studentAssignmentsContent');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { summary, assignments } = await api('/assignments/me/summary');
+        const countEl = document.getElementById('studentAssignmentsCount');
+        if (countEl) countEl.textContent = summary.pending;
+        if (!assignments.length) {
+            c.innerHTML = '<div class="empty-state">No assignments yet. Enroll in a course first.</div>';
+            return;
+        }
+        c.innerHTML = `
+            <div class="summary-cards">
+                <div class="summary-card"><div class="num">${summary.total}</div><div class="lbl">Total</div></div>
+                <div class="summary-card gold"><div class="num">${summary.submitted}</div><div class="lbl">Submitted</div></div>
+                <div class="summary-card green"><div class="num">${summary.marked}</div><div class="lbl">Marked</div></div>
+                <div class="summary-card grey"><div class="num">${summary.pending}</div><div class="lbl">Pending</div></div>
+                <div class="summary-card purple"><div class="num">${summary.average_percentage}%</div><div class="lbl">Average</div></div>
+            </div>
+            <div class="table-wrapper" style="margin-top:1rem"><table>
+                <thead><tr><th>Assignment</th><th>Course</th><th>Due</th><th>Status</th><th>Score</th><th>Actions</th></tr></thead>
+                <tbody>${assignments.map(a => {
+                    let statusBadge = '<span class="badge badge-active">NOT SUBMITTED</span>';
+                    let scoreText = '—';
+                    if (a.submission_status === 'submitted' || a.submission_status === 'resubmitted') statusBadge = '<span class="badge badge-warning">AWAITING MARKING</span>';
+                    else if (a.submission_status === 'marked') { statusBadge = '<span class="badge badge-success">✅ MARKED</span>'; scoreText = `${a.marks}/${a.max_marks} (${parseFloat(a.percentage).toFixed(1)}%)`; }
+                    else if (a.submission_status === 'returned') statusBadge = '<span class="badge badge-danger">RETURNED</span>';
+                    return `<tr><td><strong>${esc(a.title)}</strong></td><td>${esc(a.course_title)}</td><td>${a.due_date ? fmtDate(a.due_date) : '—'}</td><td>${statusBadge}</td><td><strong>${scoreText}</strong></td><td><button class="btn btn-primary btn-sm" onclick="openAssignmentView('${a.id}')">Open</button></td></tr>`;
+                }).join('')}</tbody>
+            </table></div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load: ${esc(err.message)}</div>`; }
+}
+
+async function openAssignmentView(id) {
+    currentAssignment = { id };
+    await navigateTo('student-assignment-view');
+    await renderAssignmentView();
+}
+
+async function renderAssignmentView() {
+    const c = document.getElementById('studentAssignmentViewContent');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { assignment, submissions } = await api('/assignments/' + currentAssignment.id);
+        const latest = submissions[0];
+        const attemptsUsed = submissions.length;
+        const maxReached = attemptsUsed >= assignment.max_attempts;
+
+        let submissionBlock = '';
+        if (latest) {
+            if (latest.status === 'marked') {
+                submissionBlock = `<div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid var(--success);border-radius:12px;padding:1.5rem;margin-bottom:1rem"><div style="font-size:1.5rem;font-weight:800;color:var(--success)">✅ Marked</div><div style="font-size:2rem;font-weight:900;color:var(--navy);margin-top:0.5rem">${latest.marks} / ${assignment.max_marks}</div><div style="font-size:1.1rem;color:var(--text-secondary)">${parseFloat(latest.percentage).toFixed(1)}%</div>${latest.feedback ? `<div style="margin-top:1rem;padding:1rem;background:#fff;border-radius:8px"><strong>Feedback:</strong><div style="margin-top:0.3rem">${esc(latest.feedback)}</div></div>` : ''}</div>`;
+            } else if (latest.status === 'returned') {
+                submissionBlock = `<div class="flash flash-warning" style="margin-bottom:1rem"><strong>🔔 Returned</strong><div style="margin-top:0.5rem">${esc(latest.return_reason || '')}</div></div>`;
+            } else {
+                submissionBlock = `<div class="flash flash-info" style="margin-bottom:1rem"><strong>✅ Submitted</strong><div style="margin-top:0.3rem">${fmtDateTime(latest.submitted_at)} • Attempt ${latest.attempt_number} of ${assignment.max_attempts}</div></div>`;
+            }
+        }
+
+        const canSubmit = (assignment.allow_resubmission || !latest) && !maxReached;
+
+        c.innerHTML = `
+            <div style="margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="navigateTo('student-assignments')"><i class="fas fa-arrow-left"></i> Back</button></div>
+            <h2>${esc(assignment.title)}</h2>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:0.6rem;margin:1rem 0;font-size:0.85rem">
+                <div class="progress-item"><div class="pct">${assignment.max_marks}</div><div class="lbl">Max Marks</div></div>
+                <div class="progress-item"><div class="pct">${assignment.due_date ? fmtDate(assignment.due_date) : '—'}</div><div class="lbl">Due</div></div>
+                <div class="progress-item"><div class="pct">${assignment.max_attempts}</div><div class="lbl">Attempts</div></div>
+                <div class="progress-item"><div class="pct">${attemptsUsed}</div><div class="lbl">Used</div></div>
+            </div>
+            ${submissionBlock}
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem">
+                <h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-list-ol" style="color:var(--gold)"></i> Instructions</h3>
+                <div style="white-space:pre-wrap;color:var(--text-secondary)">${esc(assignment.instructions || 'No instructions provided.')}</div>
+            </div>
+            ${canSubmit ? `<button class="btn btn-success btn-block" onclick="openSubmitModal()"><i class="fas fa-paper-plane"></i> ${latest ? 'Resubmit' : 'Submit Assignment'}</button>` : ''}
+        `;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
+}
+
+async function openSubmitModal() {
+    try {
+        const { assignment } = await api('/assignments/' + currentAssignment.id);
+        currentAssignment.full = assignment;
+        submitFileData = null;
+        document.getElementById('submitAssignmentInfo').innerHTML = `<div><strong>${esc(assignment.title)}</strong></div><div style="margin-top:0.3rem">Max Marks: ${assignment.max_marks}</div>${assignment.due_date ? `<div>Due: ${fmtDate(assignment.due_date)}</div>` : ''}`;
+        document.getElementById('submitTextBlock').style.display = assignment.allow_text ? 'block' : 'none';
+        document.getElementById('submitFileBlock').style.display = assignment.allow_file ? 'block' : 'none';
+        document.getElementById('submitMaxFileMb').textContent = assignment.max_file_mb || 10;
+        document.getElementById('submitTextAnswer').value = '';
+        document.getElementById('submitFilePreview').style.display = 'none';
+        document.getElementById('submitAssignmentModal').classList.add('active');
+    } catch (err) { alert('❌ ' + err.message); }
+}
+
+function closeSubmitModal() {
+    document.getElementById('submitAssignmentModal').classList.remove('active');
+    submitFileData = null;
+}
+
+async function handleSubmitFile(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const maxMb = currentAssignment?.full?.max_file_mb || 10;
+    if (file.size > maxMb * 1024 * 1024) { alert(`⚠️ Max ${maxMb} MB`); e.target.value = ''; return; }
+    try {
+        setLoading(true);
+        const fd = new FormData();
+        fd.append('file', file);
+        const r = await apiForm('/uploads/assignment-file?scope=assignments', fd);
+        submitFileData = r;
+        document.getElementById('submitFilePreview').innerHTML = `<div class="lesson-material"><i class="fas fa-file file-icon" style="color:var(--blue)"></i><span class="mat-name">${esc(r.file_name)}</span></div>`;
+        document.getElementById('submitFilePreview').style.display = 'block';
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    finally { setLoading(false); }
+}
+
+async function sendSubmission() {
+    const text = document.getElementById('submitTextAnswer').value.trim();
+    const allowText = document.getElementById('submitTextBlock').style.display !== 'none';
+    const allowFile = document.getElementById('submitFileBlock').style.display !== 'none';
+    const hasText = allowText && text;
+    const hasFile = allowFile && submitFileData;
+    if (!hasText && !hasFile) { alert('⚠️ Provide a text answer or attach a file'); return; }
+    const body = { text_answer: hasText ? text : null, file_path: submitFileData?.path || null, file_name: submitFileData?.file_name || null, file_type: submitFileData?.file_type || null, file_size: submitFileData?.file_size || null };
+    try {
+        const r = await api('/assignments/' + currentAssignment.id + '/submit', { method: 'POST', body });
+        closeSubmitModal();
+        alert('✅ Assignment submitted' + (r.late ? ' (late)' : ''));
+        await renderAssignmentView();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+// ============================================================
+// ADMIN ASSIGNMENTS
+// ============================================================
+async function renderAdminAssignments() {
+    const c = document.getElementById('adminAssignmentsContent');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { assignments } = await api('/assignments');
+        if (!assignments.length) { c.innerHTML = '<div class="empty-state">No assignments yet.</div>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Title</th><th>Course</th><th>Max Marks</th><th>Submissions</th><th>Status</th></tr></thead><tbody>${assignments.map(a => `<tr><td><strong>${esc(a.title)}</strong></td><td>${esc(a.course_title || '—')}</td><td>${a.max_marks}</td><td>${a.submission_count}</td><td><span class="badge badge-${a.status === 'published' ? 'published' : 'draft'}">${a.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+
+async function renderAdminSubmissions() {
+    const c = document.getElementById('adminSubmissionsContent');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { submissions } = await api('/assignments/submissions/list');
+        if (!submissions.length) { c.innerHTML = '<div class="empty-state">No submissions yet.</div>'; return; }
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Student</th><th>Assignment</th><th>Course</th><th>Date</th><th>Status</th></tr></thead><tbody>${submissions.map(s => `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.assignment_title)}</td><td>${esc(s.course_title || '—')}</td><td>${fmtDate(s.submitted_at)}</td><td><span class="badge badge-${s.status === 'marked' ? 'success' : 'warning'}">${s.status.toUpperCase()}</span></td></tr>`).join('')}</tbody></table></div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load.</div>'; }
+}
+
+// Hook into navigateTo
+const _origNavigateAssign = navigateTo;
+navigateTo = async function(page) {
+    await _origNavigateAssign(page);
+    if (page === 'student-assignments') await renderStudentAssignments();
+    else if (page === 'student-assignment-view') await renderAssignmentView();
+    else if (page === 'admin-assignments') await renderAdminAssignments();
+    else if (page === 'admin-submissions') await renderAdminSubmissions();
+};
 console.log('🎓 Nexora Academy v9.6 — API:', API_BASE);
 </script>
 
