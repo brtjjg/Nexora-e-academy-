@@ -1,8 +1,3 @@
--- ============================================================
--- NEXORA ACADEMY — ASSIGNMENT SYSTEM SCHEMA
--- Run this once on your Render PostgreSQL
--- ============================================================
-
 CREATE TABLE IF NOT EXISTS assignments (
     id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     course_id       UUID NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
@@ -21,6 +16,8 @@ CREATE TABLE IF NOT EXISTS assignments (
     status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','archived')),
     weight_percent  NUMERIC(5,2) NOT NULL DEFAULT 0,
     position        INTEGER NOT NULL DEFAULT 1,
+    late_policy     TEXT DEFAULT 'allow',
+    late_penalty_percent INTEGER DEFAULT 10,
     created_by      UUID REFERENCES users(id),
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -49,6 +46,8 @@ CREATE TABLE IF NOT EXISTS assignment_submissions (
     marked_by       UUID REFERENCES users(id),
     return_reason   TEXT,
     returned_at     TIMESTAMPTZ,
+    is_late         BOOLEAN DEFAULT FALSE,
+    penalty_percent INTEGER DEFAULT 0,
     submitted_at    TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
@@ -81,14 +80,3 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
-
--- Triggers
-DROP TRIGGER IF EXISTS trg_assignments_updated ON assignments;
-CREATE TRIGGER trg_assignments_updated
-    BEFORE UPDATE ON assignments
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
-
-DROP TRIGGER IF EXISTS trg_submissions_updated ON assignment_submissions;
-CREATE TRIGGER trg_submissions_updated
-    BEFORE UPDATE ON assignment_submissions
-    FOR EACH ROW EXECUTE FUNCTION set_updated_at();
