@@ -92,6 +92,7 @@ app.use('/api/payments',     loadRoute('payments'));
 app.use('/api/certificates', loadRoute('certificates'));
 app.use('/api/admin',        loadRoute('admin'));
 app.use('/api/groups',       loadRoute('groups')); 
+app.use('/api/notifications', loadRoute('notifications'));
 app.use('/api/uploads',      loadRoute('uploads')); 
 // app.use('/api/assignments',  loadRoute('assignments'));
 
@@ -107,7 +108,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
     const routeStatus = {};
-    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','assignments','groups']
+    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','assignments','groups','notifications']
         .forEach(name => {
             try {
                 const mod = require(`./routes/${name}`);
