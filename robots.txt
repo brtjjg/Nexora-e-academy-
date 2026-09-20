@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /backend/
+Disallow: /database/
+
+Sitemap: https://nexora-e-academy.vercel.app/sitemap.xml
