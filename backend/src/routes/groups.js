@@ -5,6 +5,7 @@ const { asyncHandler } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
 const { sendGroupMessage, sendNewGroupAnnouncement } = require('../email');
 const notifications = require('../notifications');
+
 /* ============================================================
    HELPERS
    ============================================================ */
@@ -49,7 +50,7 @@ async function ensureMembership(req, groupId) {
 
     // Auto-join rules
     let role = null;
-    if (isCreator || isAdmin)      role = 'admin';
+    if (isCreator || isAdmin)         role = 'admin';
     else if (visibility === 'public') role = 'member';
 
     if (!role) return { ok: false, reason: 'private_not_member' };
@@ -63,6 +64,10 @@ async function ensureMembership(req, groupId) {
 
     return { ok: true, role, autoJoined: true };
 }
+
+/* ============================================================
+   NOTIFICATION HELPERS
+   ============================================================ */
 
 const NOTIFY_THROTTLE_MINUTES = 10;
 
@@ -113,7 +118,7 @@ async function notifyGroupMembers({ groupId, groupName, senderId, senderName, me
                 continue;
             }
 
-            // Throttle
+            // Throttle check
             if (!(await shouldNotify(m.id, groupId))) {
                 console.log(`[notify:group] Skipping ${m.email} (throttled)`);
                 continue;
@@ -165,6 +170,7 @@ async function notifyNewGroupAnnouncement({ groupId, groupName, category, descri
         console.error('[notify:announcement] Failed:', err.message);
     }
 }
+
 /* ============================================================
    GET /api/groups — list all
    ============================================================ */
@@ -185,7 +191,8 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
 
 /* ============================================================
    POST /api/groups — create (admin)
-   Auto-adds creator as ADMIN member + verifies it worked
+   Auto-adds creator as ADMIN member
+   Sends announcement emails to all students
    ============================================================ */
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const userId = getUserId(req);
@@ -226,37 +233,46 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
         [groupId, userId]
     );
 
-    // 3. Verify it actually got inserted
+    // 3. Verify
     const check = await db.query(
         `SELECT role FROM group_members WHERE group_id = $1 AND user_id = $2`,
         [groupId, userId]
     );
     if (!check.rows.length) {
         console.error('[groups:create] Creator NOT added to group_members!');
-        // Try once more without ON CONFLICT (in case of weird constraint)
         try {
             await db.query(
-                `INSERT INTO group_members (group_id, user_id, role)
-                 VALUES ($1, $2, 'admin')`,
+                `INSERT INTO group_members (group_id, user_id, role) VALUES ($1, $2, 'admin')`,
                 [groupId, userId]
             );
-            console.log('[groups:create] Retry insert succeeded');
         } catch (e) {
             console.error('[groups:create] Retry failed:', e.message);
-            return res.status(500).json({
-                error: 'Group created but membership could not be saved'
-            });
+            return res.status(500).json({ error: 'Group created but membership could not be saved' });
         }
     } else {
         console.log('[groups:create] Creator confirmed as', check.rows[0].role);
     }
+
+    // 4. 🔔 Fire-and-forget announcement to all students
+    (async () => {
+        try {
+            await notifyNewGroupAnnouncement({
+                groupId,
+                groupName: name.trim(),
+                category: category || 'General',
+                description: description || '',
+                createdBy: userId,
+            });
+        } catch (e) {
+            console.error('[groups:create] announce failed:', e.message);
+        }
+    })();
 
     res.status(201).json({ group: r.rows[0] });
 }));
 
 /* ============================================================
    GET /api/groups/:id — details + members
-   Auto-joins admin/creator
    ============================================================ */
 router.get('/:id', requireAuth, asyncHandler(async (req, res) => {
     const mem = await ensureMembership(req, req.params.id);
@@ -339,7 +355,6 @@ router.post('/:id/leave', requireAuth, asyncHandler(async (req, res) => {
 
 /* ============================================================
    GET /api/groups/:id/messages
-   Auto-joins admin/creator BEFORE returning messages
    ============================================================ */
 router.get('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
     const mem = await ensureMembership(req, req.params.id);
@@ -358,24 +373,11 @@ router.get('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
     `, [req.params.id]);
     res.json({ messages: r.rows });
 }));
-// 🔔 Fire-and-forget announcement to all students
-(async () => {
-    try {
-        await notifyNewGroupAnnouncement({
-            groupId,
-            groupName: name.trim(),
-            category: category || 'General',
-            description: description || '',
-            createdBy: userId,
-        });
-    } catch (e) {
-        console.error('[groups:create] announce failed:', e.message);
-    }
-})();
 
 /* ============================================================
    POST /api/groups/:id/messages
-   Auto-joins admin/creator BEFORE membership check → admin can always post
+   Auto-joins admin/creator BEFORE membership check
+   Triggers email notifications to group members
    ============================================================ */
 router.post('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
     const userId = getUserId(req);
@@ -389,7 +391,7 @@ router.post('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
         return res.status(400).json({ error: 'Message too long (max 5000 chars)' });
     }
 
-    // 🔑 Auto-join BEFORE membership check
+    // Auto-join BEFORE membership check
     const mem = await ensureMembership(req, req.params.id);
     if (!mem.ok) {
         if (mem.reason === 'group_not_found') {
@@ -398,10 +400,27 @@ router.post('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
         return res.status(403).json({ error: 'You must join the group first' });
     }
 
+    // Save the message
     const r = await db.query(`
         INSERT INTO group_messages (group_id, user_id, content)
         VALUES ($1, $2, $3) RETURNING *
     `, [req.params.id, userId, content.trim()]);
+
+    // 🔔 Fire-and-forget email notification
+    (async () => {
+        try {
+            const gr = await db.query(`SELECT name FROM groups WHERE id = $1`, [req.params.id]);
+            await notifyGroupMembers({
+                groupId: req.params.id,
+                groupName: gr.rows[0]?.name || 'Group',
+                senderId: userId,
+                senderName: req.user.full_name || req.user.username || 'A member',
+                messageContent: content.trim(),
+            });
+        } catch (e) {
+            console.error('[notify:bg]', e.message);
+        }
+    })();
 
     res.status(201).json({ message: r.rows[0] });
 }));
