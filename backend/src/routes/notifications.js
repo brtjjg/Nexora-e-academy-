@@ -5,13 +5,11 @@ const { asyncHandler } = require('../utils');
 const { requireAuth } = require('../middleware');
 const notifications = require('../notifications');
 
-/* GET /api/notifications/preferences */
 router.get('/preferences', requireAuth, asyncHandler(async (req, res) => {
     const prefs = await notifications.getPreferences(req.user.id);
     res.json(prefs);
 }));
 
-/* PUT /api/notifications/preferences */
 router.put('/preferences', requireAuth, asyncHandler(async (req, res) => {
     const allowed = [
         'email_group_messages',
