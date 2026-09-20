@@ -358,6 +358,20 @@ router.get('/:id/messages', requireAuth, asyncHandler(async (req, res) => {
     `, [req.params.id]);
     res.json({ messages: r.rows });
 }));
+// 🔔 Fire-and-forget announcement to all students
+(async () => {
+    try {
+        await notifyNewGroupAnnouncement({
+            groupId,
+            groupName: name.trim(),
+            category: category || 'General',
+            description: description || '',
+            createdBy: userId,
+        });
+    } catch (e) {
+        console.error('[groups:create] announce failed:', e.message);
+    }
+})();
 
 /* ============================================================
    POST /api/groups/:id/messages
