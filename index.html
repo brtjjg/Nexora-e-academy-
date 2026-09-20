@@ -364,6 +364,7 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Management</div>
 <div class="menu-item" onclick="navigateTo('admin-students')"><i class="fas fa-users"></i><span>Students</span><span class="badge-count" id="studentCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-applications')"><i class="fas fa-user-clock"></i><span>Applications</span><span class="badge-count" id="appCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('notifications')"><i class="fas fa-bell"></i><span>Notifications</span></div>
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
@@ -381,6 +382,7 @@ table tbody tr:hover{background:#f8fafc}
 <div id="studentMenu" class="hidden">
 <div class="menu-item active" onclick="navigateTo('student-dashboard')"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
 <div class="menu-item" onclick="navigateTo('student-wallet')"><i class="fas fa-wallet"></i><span>Wallet & Payments</span></div>
+<div class="menu-item" onclick="navigateTo('notifications')"><i class="fas fa-bell"></i><span>Notifications</span></div>
 <div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
@@ -830,7 +832,7 @@ table tbody tr:hover{background:#f8fafc}
 <div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
 <div><h4>Support</h4><ul>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
-<li><a href="https://chat.whatsapp.com/G3cSmU5k7KLA6CunwrLeTw" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
+<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN?s=cl&p=a&mlu=4&ilr=4" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
 </ul></div>
 <div><h4>Connect</h4><ul>
 <li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
@@ -1084,6 +1086,88 @@ async function navigateTo(page) {
         else if (page === 'student-profile') renderStudentProfile();
     } catch (err) { console.error(err); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+  async function renderNotificationPrefs() {
+    const c = document.getElementById('notificationPrefsContent');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const p = await api('/notifications/preferences');
+        
+        const toggles = [
+            { key: 'email_group_messages', label: 'Group messages', desc: 'Someone posts in a group you\'re in', icon: 'fa-comments' },
+            { key: 'email_group_announcements', label: 'New group announcements', desc: 'A new group is created', icon: 'fa-bullhorn' },
+            { key: 'email_application_status', label: 'Application updates', desc: 'Your application is approved or rejected', icon: 'fa-file-alt' },
+            { key: 'email_payment_confirmations', label: 'Payment confirmations', desc: 'A payment succeeds', icon: 'fa-credit-card' },
+            { key: 'email_payment_reminders', label: 'Payment reminders', desc: 'Upcoming installment due', icon: 'fa-bell' },
+            { key: 'email_course_completion', label: 'Course completion', desc: 'You complete a course', icon: 'fa-trophy' },
+            { key: 'email_certificate_issued', label: 'Certificate issued', desc: 'You earn a certificate', icon: 'fa-certificate' },
+            { key: 'email_exam_reminders', label: 'Exam reminders', desc: 'CAT/exam unlocks soon', icon: 'fa-pencil-alt' },
+            { key: 'email_weekly_digest', label: 'Weekly progress digest', desc: 'Weekly summary of your learning', icon: 'fa-chart-line' },
+        ];
+
+        c.innerHTML = `
+          <div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem">
+            <label style="display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer">
+              <div>
+                <div style="font-weight:700;color:var(--navy);font-size:1.05rem">
+                  <i class="fas fa-envelope" style="color:var(--gold)"></i> Email notifications
+                </div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">
+                  Master switch — turn off to disable all emails
+                </div>
+              </div>
+              <input type="checkbox" id="pref_master" ${p.email_enabled !== false ? 'checked' : ''}
+                     style="width:48px;height:26px;accent-color:var(--blue);cursor:pointer" onchange="savePref('email_enabled', this.checked)">
+            </label>
+          </div>
+
+          <div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);opacity:${p.email_enabled !== false ? 1 : 0.5};pointer-events:${p.email_enabled !== false ? 'auto' : 'none'}">
+            <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">What to receive</h3>
+            <div style="display:grid;gap:0.75rem">
+              ${toggles.map(t => `
+                <label style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.9rem 1rem;background:var(--bg);border-radius:12px;cursor:pointer">
+                  <div style="display:flex;gap:0.75rem;align-items:center">
+                    <i class="fas ${t.icon}" style="color:var(--gold);width:20px;text-align:center"></i>
+                    <div>
+                      <div style="font-weight:600;color:var(--navy);font-size:0.95rem">${t.label}</div>
+                      <div style="font-size:0.8rem;color:var(--text-secondary)">${t.desc}</div>
+                    </div>
+                  </div>
+                  <input type="checkbox" id="pref_${t.key}" ${p[t.key] !== false ? 'checked' : ''}
+                         style="width:22px;height:22px;accent-color:var(--blue);cursor:pointer"
+                         onchange="savePref('${t.key}', this.checked)">
+                </label>
+              `).join('')}
+            </div>
+          </div>
+
+          <div style="text-align:center;margin-top:1.5rem;color:var(--text-secondary);font-size:0.85rem">
+            <i class="fas fa-info-circle"></i> Changes are saved automatically
+          </div>`;
+    } catch (err) {
+        c.innerHTML = '<div class="empty-state">Failed to load preferences.</div>';
+    }
+}
+
+async function savePref(key, value) {
+    try {
+        const body = {};
+        body[key] = value;
+        await api('/notifications/preferences', { method: 'PUT', body });
+        // Visual feedback
+        const el = document.getElementById('pref_' + key);
+        if (el) {
+            const label = el.closest('label');
+            if (label) {
+                label.style.background = '#dcfce7';
+                setTimeout(() => { label.style.background = ''; }, 600);
+            }
+        }
+        // If master was toggled, re-render to enable/disable others
+        if (key === 'email_enabled') await renderNotificationPrefs();
+    } catch (err) {
+        alert('Failed to save: ' + (err.data?.error || err.message));
+    }
 }
 async function updateCounts() {
     if (!currentUser) return;
