@@ -91,6 +91,7 @@ app.use('/api/applications', loadRoute('applications'));
 app.use('/api/payments',     loadRoute('payments'));
 app.use('/api/certificates', loadRoute('certificates'));
 app.use('/api/admin',        loadRoute('admin'));
+app.use('/api/groups',       loadRoute('groups')); 
 app.use('/api/uploads',      loadRoute('uploads')); 
 // app.use('/api/assignments',  loadRoute('assignments'));
 
