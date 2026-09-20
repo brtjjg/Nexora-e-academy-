@@ -107,7 +107,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
     const routeStatus = {};
-    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','assignments']
+    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','assignments','groups']
         .forEach(name => {
             try {
                 const mod = require(`./routes/${name}`);
