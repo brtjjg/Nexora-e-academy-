@@ -39,7 +39,10 @@ async function sendEmail({ to, subject, html }) {
     if (!t) return { skipped: true };
     try {
         const info = await t.sendMail({
-            from: FROM, to, subject,
+            from: FROM,
+            to,
+            replyTo: process.env.EMAIL_REPLY_TO || FROM,
+            subject,
             text: html.replace(/<[^>]+>/g, '').slice(0, 800),
             html,
         });
@@ -78,8 +81,6 @@ ${footer || ''}
 </td></tr>
 </table></td></tr></table></body></html>`;
 }
-
-/* ---------- Ready-made notification templates ---------- */
 
 async function sendGroupMessage({ to, recipientName, senderName, groupName, groupId, messagePreview }) {
     return sendEmail({
@@ -122,13 +123,11 @@ async function sendApplicationStatus({ to, recipientName, status, reason }) {
         to,
         subject: isApproved ? '🎉 Your Nexora Academy application is approved!' : '📋 Update on your Nexora Academy application',
         html: emailTemplate({
-            title: isApproved ? 'Congratulations — you\'re in!' : 'Application update',
+            title: isApproved ? "Congratulations — you're in!" : 'Application update',
             greeting: `Hi ${esc(recipientName || 'there')},`,
             body: isApproved
-                ? `<p style="margin:0 0 12px;">Your application has been <strong style="color:#16A34A;">approved</strong>. Welcome to Nexora Academy!</p>
-                   <p style="margin:0;">You can now enroll in courses and start learning immediately.</p>`
-                : `<p style="margin:0 0 12px;">Unfortunately your application was <strong style="color:#DC2626;">not approved</strong>.</p>
-                   ${reason ? `<div style="background:#FEF2F2;padding:12px;border-radius:8px;border-left:4px solid #DC2626;color:#7F1D1D;">Reason: ${esc(reason)}</div>` : ''}`,
+                ? `<p style="margin:0 0 12px;">Your application has been <strong style="color:#16A34A;">approved</strong>. Welcome to Nexora Academy!</p><p style="margin:0;">You can now enroll in courses and start learning immediately.</p>`
+                : `<p style="margin:0 0 12px;">Unfortunately your application was <strong style="color:#DC2626;">not approved</strong>.</p>${reason ? `<div style="background:#FEF2F2;padding:12px;border-radius:8px;border-left:4px solid #DC2626;color:#7F1D1D;">Reason: ${esc(reason)}</div>` : ''}`,
             ctaText: isApproved ? 'Go to Dashboard' : 'Contact Support',
             ctaUrl: isApproved ? 'https://nexora-e-academy.vercel.app' : 'mailto:nexo27716@gmail.com',
         }),
