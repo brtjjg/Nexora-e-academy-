@@ -3,7 +3,8 @@ const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
-
+const { sendGroupMessage, sendNewGroupAnnouncement } = require('../email');
+const notifications = require('../notifications');
 /* ============================================================
    HELPERS
    ============================================================ */
@@ -63,6 +64,107 @@ async function ensureMembership(req, groupId) {
     return { ok: true, role, autoJoined: true };
 }
 
+const NOTIFY_THROTTLE_MINUTES = 10;
+
+async function shouldNotify(userId, groupId) {
+    const r = await db.query(
+        `SELECT last_notified_at FROM email_notification_log
+         WHERE user_id = $1 AND group_id = $2`,
+        [userId, groupId]
+    );
+    if (!r.rows.length) return true;
+    return (Date.now() - new Date(r.rows[0].last_notified_at).getTime())
+           > NOTIFY_THROTTLE_MINUTES * 60 * 1000;
+}
+
+async function markNotified(userId, groupId) {
+    await db.query(
+        `INSERT INTO email_notification_log (user_id, group_id, last_notified_at)
+         VALUES ($1, $2, NOW())
+         ON CONFLICT (user_id, group_id)
+         DO UPDATE SET last_notified_at = NOW()`,
+        [userId, groupId]
+    );
+}
+
+/**
+ * Fire-and-forget: notify all group members (except sender)
+ * about a new message.
+ */
+async function notifyGroupMembers({ groupId, groupName, senderId, senderName, messageContent }) {
+    try {
+        const members = await db.query(
+            `SELECT u.id, u.email, u.full_name
+             FROM group_members gm
+             JOIN users u ON u.id = gm.user_id
+             WHERE gm.group_id = $1 AND gm.user_id <> $2`,
+            [groupId, senderId]
+        );
+
+        console.log(`[notify:group] "${groupName}" — ${members.rows.length} potential recipients`);
+
+        for (const m of members.rows) {
+            if (!m.email) continue;
+
+            // Check user preference
+            const enabled = await notifications.isEnabled(m.id, 'email_group_messages');
+            if (!enabled) {
+                console.log(`[notify:group] Skipping ${m.email} (pref off)`);
+                continue;
+            }
+
+            // Throttle
+            if (!(await shouldNotify(m.id, groupId))) {
+                console.log(`[notify:group] Skipping ${m.email} (throttled)`);
+                continue;
+            }
+
+            await sendGroupMessage({
+                to: m.email,
+                recipientName: m.full_name,
+                senderName,
+                groupName,
+                groupId,
+                messagePreview: messageContent,
+            });
+
+            await markNotified(m.id, groupId);
+        }
+    } catch (err) {
+        console.error('[notify:group] Failed:', err.message);
+    }
+}
+
+/**
+ * Fire-and-forget: notify all students about a new group.
+ */
+async function notifyNewGroupAnnouncement({ groupId, groupName, category, description, createdBy }) {
+    try {
+        const students = await db.query(
+            `SELECT id, email, full_name FROM users
+             WHERE role = 'student' AND email IS NOT NULL AND id <> $1`,
+            [createdBy]
+        );
+
+        console.log(`[notify:announcement] "${groupName}" — ${students.rows.length} students`);
+
+        for (const s of students.rows) {
+            const enabled = await notifications.isEnabled(s.id, 'email_group_announcements');
+            if (!enabled) continue;
+
+            await sendNewGroupAnnouncement({
+                to: s.email,
+                recipientName: s.full_name,
+                groupName,
+                groupId,
+                category,
+                description,
+            });
+        }
+    } catch (err) {
+        console.error('[notify:announcement] Failed:', err.message);
+    }
+}
 /* ============================================================
    GET /api/groups — list all
    ============================================================ */
