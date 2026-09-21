@@ -32,7 +32,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="twitter:description" content="Expert-led online courses with flexible payments and recognized certificates." />
 <meta name="twitter:image" content="https://nexora-e-academy.vercel.app/og-image.jpg" />
 
-<!-- Structured data for Google -->
+<!-- Structured data -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -44,7 +44,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
   "email": "nexo27716@gmail.com",
   "sameAs": [
     "https://facebook.com/groups/2560631744449743/",
-    "https://chat.whatsapp.com/G3cSmU5k7KLA6CunwrLeTw"
+    "https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN"
   ]
 }
 </script>
@@ -62,10 +62,30 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
 <style>
-:root{--navy:#0B1F3A;--navy-light:#172B4D;--blue:#29A9E8;--blue-dark:#1E8BC3;--gold:#D4A63A;--gold-light:#E8C84A;--gold-dark:#A67C1E;--bg:#F5F7FA;--white:#FFF;--text-primary:#172B4D;--text-secondary:#64748B;--success:#16A34A;--danger:#EF4444;--warning:#F59E0B;--shadow:0 4px 20px rgba(11,31,58,0.12);--shadow-hover:0 8px 40px rgba(11,31,58,0.2);--radius:16px;--sidebar-width:260px}
+/* ═══════════════════════════════════════════════════════════
+   ROOT VARIABLES
+   ═══════════════════════════════════════════════════════════ */
+:root{
+  --navy:#0B1F3A;--navy-light:#172B4D;--blue:#29A9E8;--blue-dark:#1E8BC3;
+  --gold:#D4A63A;--gold-light:#E8C84A;--gold-dark:#A67C1E;
+  --bg:#F5F7FA;--white:#FFF;--text-primary:#172B4D;--text-secondary:#64748B;
+  --success:#16A34A;--danger:#EF4444;--warning:#F59E0B;
+  --shadow:0 4px 20px rgba(11,31,58,0.12);--shadow-hover:0 8px 40px rgba(11,31,58,0.2);
+  --radius:16px;--sidebar-width:260px;
+  /* Learning page palette */
+  --nx-navy:#142B4A;--nx-navy-dark:#061F46;--nx-blue:#087FF5;
+  --nx-blue-light:#EEF7FF;--nx-green:#16A765;--nx-page:#F5F8FC;
+  --nx-border:#D9E5F2;--nx-secondary:#64748B;--nx-pdf:#E53935;
+}
 *{margin:0;padding:0;box-sizing:border-box}
 body{font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,sans-serif;background:var(--bg);color:var(--text-primary);line-height:1.6}
 a{text-decoration:none;color:inherit}
+.hidden{display:none!important}
+.text-center{text-align:center}
+
+/* ═══════════════════════════════════════════════════════════
+   TOP NAV
+   ═══════════════════════════════════════════════════════════ */
 .top-nav{background:var(--navy);padding:10px 24px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:1001}
 .top-nav .container{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;flex-wrap:wrap;gap:1rem}
 .top-nav .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
@@ -78,16 +98,20 @@ a{text-decoration:none;color:inherit}
 .top-nav .nav-links{display:flex;gap:1.8rem;align-items:center;flex-wrap:wrap}
 .top-nav .nav-links a{color:rgba(255,255,255,0.85);font-weight:500;font-size:0.95rem;padding:4px 0}
 .top-nav .nav-links a:hover{color:var(--blue)}
-.top-nav .nav-links .btn{padding:8px 20px;border-radius:50px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-size:0.9rem}
+.top-nav .nav-links .btn{padding:8px 20px;border-radius:50px;font-weight:600;display:inline-flex;align-items:center;gap:6px;border:none;cursor:pointer;font-size:0.9rem;font-family:inherit}
 .btn-login{background:transparent;border:2px solid rgba(255,255,255,0.25);color:var(--white)}
 .btn-register{background:var(--gold);color:var(--navy);border:2px solid var(--gold)}
 .btn-logout{background:transparent;border:2px solid var(--danger);color:var(--danger)}
 .btn-logout:hover{background:var(--danger);color:var(--white)}
 .top-nav .nav-links .user-info{display:flex;align-items:center;gap:8px;color:var(--white)}
 .top-nav .nav-links .user-info .avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}
+
+/* ═══════════════════════════════════════════════════════════
+   SIDEBAR
+   ═══════════════════════════════════════════════════════════ */
 .sidebar-toggle-bar{background:var(--navy-light);padding:10px 24px;border-bottom:1px solid rgba(255,255,255,0.05);display:none;align-items:center;gap:12px}
 .sidebar-toggle-bar.visible{display:flex}
-.sidebar-toggle-bar .toggle-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-size:1.2rem;cursor:pointer;padding:8px 16px;border-radius:50px;display:flex;align-items:center;gap:10px}
+.sidebar-toggle-bar .toggle-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-size:1.2rem;cursor:pointer;padding:8px 16px;border-radius:50px;display:flex;align-items:center;gap:10px;font-family:inherit}
 .sidebar-toggle-bar .toggle-btn span{font-size:0.85rem;font-weight:600;color:rgba(255,255,255,0.85)}
 .sidebar-toggle-bar .page-indicator{color:rgba(255,255,255,0.7);font-size:0.9rem;font-weight:500;margin-left:auto}
 .sidebar{position:fixed;top:0;left:0;width:var(--sidebar-width);height:100vh;background:var(--navy);color:rgba(255,255,255,0.8);z-index:1000;overflow-y:auto;transition:transform 0.3s ease;transform:translateX(-100%);padding-top:80px}
@@ -98,7 +122,7 @@ a{text-decoration:none;color:inherit}
 .sidebar-brand .brand-text .nexora{color:var(--blue)}
 .sidebar-brand .brand-text .academy{color:var(--white)}
 .sidebar-menu{padding:12px 0}
-.menu-item{display:flex;align-items:center;gap:12px;padding:12px 16px;color:rgba(255,255,255,0.75);cursor:pointer;font-size:0.9rem;border-left:3px solid transparent}
+.menu-item{display:flex;align-items:center;gap:12px;padding:12px 16px;color:rgba(255,255,255,0.75);cursor:pointer;font-size:0.9rem;border-left:3px solid transparent;font-family:inherit}
 .menu-item:hover{background:rgba(255,255,255,0.05);color:var(--white)}
 .menu-item.active{background:rgba(41,169,232,0.15);color:var(--blue);border-left-color:var(--blue)}
 .menu-item i{width:20px;text-align:center;font-size:1rem}
@@ -112,13 +136,17 @@ a{text-decoration:none;color:inherit}
 .page-content{padding:24px;max-width:1200px;margin:0 auto}
 .page{display:none}
 .page.active{display:block}
+
+/* ═══════════════════════════════════════════════════════════
+   LANDING / GENERAL
+   ═══════════════════════════════════════════════════════════ */
 .landing-hero{text-align:center;padding:4rem 0 3rem}
 .landing-hero .badge-tag{display:inline-block;background:rgba(212,166,58,0.15);border:1px solid rgba(212,166,58,0.3);color:var(--gold);padding:6px 18px;border-radius:50px;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:1.5rem}
 .landing-hero h1{font-size:3.5rem;font-weight:800;color:var(--navy);line-height:1.15;margin-bottom:1.2rem}
 .landing-hero h1 .gold{color:var(--gold)}
 .landing-hero p{color:var(--text-secondary);font-size:1.15rem;max-width:620px;margin:0 auto 2rem}
 .landing-hero .hero-buttons{display:flex;gap:1rem;justify-content:center;flex-wrap:wrap}
-.landing-hero .hero-buttons .btn{padding:14px 36px;font-size:1rem;border-radius:50px;font-weight:700;display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer}
+.landing-hero .hero-buttons .btn{padding:14px 36px;font-size:1rem;border-radius:50px;font-weight:700;display:inline-flex;align-items:center;gap:10px;border:none;cursor:pointer;font-family:inherit}
 .btn-primary-hero{background:var(--blue);color:var(--white)}
 .btn-outline-hero{background:transparent;color:var(--navy);border:2px solid #e2e8f0}
 .landing-features{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:1.5rem;padding:2rem 0 3rem}
@@ -131,13 +159,9 @@ a{text-decoration:none;color:inherit}
 .landing-stats .stat h3 .gold{color:var(--gold)}
 .landing-stats .stat p{color:var(--text-secondary);font-size:0.9rem}
 .badge{padding:3px 12px;border-radius:50px;font-size:0.7rem;font-weight:600;display:inline-block}
-.badge-published{background:#dcfce7;color:#166534}
-.badge-draft{background:#fef3c7;color:#92400e}
-.badge-success{background:#dcfce7;color:#166534}
-.badge-warning{background:#fef3c7;color:#92400e}
-.badge-danger{background:#fee2e2;color:#991b1b}
-.badge-paid{background:#dcfce7;color:#166534}
-.badge-unpaid{background:#fee2e2;color:#991b1b}
+.badge-published,.badge-success,.badge-paid{background:#dcfce7;color:#166534}
+.badge-draft,.badge-warning{background:#fef3c7;color:#92400e}
+.badge-danger,.badge-unpaid{background:#fee2e2;color:#991b1b}
 .badge-active{background:#dbeafe;color:#1e40af}
 .flash{padding:1rem 1.5rem;border-radius:var(--radius);margin:1rem 0;font-weight:500}
 .flash-success{background:#dcfce7;color:#166534;border-left:4px solid var(--success)}
@@ -151,6 +175,10 @@ a{text-decoration:none;color:inherit}
 .stat-card.gold{border-left-color:var(--gold)}
 .stat-card.green{border-left-color:var(--success)}
 .stat-card.purple{border-left-color:#8B5CF6}
+
+/* ═══════════════════════════════════════════════════════════
+   FORMS
+   ═══════════════════════════════════════════════════════════ */
 .form-group{margin-bottom:1.5rem}
 .form-group label{display:block;font-weight:600;margin-bottom:0.4rem;color:var(--navy);font-size:0.9rem}
 .form-group label .required{color:var(--danger)}
@@ -216,7 +244,6 @@ table tbody tr:hover{background:#f8fafc}
 .activity-item .a-icon{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;background:var(--bg);color:var(--gold)}
 .activity-item .a-content{flex:1}
 .activity-item .a-title{font-weight:600;color:var(--navy)}
-.activity-item .a-time{font-size:0.75rem;color:var(--text-secondary)}
 .file-upload-container{border:2px dashed #e2e8f0;border-radius:12px;padding:1.5rem;text-align:center;cursor:pointer;background:var(--bg)}
 .file-upload-container:hover{border-color:var(--blue);background:rgba(41,169,232,0.05)}
 .file-upload-container .upload-icon{font-size:2.5rem;color:var(--gold);margin-bottom:0.5rem}
@@ -270,13 +297,9 @@ table tbody tr:hover{background:#f8fafc}
 .status-rejected{background:#fee2e2;color:#991b1b;font-weight:700}
 .empty-state{text-align:center;padding:2rem;color:var(--text-secondary);background:var(--bg);border-radius:12px;border:1px dashed #cbd5e1}
 .doc-card{display:flex;gap:1rem;padding:1rem;background:var(--bg);border-radius:12px;margin-bottom:0.75rem;border-left:4px solid var(--blue);align-items:center;flex-wrap:wrap}
-.doc-card.verified{border-left-color:var(--success)}
-.doc-card.rejected{border-left-color:var(--danger)}
-.doc-thumb{width:80px;height:60px;border-radius:8px;object-fit:cover;background:#fff;cursor:pointer;border:2px solid #e2e8f0}
 .doc-info{flex:1;min-width:180px}
 .doc-info .doc-name{font-weight:700;color:var(--navy);font-size:0.9rem}
 .doc-info .doc-meta{font-size:0.75rem;color:var(--text-secondary);margin-top:2px}
-.doc-actions{display:flex;gap:6px;flex-wrap:wrap}
 .students-table-wrap{overflow-x:auto;background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);-webkit-overflow-scrolling:touch}
 .students-table{width:100%;min-width:1300px;border-collapse:collapse}
 .students-table thead{background:var(--navy);color:#fff;position:sticky;top:0;z-index:5}
@@ -295,14 +318,9 @@ table tbody tr:hover{background:#f8fafc}
 .action-btn.approve{background:#dcfce7;color:#166534}
 .action-btn.reject{background:#fee2e2;color:#991b1b}
 .action-btn.documents{background:#dbeafe;color:#1e40af}
-.action-btn.progress{background:#fef3c7;color:#92400e}
 .action-btn.view{background:#f1f5f9;color:#334155}
 .action-btn.payments{background:#dcfce7;color:#16a34a}
 .action-btn.sponsorship{background:#fce7f3;color:#9d174d}
-.action-btn.certificate{background:#fef3c7;color:#a16207}
-.overall-progress{background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:14px;text-align:center;margin-bottom:1.5rem}
-.overall-progress .big-pct{font-size:3rem;font-weight:900;color:var(--gold);line-height:1}
-.overall-progress .big-lbl{font-size:0.8rem;text-transform:uppercase;letter-spacing:2px;opacity:0.8;margin-top:0.4rem}
 .sponsorship-card{background:linear-gradient(135deg,#fce7f3,#fef2f2);border:2px solid #fbcfe8;border-radius:12px;padding:1.25rem;margin-bottom:1rem}
 .sponsorship-card.full{background:linear-gradient(135deg,#dcfce7,#f0fdf4);border-color:#bbf7d0}
 .sponsorship-card.partial{background:linear-gradient(135deg,#fef3c7,#fffbeb);border-color:#fde68a}
@@ -311,10 +329,6 @@ table tbody tr:hover{background:#f8fafc}
 .discount-price-row s{color:var(--text-secondary);font-size:0.8rem;margin-right:6px}
 .discount-price-row .discounted{color:var(--gold);font-weight:800;font-size:1.15rem}
 .lesson-material{display:flex;align-items:center;gap:10px;padding:0.75rem;background:var(--bg);border-radius:8px;margin-bottom:0.5rem}
-.lesson-material i.file-icon{font-size:1.2rem}
-.lesson-material .mat-name{flex:1;color:var(--navy);font-weight:600}
-.hidden{display:none!important}
-.text-center{text-align:center}
 
 /* GROUPS / CHAT */
 .group-msg-box{display:flex;flex-direction:column;gap:0.75rem}
@@ -325,13 +339,222 @@ table tbody tr:hover{background:#f8fafc}
 .chat-meta .chat-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem}
 .chat-meta .chat-avatar.admin{background:var(--gold)}
 
+/* ═══════════════════════════════════════════════════════════
+   PROFESSIONAL COURSE LEARNING PAGE (NX)
+   ═══════════════════════════════════════════════════════════ */
+.nx-learning{background:#F5F8FC;min-height:100vh;padding:0}
+
+/* Course nav tabs */
+.nx-course-nav{background:#FFFFFF;border-bottom:1px solid #D9E5F2;position:sticky;top:64px;z-index:50;box-shadow:0 1px 3px rgba(20,43,74,0.04)}
+.nx-course-nav-inner{max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex;gap:0.25rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
+.nx-course-nav-tab{padding:1rem 1.25rem;font-size:0.88rem;font-weight:600;color:#60758C;display:inline-flex;align-items:center;gap:0.5rem;cursor:pointer;border-bottom:3px solid transparent;white-space:nowrap;transition:all 0.15s;background:transparent;border-top:none;border-left:none;border-right:none;font-family:inherit}
+.nx-course-nav-tab:hover{color:#142B4A;background:#F5F8FC}
+.nx-course-nav-tab.active{color:#087FF5;border-bottom-color:#087FF5}
+.nx-course-nav-tab i{font-size:0.82rem}
+
+/* Payment banner */
+.nx-payment-banner{background:linear-gradient(135deg,#EEF7FF 0%,#F0F8FF 100%);border:1px solid #B9D9FF;border-radius:12px;padding:1rem 1.25rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap}
+.nx-payment-banner.locked{background:linear-gradient(135deg,#FEF3C7 0%,#FFFBEB 100%);border-color:#FDE68A}
+.nx-payment-banner.full{background:linear-gradient(135deg,#E8F8EF 0%,#F0FDF4 100%);border-color:#BBF7D0}
+.nx-payment-banner .info{flex:1;min-width:200px}
+.nx-payment-banner .label{font-size:0.72rem;color:#64748B;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px}
+.nx-payment-banner .numbers{display:flex;gap:1.25rem;flex-wrap:wrap;font-size:0.88rem;color:#142B4A}
+.nx-payment-banner .numbers strong{color:#087FF5;font-weight:800}
+.nx-payment-banner .numbers .balance strong{color:#DC2626}
+.nx-payment-banner .actions{display:flex;gap:0.5rem}
+.nx-payment-progress{width:100%;height:6px;background:#DCE6EF;border-radius:3px;overflow:hidden;margin-top:0.6rem}
+.nx-payment-progress .fill{height:100%;background:linear-gradient(90deg,#087FF5,#16A765);border-radius:3px;transition:width 0.5s ease}
+
+/* Header band */
+.nx-course-header{background:linear-gradient(135deg,#061F46 0%,#142B4A 100%);color:#fff;padding:2rem 1.5rem;position:relative;overflow:hidden}
+.nx-course-header::before{content:'';position:absolute;top:-50%;right:-5%;width:400px;height:400px;background:radial-gradient(circle,rgba(8,127,245,0.28) 0%,transparent 70%);border-radius:50%}
+.nx-course-header-inner{max-width:1400px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1.5rem;flex-wrap:wrap;position:relative;z-index:1}
+.nx-course-header-left{display:flex;align-items:center;gap:1.25rem;flex:1;min-width:280px}
+.nx-course-header-icon{width:76px;height:76px;border-radius:16px;background:linear-gradient(135deg,#087FF5,#0B5FB8);display:flex;align-items:center;justify-content:center;flex-shrink:0;box-shadow:0 8px 24px rgba(8,127,245,0.3)}
+.nx-course-header-icon i{font-size:2.2rem;color:#fff}
+.nx-course-header-meta h1{font-size:1.65rem;font-weight:800;color:#fff;margin:0 0 0.35rem;letter-spacing:-0.5px}
+.nx-course-header-meta p{color:rgba(255,255,255,0.78);font-size:0.92rem;margin:0 0 0.7rem}
+.nx-course-header-badges{display:flex;gap:0.5rem;flex-wrap:wrap}
+.nx-course-header-badges span{display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.1);padding:5px 11px;border-radius:50px;border:1px solid rgba(255,255,255,0.14);font-size:0.76rem;color:rgba(255,255,255,0.88)}
+.nx-course-header-badges i{color:#7CB8FF;font-size:0.72rem}
+.nx-header-progress{display:flex;flex-direction:column;align-items:center;gap:0.4rem;min-width:170px}
+.nx-header-ring{position:relative;width:78px;height:78px}
+.nx-header-ring svg{transform:rotate(-90deg);width:78px;height:78px}
+.nx-header-ring .bg{fill:none;stroke:rgba(255,255,255,0.15);stroke-width:8}
+.nx-header-ring .fg{fill:none;stroke:#16A765;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.6s ease}
+.nx-header-ring .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.05rem;font-weight:800;color:#fff}
+.nx-header-progress .lbl{font-size:0.68rem;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:1.5px;font-weight:600}
+.nx-header-progress .cnt{font-size:0.76rem;color:rgba(255,255,255,0.9)}
+
+/* 3-column body */
+.nx-body{max-width:1400px;margin:0 auto;padding:1.25rem 1.5rem;display:grid;grid-template-columns:290px 1fr 300px;gap:1.25rem;align-items:start}
+@media(max-width:1150px){.nx-body{grid-template-columns:1fr;gap:1rem}}
+
+.nx-card{background:#FFFFFF;border-radius:14px;border:1px solid #D9E5F2;overflow:hidden}
+.nx-card-title{padding:1rem 1.25rem;border-bottom:1px solid #EEF3F9;font-weight:700;color:#142B4A;font-size:0.92rem;display:flex;align-items:center;gap:0.55rem}
+.nx-card-title i{color:#087FF5;font-size:0.88rem}
+.nx-card-body{padding:1.25rem}
+
+/* Left: modules */
+.nx-modules{position:sticky;top:200px;max-height:calc(100vh - 220px);overflow-y:auto;padding-right:4px}
+@media(max-width:1150px){.nx-modules{position:static;max-height:none}}
+.nx-module{background:#FFFFFF;border-radius:12px;margin-bottom:0.65rem;border:1px solid #D9E5F2;overflow:hidden;transition:all 0.2s}
+.nx-module.active{background:#EEF7FF;border-color:#B9D9FF}
+.nx-module-head{padding:0.85rem 1rem;display:flex;align-items:center;gap:0.7rem;cursor:pointer;user-select:none}
+.nx-module-num{width:30px;height:30px;border-radius:50%;background:#F0F4F8;color:#6F879F;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:0.82rem;flex-shrink:0}
+.nx-module.active .nx-module-num{background:#087FF5;color:#fff}
+.nx-module-info{flex:1;min-width:0}
+.nx-module-title{font-weight:700;color:#142B4A;font-size:0.86rem;line-height:1.3}
+.nx-module-sub{font-size:0.7rem;color:#64748B;margin-top:2px}
+.nx-module-chevron{color:#94A3B8;font-size:0.72rem;transition:transform 0.2s}
+.nx-module.active .nx-module-chevron{transform:rotate(180deg)}
+.nx-module-bar{height:4px;background:#DCE6EF;border-radius:2px;margin:0 1rem 0.7rem;overflow:hidden}
+.nx-module.active .nx-module-bar{background:rgba(8,127,245,0.15)}
+.nx-module-bar-fill{height:100%;background:#087FF5;border-radius:2px;transition:width 0.5s ease}
+.nx-lessons{display:none;padding:0 0.5rem 0.7rem}
+.nx-module.active .nx-lessons{display:block}
+.nx-lesson{display:flex;align-items:center;gap:0.6rem;padding:0.65rem 0.75rem;border-radius:8px;cursor:pointer;margin-bottom:2px;transition:all 0.15s;border:2px solid transparent;position:relative}
+.nx-lesson:hover{background:#F5F8FC}
+.nx-lesson.active{background:#F0F8FF;border-color:#5AA9FF}
+.nx-lesson.locked{opacity:0.7;cursor:not-allowed}
+.nx-lesson.locked:hover{background:transparent}
+.nx-lesson-icon{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:0.7rem;flex-shrink:0;background:#EEF3F9;color:#64748B}
+.nx-lesson.active .nx-lesson-icon{background:#087FF5;color:#fff}
+.nx-lesson.completed .nx-lesson-icon{background:#16A765;color:#fff}
+.nx-lesson.locked .nx-lesson-icon{background:#FEF3C7;color:#D97706}
+.nx-lesson-info{flex:1;min-width:0}
+.nx-lesson-title{color:#142B4A;font-weight:600;line-height:1.3;font-size:0.8rem}
+.nx-lesson.active .nx-lesson-title{color:#087FF5}
+.nx-lesson-sub{font-size:0.68rem;color:#64748B;margin-top:2px;display:flex;align-items:center;gap:4px}
+.nx-lesson-sub i{font-size:0.62rem;color:#94A3B8}
+.nx-lesson-check{color:#16A765;font-size:0.85rem;flex-shrink:0}
+.nx-lesson-lock{color:#D97706;font-size:0.82rem;flex-shrink:0}
+
+/* Center: lesson content */
+.nx-lesson-main{background:#FFFFFF;border-radius:14px;border:1px solid #D9E5F2;padding:1.5rem;min-width:0}
+.nx-breadcrumb{display:flex;align-items:center;gap:8px;color:#60758C;font-size:0.83rem;margin-bottom:1rem;flex-wrap:wrap}
+.nx-breadcrumb a,.nx-breadcrumb span.lnk{color:#60758C;cursor:pointer;text-decoration:none}
+.nx-breadcrumb a:hover,.nx-breadcrumb span.lnk:hover{color:#087FF5}
+.nx-breadcrumb i{font-size:0.62rem;color:#94A3B8}
+.nx-lesson-title-row{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;margin-bottom:0.7rem;flex-wrap:wrap}
+.nx-lesson-title{font-size:1.4rem;color:#142B4A;font-weight:800;letter-spacing:-0.3px;margin:0;flex:1;min-width:200px}
+.nx-completed-badge{background:#E8F8EF;color:#16A765;padding:5px 14px;border-radius:50px;font-size:0.74rem;font-weight:700;display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
+.nx-completed-badge i{font-size:0.68rem}
+.nx-lesson-meta{display:flex;gap:1rem;font-size:0.8rem;color:#60758C;margin-bottom:1.2rem;flex-wrap:wrap}
+.nx-lesson-meta span{display:inline-flex;align-items:center;gap:6px}
+.nx-lesson-meta i{color:#94A3B8;font-size:0.78rem}
+.nx-video{background:#061F46;border-radius:12px;overflow:hidden;margin-bottom:1.4rem;aspect-ratio:16/9;position:relative}
+.nx-video video{width:100%;height:100%;display:block}
+.nx-overview h3{color:#142B4A;font-size:0.98rem;font-weight:700;margin:0 0 0.55rem}
+.nx-overview p{color:#52657A;font-size:0.88rem;line-height:1.7;margin:0 0 1rem}
+.nx-key-topics{background:#EEF7FF;border-radius:12px;padding:1.15rem;margin-bottom:1.4rem}
+.nx-key-topics h4{color:#142B4A;font-size:0.9rem;font-weight:700;margin:0 0 0.7rem}
+.nx-key-topics ul{list-style:none;padding:0;margin:0}
+.nx-key-topics li{display:flex;align-items:flex-start;gap:0.5rem;color:#334E68;font-size:0.83rem;line-height:1.55;margin-bottom:0.45rem}
+.nx-key-topics li:last-child{margin-bottom:0}
+.nx-key-topics li i{color:#087FF5;font-size:0.78rem;margin-top:4px;flex-shrink:0}
+.nx-tabs{display:flex;gap:0.35rem;margin:1.4rem 0 0.9rem;flex-wrap:wrap}
+.nx-tab{padding:0.5rem 1rem;border-radius:8px;font-size:0.82rem;font-weight:600;cursor:pointer;color:#52657A;background:#F3F7FB;display:inline-flex;align-items:center;gap:6px;transition:all 0.15s;border:none;font-family:inherit}
+.nx-tab:hover{background:#E8F0F9;color:#142B4A}
+.nx-tab.active{background:#087FF5;color:#FFFFFF}
+.nx-tab i{font-size:0.76rem}
+.nx-tab-content{display:none;padding:0.9rem 0}
+.nx-tab-content.active{display:block}
+.nx-tab-content h4{color:#142B4A;font-size:0.95rem;font-weight:700;margin:0 0 0.7rem}
+.nx-notes-body{color:#52657A;font-size:0.88rem;line-height:1.7;white-space:pre-wrap}
+.nx-resource{display:flex;align-items:center;gap:0.7rem;padding:0.8rem 1rem;background:#F0F8FF;border-radius:10px;margin-bottom:0.5rem;text-decoration:none;transition:all 0.15s;border:1px solid #E0EDF7}
+.nx-resource:hover{border-color:#5AA9FF;background:#E6F3FF}
+.nx-resource-icon{width:36px;height:36px;border-radius:8px;background:#FFFFFF;color:#E53935;display:flex;align-items:center;justify-content:center;font-size:1rem;flex-shrink:0}
+.nx-resource-icon.img{color:#087FF5}
+.nx-resource-icon.doc{color:#4338CA}
+.nx-resource-info{flex:1;min-width:0}
+.nx-resource-name{color:#142B4A;font-weight:600;font-size:0.83rem;word-break:break-word}
+.nx-resource-meta{font-size:0.7rem;color:#64748B;margin-top:2px}
+.nx-resource-dl{color:#087FF5;font-size:0.95rem;padding:6px 10px;border-radius:6px;flex-shrink:0}
+.nx-discussion{text-align:center;padding:2.2rem 1rem;background:#F0F8FF;border-radius:12px}
+.nx-discussion i{font-size:2.2rem;color:#087FF5;margin-bottom:0.7rem;display:block}
+.nx-discussion h4{color:#142B4A;font-size:0.95rem;font-weight:700;margin:0 0 0.4rem}
+.nx-discussion p{color:#64748B;font-size:0.83rem;margin:0 0 1rem;line-height:1.55}
+.nx-join-btn{display:inline-flex;align-items:center;gap:8px;background:#087FF5;color:#fff;padding:10px 22px;border-radius:50px;font-weight:700;font-size:0.83rem;border:none;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.nx-join-btn:hover{background:#0B5FB8;transform:translateY(-1px)}
+.nx-assignment{background:#FEF3C7;border-left:4px solid #F59E0B;padding:1rem 1.15rem;border-radius:8px;color:#78350F;font-size:0.88rem;line-height:1.7;white-space:pre-wrap}
+.nx-actions{display:flex;justify-content:space-between;align-items:center;gap:0.7rem;margin-top:1.6rem;padding-top:1.4rem;border-top:1px solid #EEF3F9;flex-wrap:wrap}
+.nx-btn{padding:11px 22px;border-radius:50px;font-weight:700;font-size:0.87rem;display:inline-flex;align-items:center;gap:8px;border:none;cursor:pointer;font-family:inherit;transition:all 0.15s}
+.nx-btn-complete{background:#EAF5FF;color:#087FF5;border:2px solid #087FF5}
+.nx-btn-complete:hover{background:#087FF5;color:#fff}
+.nx-btn-complete.done{background:#16A765;color:#fff;border-color:#16A765}
+.nx-btn-next{background:#087FF5;color:#fff}
+.nx-btn-next:hover{background:#0B5FB8}
+.nx-btn-prev{background:#fff;color:#60758C;border:2px solid #D9E5F2}
+.nx-btn-prev:hover{border-color:#087FF5;color:#087FF5}
+
+/* Locked overlay */
+.nx-locked{text-align:center;padding:3rem 1.5rem;background:linear-gradient(135deg,#FEF3C7 0%,#FFFBEB 100%);border:2px dashed #FDE68A;border-radius:14px;margin:1rem 0}
+.nx-locked .lock-icon{width:70px;height:70px;border-radius:50%;background:#FFFFFF;color:#D97706;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1rem;box-shadow:0 4px 12px rgba(217,119,6,0.15)}
+.nx-locked h3{color:#78350F;font-size:1.15rem;font-weight:800;margin:0 0 0.5rem}
+.nx-locked p{color:#92400E;font-size:0.88rem;margin:0 0 1.5rem;line-height:1.6;max-width:480px;margin-left:auto;margin-right:auto}
+.nx-locked .pay-btn{background:#087FF5;color:#fff;padding:12px 28px;border-radius:50px;font-weight:700;font-size:0.9rem;border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
+.nx-locked .pay-btn:hover{background:#0B5FB8}
+
+/* Admission block */
+.nx-admission-block{max-width:520px;margin:4rem auto;text-align:center;background:#fff;border-radius:16px;padding:2.5rem 2rem;box-shadow:0 8px 40px rgba(11,31,58,0.12)}
+.nx-admission-block .icon{width:80px;height:80px;border-radius:50%;background:linear-gradient(135deg,#FEF3C7,#FFFBEB);color:#D97706;display:flex;align-items:center;justify-content:center;font-size:2rem;margin:0 auto 1.25rem}
+.nx-admission-block h2{color:#142B4A;font-size:1.35rem;font-weight:800;margin:0 0 0.6rem}
+.nx-admission-block p{color:#64748B;font-size:0.92rem;margin:0 0 1.5rem;line-height:1.6}
+.nx-admission-block .fee{font-size:2.2rem;font-weight:900;color:#087FF5;margin:1rem 0}
+.nx-admission-block .pay-btn{background:#087FF5;color:#fff;padding:14px 32px;border-radius:50px;font-weight:700;font-size:0.95rem;border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;gap:8px}
+.nx-admission-block .pay-btn:hover{background:#0B5FB8}
+
+/* Right: sidebar */
+.nx-side{display:flex;flex-direction:column;gap:0.9rem}
+@media(max-width:1150px){.nx-side{display:grid;grid-template-columns:1fr 1fr;gap:1rem}}
+@media(max-width:640px){.nx-side{grid-template-columns:1fr}}
+.nx-progress{background:#FFFFFF;border-radius:14px;border:1px solid #D9E5F2;padding:1.4rem}
+.nx-progress-head{display:flex;align-items:center;gap:0.9rem;margin-bottom:0.9rem}
+.nx-progress-ring{position:relative;width:68px;height:68px;flex-shrink:0}
+.nx-progress-ring svg{transform:rotate(-90deg);width:68px;height:68px}
+.nx-progress-ring .bg{fill:none;stroke:#DCE6EF;stroke-width:8}
+.nx-progress-ring .fg{fill:none;stroke:#16A765;stroke-width:8;stroke-linecap:round;transition:stroke-dashoffset 0.6s ease}
+.nx-progress-ring .txt{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.95rem;font-weight:800;color:#142B4A}
+.nx-progress-info{flex:1}
+.nx-progress-info .big{font-size:0.88rem;color:#142B4A;font-weight:600;margin-bottom:0.25rem}
+.nx-progress-info .sub{font-size:0.76rem;color:#64748B}
+.nx-progress-bar{height:6px;background:#DCE6EF;border-radius:3px;overflow:hidden;margin-top:0.5rem}
+.nx-progress-bar-fill{height:100%;background:#16A765;border-radius:3px;transition:width 0.5s ease}
+.nx-mod-progress{display:flex;justify-content:space-between;align-items:center;padding:0.6rem 0;border-bottom:1px solid #F5F8FC;font-size:0.82rem}
+.nx-mod-progress:last-child{border-bottom:none}
+.nx-mod-progress .left{display:flex;align-items:center;gap:8px;color:#142B4A;font-weight:500}
+.nx-mod-progress .circle{width:18px;height:18px;border-radius:50%;border:2px solid #B8C7D6;background:transparent;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:0.58rem;color:transparent}
+.nx-mod-progress.done .circle{background:#16A765;border-color:#16A765;color:#fff}
+.nx-mod-progress .count{color:#64748B;font-size:0.76rem}
+.nx-continue-btn{width:100%;background:#087FF5;color:#fff;padding:11px;border-radius:50px;font-weight:700;font-size:0.86rem;border:none;cursor:pointer;font-family:inherit;display:inline-flex;align-items:center;justify-content:center;gap:8px;margin-top:0.9rem;transition:all 0.15s}
+.nx-continue-btn:hover{background:#0B5FB8}
+.nx-info-row{display:flex;justify-content:space-between;align-items:center;padding:0.55rem 0;font-size:0.82rem;border-bottom:1px solid #F5F8FC}
+.nx-info-row:last-child{border-bottom:none}
+.nx-info-label{color:#64748B;display:flex;align-items:center;gap:0.5rem}
+.nx-info-label i{color:#087FF5;width:16px;font-size:0.78rem}
+.nx-info-value{color:#52657A;font-weight:600;text-align:right}
+.nx-join-card{background:#FFFFFF;border-radius:14px;border:1px solid #D9E5F2;padding:1.2rem;text-align:center}
+.nx-join-icon{width:50px;height:50px;border-radius:12px;background:#EAF5FF;color:#087FF5;display:flex;align-items:center;justify-content:center;font-size:1.35rem;margin:0 auto 0.7rem}
+.nx-join-card h4{color:#142B4A;font-weight:700;font-size:0.9rem;margin:0 0 0.4rem}
+.nx-join-card p{color:#64748B;font-size:0.8rem;margin:0 0 0.85rem;line-height:1.5}
+.nx-next-card{background:#FFFFFF;border-radius:14px;border:1px solid #D9E5F2;padding:1.2rem;cursor:pointer;transition:all 0.15s}
+.nx-next-card:hover{border-color:#5AA9FF;box-shadow:0 4px 16px rgba(8,127,245,0.1)}
+.nx-next-card .label{font-size:0.68rem;color:#64748B;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:0.55rem}
+.nx-next-card .row{display:flex;align-items:center;gap:0.7rem}
+.nx-next-card .ico{width:36px;height:36px;border-radius:10px;background:#EAF5FF;color:#087FF5;display:flex;align-items:center;justify-content:center;font-size:0.95rem;flex-shrink:0}
+.nx-next-card .txt{flex:1;min-width:0}
+.nx-next-card .txt .t{font-weight:700;color:#142B4A;font-size:0.86rem;line-height:1.3;margin-bottom:2px}
+.nx-next-card .txt .d{font-size:0.72rem;color:#64748B}
+.nx-next-card .arrow{color:#087FF5;font-size:0.95rem}
+
+/* Responsive */
 @media(max-width:1024px){.stats-grid{grid-template-columns:repeat(2,1fr)}.footer .container{grid-template-columns:1fr 1fr}.app-filters{grid-template-columns:1fr 1fr}}
 @media(max-width:768px){.sidebar{width:280px;padding-top:60px}.main-content{margin-left:0!important}.form-row{grid-template-columns:1fr}.stats-grid{grid-template-columns:1fr}.page-content{padding:16px}.footer .container{grid-template-columns:1fr}.top-nav .brand .tagline{display:none}.top-nav .nav-links{gap:0.8rem}.top-nav .nav-links a{font-size:0.85rem}.landing-hero h1{font-size:2.2rem}.app-filters{grid-template-columns:1fr}}
 @media(max-width:480px){.page-content{padding:12px}.stat-card .stat-number{font-size:1.8rem}.landing-hero h1{font-size:1.8rem}.top-nav .brand .brand-text{font-size:1.1rem}}
 </style>
 </head>
 <body>
-
 <!-- Google Tag Manager (noscript) -->
 <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-POPX4NXC"
 height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
@@ -465,9 +688,9 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </div>
 
-  <div id="page-notifications" class="page">
-  <h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notification Settings</h2>
-  <div id="notificationPrefsContent"></div>
+<div id="page-notifications" class="page">
+<h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notification Settings</h2>
+<div id="notificationPrefsContent"></div>
 </div>
 
 <div id="page-register" class="page">
@@ -491,7 +714,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="form-group"><label>Phone <span class="required">*</span></label><input type="tel" id="regPhone" required placeholder="+254 7XX XXX XXX"></div>
 </div>
 <div class="form-row">
-<div class="form-group"><label>Date of Birth <span class="required">*</span></label><input type="date" id="regDob" required max=""><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.3rem"><i class="fas fa-info-circle"></i> Today or earlier only</div></div>
+<div class="form-group"><label>Date of Birth <span class="required">*</span></label><input type="date" id="regDob" required><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.3rem"><i class="fas fa-info-circle"></i> Today or earlier only</div></div>
 <div class="form-group"><label>Country <span class="required">*</span></label><div style="position:relative"><input type="text" id="regCountry" required placeholder="Start typing..." autocomplete="off" oninput="filterCountries(this.value)" onfocus="filterCountries(this.value)"><div id="countryDropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:2px solid #e2e8f0;border-radius:10px;max-height:220px;overflow-y:auto;z-index:50;box-shadow:0 8px 24px rgba(11,31,58,0.15)"></div></div></div>
 </div>
 <div class="form-group"><label>Course of Interest <span class="required">*</span></label><select id="regCourseInterest" required><option value="">Select a course...</option></select></div>
@@ -586,7 +809,15 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="page-student-dashboard" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-tachometer-alt" style="color:var(--gold)"></i> My Dashboard</h2><div id="studentDashboardContent"></div></div>
 <div id="page-student-wallet" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-wallet" style="color:var(--gold)"></i> Wallet & Payments</h2><div id="studentWalletContent"></div></div>
 <div id="page-student-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> My Courses</h2><div id="studentCoursesList"></div></div>
+
+<!-- ═══ NEW: Professional Learning Page ═══ -->
+<div id="page-learning" class="page">
+  <div class="nx-learning" id="nxLearningContent"></div>
+</div>
+
+<!-- Legacy viewer kept as fallback (unused if learning works) -->
 <div id="page-student-course-viewer" class="page"><div id="studentCourseViewerContent"></div></div>
+
 <div id="page-student-results" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-list" style="color:var(--gold)"></i> My Results</h2><div id="studentResultsTable"></div></div>
 <div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>
 <div id="page-student-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> My Certificates</h2><div id="studentCertificatesList"></div></div>
@@ -612,7 +843,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <div id="page-admin-applications" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user-clock" style="color:var(--gold)"></i> Student Applications</h2><div id="adminApplicationsList"></div></div>
 <div id="page-admin-students" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-users" style="color:var(--gold)"></i> Students</h2><div id="adminStudentsList"></div></div>
-
 <div id="page-admin-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book" style="color:var(--gold)"></i> All Courses</h2><div id="adminCoursesList" class="courses-grid"></div></div>
 
 <div id="page-admin-builder" class="page">
@@ -632,7 +862,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div style="font-size:1.2rem;font-weight:700;color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-info-circle" style="color:var(--gold)"></i> Basic Course Information</div>
 <div class="form-row"><div class="form-group"><label>Course Title <span class="required">*</span></label><input type="text" id="courseTitle"></div><div class="form-group"><label>Course Code</label><input type="text" id="courseCode" placeholder="e.g., NXA-CP-101"></div></div>
 <div class="form-row"><div class="form-group"><label>Category</label><select id="courseCategory"><option>IT & Technology</option><option>Business</option><option>Finance</option><option>Education</option><option>Design</option><option>Marketing</option><option>Personal Development</option><option>Other</option></select></div><div class="form-group"><label>Level</label><select id="courseLevel"><option>Beginner</option><option>Intermediate</option><option>Advanced</option><option>Professional</option></select></div></div>
-<div class="form-group"><label>Course Cover Image</label><div class="file-upload-container" onclick="document.getElementById('courseImageInput').click()"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-text">Click to upload</div><input type="file" id="courseImageInput" accept="image/*" onchange="handleImageUpload(event)"></div><div id="imagePreviewContainer" style="margin-top:0.8rem;display:none"><img id="imagePreview" style="max-width:200px;border-radius:10px"></div></div>
+<div class="form-group"><label>Course Cover Image</label><div class="file-upload-container" onclick="document.getElementById('courseImageInput').click()"><div class="upload-icon"><i class="fas fa-cloud-upload-alt"></i></div><div class="upload-text">Click to upload</div><input type="file" id="courseImageInput" accept="image/*" onchange="handleImageUpload(event)"></div><div id="imagePreviewContainer" style="margin-top:0.8rem;display:none"><img id="imagePreview" alt="Course cover preview" style="max-width:200px;border-radius:10px"></div></div>
 <div class="form-group"><label>Description <span class="required">*</span></label><textarea id="courseDescription" rows="4"></textarea></div>
 <div class="form-row"><div class="form-group"><label>Instructor</label><input type="text" id="courseInstructor" placeholder="e.g., Dr. Kelvin M. Obieing"></div><div class="form-group"><label>Duration</label><input type="text" id="courseDuration" placeholder="e.g., 6 Weeks"></div></div>
 <div style="display:flex;justify-content:flex-end"><button class="btn btn-primary" onclick="saveBasicInfo()"><i class="fas fa-arrow-right"></i> Save & Continue</button></div>
@@ -702,6 +932,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </div>
 
+<!-- MODALS -->
 <div class="modal-backdrop" id="appDetailsModal">
 <div class="modal-box">
 <h2><i class="fas fa-file-alt"></i> Details</h2>
@@ -790,29 +1021,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="modal-box" style="max-width:560px">
 <h2><i class="fas fa-users" style="color:var(--gold)"></i> <span id="groupModalTitle">Create Group</span></h2>
 <input type="hidden" id="groupEditId">
-<div class="form-group">
-<label>Group Name <span class="required">*</span></label>
-<input type="text" id="groupName" placeholder="e.g., Web Development Cohort 2026">
-</div>
-<div class="form-group">
-<label>Description</label>
-<textarea id="groupDescription" rows="3" placeholder="What is this group about?"></textarea>
-</div>
+<div class="form-group"><label>Group Name <span class="required">*</span></label><input type="text" id="groupName" placeholder="e.g., Web Development Cohort 2026"></div>
+<div class="form-group"><label>Description</label><textarea id="groupDescription" rows="3" placeholder="What is this group about?"></textarea></div>
 <div class="form-row">
-<div class="form-group">
-<label>Category</label>
-<select id="groupCategory">
-<option>General</option><option>Course Support</option>
-<option>Study Group</option><option>Announcements</option>
-</select>
-</div>
-<div class="form-group">
-<label>Visibility</label>
-<select id="groupVisibility">
-<option value="public">Public (anyone can join)</option>
-<option value="private">Private (invite only)</option>
-</select>
-</div>
+<div class="form-group"><label>Category</label><select id="groupCategory"><option>General</option><option>Course Support</option><option>Study Group</option><option>Announcements</option></select></div>
+<div class="form-group"><label>Visibility</label><select id="groupVisibility"><option value="public">Public (anyone can join)</option><option value="private">Private (invite only)</option></select></div>
 </div>
 <div style="display:flex;gap:0.5rem;justify-content:flex-end">
 <button type="button" class="btn btn-outline" onclick="closeGroupModal()">Cancel</button>
@@ -849,7 +1062,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
 <div><h4>Support</h4><ul>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
-<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN?s=cl&p=a&mlu=4&ilr=4" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
+<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
 </ul></div>
 <div><h4>Connect</h4><ul>
 <li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
@@ -858,7 +1071,6 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="bottom">&copy; 2026 <span class="gold">Nexora Academy</span>. All rights reserved.</div>
 </div>
 </footer>
-
 <script>
 const API_BASE = 'https://nexora-api-sskg.onrender.com/api';
 const ACTIVATION_FEE_DISPLAY = 0.75;
@@ -900,6 +1112,12 @@ let studentGroupTab = 'mine';
 let groupsPollInterval = null;
 let deleteGroupId = null;
 
+// NEW: learning page state
+let nxCourse = null;        // { id, course, modules, lessons, completed:Set, access:{} }
+let nxLessonId = null;
+let nxTab = 'notes';
+let nxNavTab = 'modules';
+
 const COUNTRIES = ['Kenya','Uganda','Tanzania','Rwanda','Burundi','South Sudan','Ethiopia','Somalia','Djibouti','Eritrea','Nigeria','Ghana','South Africa','Egypt','Morocco','Algeria','Tunisia','Libya','Sudan','Senegal','Ivory Coast','Cameroon','Zambia','Zimbabwe','Botswana','Namibia','Mozambique','Malawi','Angola','United States','United Kingdom','Canada','Australia','India','China','Japan','Germany','France','Italy','Spain','Brazil','Mexico','Argentina','Netherlands','Sweden','Norway','Denmark','Switzerland','Ireland','Belgium','Portugal','Poland','Russia','Turkey','Saudi Arabia','United Arab Emirates','Qatar','Pakistan','Bangladesh','Indonesia','Malaysia','Singapore','Philippines','Thailand','Vietnam','South Korea','New Zealand','Other'];
 
 function esc(s) { return (s == null ? '' : String(s)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
@@ -915,6 +1133,9 @@ function renderPriceHTML(course) {
     return `<span style="color:var(--gold);font-weight:700;font-size:1.1rem">${fmtMoney(course.price)}</span>`;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   AUTH
+   ═══════════════════════════════════════════════════════════ */
 async function bootSession() { try { const { user } = await api('/auth/me'); currentUser = user; } catch (e) { currentUser = null; } }
 async function loginUser(e) {
     e.preventDefault();
@@ -930,6 +1151,9 @@ async function loginUser(e) {
 }
 async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); if (groupsPollInterval) clearInterval(groupsPollInterval); goHome(); }
 
+/* ═══════════════════════════════════════════════════════════
+   NAVIGATION
+   ═══════════════════════════════════════════════════════════ */
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-landing').classList.add('active');
@@ -983,6 +1207,10 @@ function updateTopNav() {
         document.getElementById('topUserLinks').classList.add('hidden');
     }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   SHOW APP — ADMISSION GATE (PAYMENT-BASED, NOT APPROVAL)
+   ═══════════════════════════════════════════════════════════ */
 async function showApp() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('sidebarToggleBar').classList.add('visible');
@@ -999,23 +1227,19 @@ async function showApp() {
     }
     document.getElementById('adminMenu').classList.add('hidden');
     document.getElementById('studentMenu').classList.remove('hidden');
+
+    // Check admission fee ONLY (not admin approval — auto-approved on payment)
     let app = null;
     try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
-    const paidYet = (app && app.payment_status === 'paid')
-                 || (currentUser && currentUser.activationFeePaid === true)
-                 || (currentUser && currentUser.admissionStatus && currentUser.admissionStatus !== 'pending_payment');
-    const approved = (app && app.status === 'approved')
-                  || (currentUser && currentUser.approvals && currentUser.approvals.status === 'approved')
-                  || (currentUser && currentUser.admissionStatus === 'approved');
-    if (!paidYet || !approved) {
+    const admissionPaid = (app && app.payment_status === 'paid')
+                       || (currentUser && currentUser.activationFeePaid === true)
+                       || (currentUser && currentUser.admissionStatus && currentUser.admissionStatus !== 'pending_payment');
+
+    if (!admissionPaid) {
         document.getElementById('page-register').classList.add('active');
-        document.getElementById('pageIndicator').textContent = paidYet ? 'Awaiting Approval' : 'Complete Payment';
+        document.getElementById('pageIndicator').textContent = 'Complete Payment';
         if (app) { const e = document.getElementById('regAppId'); if (e) e.textContent = app.application_id; }
         regGoToStep(3);
-        if (paidYet) {
-            const st3 = document.getElementById('reg-step-3');
-            if (st3) st3.innerHTML = `<div style="text-align:center;padding:1rem 0"><i class="fas fa-hourglass-half" style="font-size:3.5rem;color:var(--blue);margin-bottom:1rem"></i><h2 style="color:var(--navy)">Awaiting Approval</h2><p style="color:var(--text-secondary);margin:1rem 0">Payment received. Awaiting admissions review.</p><div style="background:#dbeafe;padding:1rem;border-radius:12px;margin:1rem 0"><strong>Status:</strong> <span class="badge status-paid">PAID — AWAITING APPROVAL</span></div><button class="btn btn-outline" onclick="location.reload()"><i class="fas fa-sync"></i> Refresh</button></div>`;
-        }
         updateSidebarActive('student-dashboard');
         updateTopNav();
         await updateCounts();
@@ -1028,6 +1252,7 @@ async function showApp() {
     updateTopNav();
     await updateCounts();
 }
+
 function toggleSidebar() {
     sidebarOpen = !sidebarOpen;
     const s = document.getElementById('sidebar'), o = document.getElementById('sidebarOverlay');
@@ -1045,9 +1270,44 @@ function updateSidebarActive(page) {
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => { if (el.onclick && el.onclick.toString().includes(`'${page}'`)) el.classList.add('active'); });
 }
-  const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion','student-profile':'Profile','group-chat':'Group Chat','learning':'Learning'};
+
+const PAGE_NAMES = {
+  'admin-dashboard':'Admin Dashboard',
+  'admin-students':'Students',
+  'admin-applications':'Applications',
+  'admin-courses':'Courses',
+  'admin-builder':'Add Course',
+  'admin-exams':'Exams',
+  'admin-certificates':'Certificates',
+  'admin-groups':'Groups / Discussion',
+  'admin-revenue':'Revenue',
+  'admin-payments':'Payments',
+  'student-dashboard':'Dashboard',
+  'student-wallet':'Wallet',
+  'student-courses':'My Courses',
+  'student-course-viewer':'Course',
+  'student-results':'Results',
+  'student-exams':'Exams',
+  'student-certificates':'Certificates',
+  'student-groups':'Groups / Discussion',
+  'student-profile':'Profile',
+  'group-chat':'Group Chat',
+  'notifications':'Notifications',
+  'learning':'Learning'
+};
+
 async function navigateTo(page) {
     if (!currentUser) { showLogin(); return; }
+    if (page === 'learning') {
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-learning').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Course';
+        updateSidebarActive('student-courses');
+        if (window.innerWidth <= 768) closeSidebar();
+        await renderNxLearning();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return;
+    }
     if (page === 'student-course-viewer') {
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-student-course-viewer').classList.add('active');
@@ -1101,15 +1361,19 @@ async function navigateTo(page) {
         else if (page === 'student-exams') await renderStudentExams();
         else if (page === 'student-certificates') await renderStudentCertificates();
         else if (page === 'student-profile') renderStudentProfile();
+        else if (page === 'notifications') await renderNotificationPrefs();
     } catch (err) { console.error(err); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-  async function renderNotificationPrefs() {
+
+/* ═══════════════════════════════════════════════════════════
+   NOTIFICATIONS
+   ═══════════════════════════════════════════════════════════ */
+async function renderNotificationPrefs() {
     const c = document.getElementById('notificationPrefsContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const p = await api('/notifications/preferences');
-        
         const toggles = [
             { key: 'email_group_messages', label: 'Group messages', desc: 'Someone posts in a group you\'re in', icon: 'fa-comments' },
             { key: 'email_group_announcements', label: 'New group announcements', desc: 'A new group is created', icon: 'fa-bullhorn' },
@@ -1121,23 +1385,16 @@ async function navigateTo(page) {
             { key: 'email_exam_reminders', label: 'Exam reminders', desc: 'CAT/exam unlocks soon', icon: 'fa-pencil-alt' },
             { key: 'email_weekly_digest', label: 'Weekly progress digest', desc: 'Weekly summary of your learning', icon: 'fa-chart-line' },
         ];
-
         c.innerHTML = `
           <div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem">
             <label style="display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer">
               <div>
-                <div style="font-weight:700;color:var(--navy);font-size:1.05rem">
-                  <i class="fas fa-envelope" style="color:var(--gold)"></i> Email notifications
-                </div>
-                <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">
-                  Master switch — turn off to disable all emails
-                </div>
+                <div style="font-weight:700;color:var(--navy);font-size:1.05rem"><i class="fas fa-envelope" style="color:var(--gold)"></i> Email notifications</div>
+                <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">Master switch — turn off to disable all emails</div>
               </div>
-              <input type="checkbox" id="pref_master" ${p.email_enabled !== false ? 'checked' : ''}
-                     style="width:48px;height:26px;accent-color:var(--blue);cursor:pointer" onchange="savePref('email_enabled', this.checked)">
+              <input type="checkbox" id="pref_master" ${p.email_enabled !== false ? 'checked' : ''} style="width:48px;height:26px;accent-color:var(--blue);cursor:pointer" onchange="savePref('email_enabled', this.checked)">
             </label>
           </div>
-
           <div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);opacity:${p.email_enabled !== false ? 1 : 0.5};pointer-events:${p.email_enabled !== false ? 'auto' : 'none'}">
             <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">What to receive</h3>
             <div style="display:grid;gap:0.75rem">
@@ -1145,76 +1402,31 @@ async function navigateTo(page) {
                 <label style="display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:0.9rem 1rem;background:var(--bg);border-radius:12px;cursor:pointer">
                   <div style="display:flex;gap:0.75rem;align-items:center">
                     <i class="fas ${t.icon}" style="color:var(--gold);width:20px;text-align:center"></i>
-                    <div>
-                      <div style="font-weight:600;color:var(--navy);font-size:0.95rem">${t.label}</div>
-                      <div style="font-size:0.8rem;color:var(--text-secondary)">${t.desc}</div>
-                    </div>
+                    <div><div style="font-weight:600;color:var(--navy);font-size:0.95rem">${t.label}</div><div style="font-size:0.8rem;color:var(--text-secondary)">${t.desc}</div></div>
                   </div>
-                  <input type="checkbox" id="pref_${t.key}" ${p[t.key] !== false ? 'checked' : ''}
-                         style="width:22px;height:22px;accent-color:var(--blue);cursor:pointer"
-                         onchange="savePref('${t.key}', this.checked)">
+                  <input type="checkbox" id="pref_${t.key}" ${p[t.key] !== false ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--blue);cursor:pointer" onchange="savePref('${t.key}', this.checked)">
                 </label>
               `).join('')}
             </div>
           </div>
-
-          <div style="text-align:center;margin-top:1.5rem;color:var(--text-secondary);font-size:0.85rem">
-            <i class="fas fa-info-circle"></i> Changes are saved automatically
-          </div>`;
-    } catch (err) {
-        c.innerHTML = '<div class="empty-state">Failed to load preferences.</div>';
-    }
+          <div style="text-align:center;margin-top:1.5rem;color:var(--text-secondary);font-size:0.85rem"><i class="fas fa-info-circle"></i> Changes are saved automatically</div>`;
+    } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load preferences.</div>'; }
 }
-
 async function savePref(key, value) {
     try {
-        const body = {};
-        body[key] = value;
+        const body = {}; body[key] = value;
         await api('/notifications/preferences', { method: 'PUT', body });
-        // Visual feedback
         const el = document.getElementById('pref_' + key);
-        if (el) {
-            const label = el.closest('label');
-            if (label) {
-                label.style.background = '#dcfce7';
-                setTimeout(() => { label.style.background = ''; }, 600);
-            }
-        }
-        // If master was toggled, re-render to enable/disable others
+        if (el) { const label = el.closest('label'); if (label) { label.style.background = '#dcfce7'; setTimeout(() => { label.style.background = ''; }, 600); } }
         if (key === 'email_enabled') await renderNotificationPrefs();
-    } catch (err) {
-        alert('Failed to save: ' + (err.data?.error || err.message));
-    }
+    } catch (err) { alert('Failed to save: ' + (err.data?.error || err.message)); }
 }
-async function updateCounts() {
-    if (!currentUser) return;
-    try {
-        if (currentUser.role === 'admin') {
-            const { counts } = await api('/admin/stats');
-            document.getElementById('studentCount').textContent = counts.students;
-            document.getElementById('courseCount').textContent = counts.courses;
-            const pendingApps = (counts.applications.payment_due || 0) + (counts.applications.paid || 0);
-            document.getElementById('appCount').textContent = pendingApps;
-            try {
-                const { groups } = await api('/groups');
-                const el = document.getElementById('adminGroupCount');
-                if (el) el.textContent = groups.length;
-            } catch (e) {}
-        } else {
-            const { enrollments } = await api('/enrollments');
-            document.getElementById('studentEnrollCount').textContent = enrollments.length;
-            try {
-                const { groups } = await api('/groups');
-                const mine = groups.filter(g => g.is_member).length;
-                const el = document.getElementById('studentGroupCount');
-                if (el) el.textContent = mine;
-            } catch (e) {}
-        }
-    } catch (e) {}
-}
+
+/* ═══════════════════════════════════════════════════════════
+   COUNTRIES / PASSWORD / REGISTER
+   ═══════════════════════════════════════════════════════════ */
 function filterCountries(q) {
-    const dd = document.getElementById('countryDropdown');
-    if (!dd) return;
+    const dd = document.getElementById('countryDropdown'); if (!dd) return;
     const term = (q || '').toLowerCase().trim();
     const matches = term ? COUNTRIES.filter(c => c.toLowerCase().includes(term)) : COUNTRIES;
     if (!matches.length) { dd.innerHTML = '<div class="country-item" style="color:var(--text-secondary)">No matches</div>'; dd.style.display = 'block'; return; }
@@ -1224,8 +1436,7 @@ function filterCountries(q) {
 function selectCountry(c) { document.getElementById('regCountry').value = c; document.getElementById('countryDropdown').style.display = 'none'; }
 document.addEventListener('click', e => { const dd = document.getElementById('countryDropdown'); if (dd && !dd.contains(e.target) && e.target.id !== 'regCountry') dd.style.display = 'none'; });
 function togglePassword(inputId, btn) {
-    const inp = document.getElementById(inputId);
-    if (!inp) return;
+    const inp = document.getElementById(inputId); if (!inp) return;
     if (inp.type === 'password') { inp.type = 'text'; btn.innerHTML = '<i class="fas fa-eye-slash"></i>'; }
     else { inp.type = 'password'; btn.innerHTML = '<i class="fas fa-eye"></i>'; }
 }
@@ -1244,8 +1455,7 @@ function checkPasswordStrength(pw) {
 }
 function regGoToStep(n) {
     document.querySelectorAll('.reg-step').forEach(el => el.classList.remove('active'));
-    const s = document.getElementById('reg-step-' + n);
-    if (s) s.classList.add('active');
+    const s = document.getElementById('reg-step-' + n); if (s) s.classList.add('active');
     document.querySelectorAll('#regStepIndicator .si').forEach(el => {
         const i = parseInt(el.dataset.s);
         el.classList.remove('active', 'done');
@@ -1281,8 +1491,7 @@ async function regStep2() {
         const files = { national_front: document.getElementById('doc_national_front').files[0], national_back: document.getElementById('doc_national_back').files[0], certificate: document.getElementById('doc_certificate').files[0], passport: document.getElementById('doc_passport').files[0] };
         for (const [type, file] of Object.entries(files)) {
             if (!file) continue;
-            const fd = new FormData();
-            fd.append('file', file);
+            const fd = new FormData(); fd.append('file', file);
             try { await apiForm(`/uploads/application-document?application_id=${application.id}&document_type=${type}&scope=applications`, fd); } catch (e) { console.warn('Upload failed for', type, e.message); }
         }
         document.getElementById('regAppId').textContent = application.application_id;
@@ -1298,29 +1507,29 @@ async function payActivationFee() {
     showFlash('feeFlash', '<i class="fas fa-spinner fa-spin"></i> Processing...', 'info');
     try {
         await api('/payments/activation', { method: 'POST' });
-        showFlash('feeFlash', '✅ Payment received! Awaiting admin approval.', 'success');
+        showFlash('feeFlash', '✅ Payment received! You can now access courses.', 'success');
         setTimeout(() => location.reload(), 2000);
     } catch (err) { showFlash('feeFlash', '❌ ' + (err.data?.error || err.message), 'danger'); btn.disabled = false; }
 }
 function goToDashboard() { showApp(); }
 
+/* ═══════════════════════════════════════════════════════════
+   DOCUMENT UPLOAD
+   ═══════════════════════════════════════════════════════════ */
 function handleDocumentUpload(event, docType) {
-    const f = event.target.files[0];
-    if (!f) return;
+    const f = event.target.files[0]; if (!f) return;
     if (f.size > 2 * 1024 * 1024) { alert('⚠️ Max 2MB per file.'); event.target.value = ''; return; }
     const r = new FileReader();
     r.onload = ev => { renderDocPreview(docType, ev.target.result); updateDocSummary(); };
     r.readAsDataURL(f);
 }
 function renderDocPreview(docType, dataUrl) {
-    const c = document.getElementById('preview_' + docType);
-    if (!c) return;
+    const c = document.getElementById('preview_' + docType); if (!c) return;
     c.innerHTML = `<div style="position:relative;display:inline-block;margin-top:0.3rem"><img src="${dataUrl}" style="max-width:100%;max-height:180px;border-radius:10px;border:2px solid var(--success)"></div>`;
     c.style.display = 'block';
 }
 function updateDocSummary() {
-    const sum = document.getElementById('docUploadSummary');
-    if (!sum) return;
+    const sum = document.getElementById('docUploadSummary'); if (!sum) return;
     const count = ['national_front','national_back','certificate','passport'].filter(k => {
         const f = document.getElementById('doc_' + k);
         return f && f.files && f.files[0];
@@ -1328,6 +1537,9 @@ function updateDocSummary() {
     sum.innerHTML = `<strong>📎 ${count} document${count !== 1 ? 's' : ''} selected</strong>`;
 }
 
+/* ═══════════════════════════════════════════════════════════
+   COURSE CARD
+   ═══════════════════════════════════════════════════════════ */
 function renderCourseCardHTML(course, mode, extra = {}) {
     const totalLessons = course.lesson_count || 0;
     const totalModules = course.module_count || 0;
@@ -1335,7 +1547,7 @@ function renderCourseCardHTML(course, mode, extra = {}) {
     let actionBtn;
     if (mode === 'public') actionBtn = `<button class="btn btn-primary btn-sm" onclick="showRegister()">Enroll</button>`;
     else if (mode === 'admin') actionBtn = `<div class="course-card-actions"><button class="btn btn-primary btn-sm" onclick="editCourse('${course.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-warning btn-sm" onclick="toggleCourseStatus('${course.id}', '${course.status}')"><i class="fas fa-${course.status === 'published' ? 'eye-slash' : 'eye'}"></i></button><button class="btn btn-danger btn-sm" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button></div>`;
-    else if (mode === 'student') { actionBtn = extra.enrolled ? `<button class="btn btn-primary btn-sm" onclick="openCourseViewer('${course.id}')"><i class="fas fa-play-circle"></i> Open</button>` : `<button class="btn btn-primary btn-sm" onclick="enrollInCourse('${course.id}')">Enroll</button>`; }
+    else if (mode === 'student') actionBtn = extra.enrolled ? `<button class="btn btn-primary btn-sm" onclick="openCourseViewer('${course.id}')"><i class="fas fa-play-circle"></i> Open</button>` : `<button class="btn btn-primary btn-sm" onclick="enrollInCourse('${course.id}')">Enroll</button>`;
     return `<div class="course-card"><div class="course-image">${course.cover_image_url ? `<img src="${esc(course.cover_image_url)}" style="width:100%;height:100%;object-fit:cover">` : ''}</div><div class="course-body"><h3 class="course-title">${esc(course.title)}</h3><div class="course-meta"><span><i class="fas fa-user-tie"></i> ${esc(course.instructor_name || 'N/A')}</span><span><i class="fas fa-clock"></i> ${esc(course.duration || 'N/A')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
 }
 async function renderPublicCourses() {
@@ -1348,6 +1560,9 @@ async function renderPublicCourses() {
     } catch (err) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Failed to load courses.</div>'; }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ENROLLED CARD
+   ═══════════════════════════════════════════════════════════ */
 function renderEnrolledCard(e) {
     const paid = parseFloat(e.total_course_paid || 0);
     const price = parseFloat(e.course_price || e.price || 0);
@@ -1394,8 +1609,553 @@ async function enrollInCourse(courseId) {
     try { await api('/enrollments', { method: 'POST', body: { course_id: courseId } }); alert('✅ Enrolled!'); await renderStudentCourses(); await updateCounts(); }
     catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
-async function openCourseViewer(courseId) { currentCourseView = { courseId }; currentLessonView = null; await navigateTo('student-course-viewer'); }
 
+/* ═══════════════════════════════════════════════════════════
+   COURSE OPEN — ROUTES TO NEW LEARNING PAGE
+   ═══════════════════════════════════════════════════════════ */
+async function openCourseViewer(courseId) {
+    await openCourseLearning(courseId);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ⭐ PAYMENT-BASED ACCESS CONTROL ENGINE ⭐
+   ═══════════════════════════════════════════════════════════ */
+function computeCourseAccess(course, enrollment, lessons) {
+    const price = parseFloat((enrollment && enrollment.course_price) || course.price || 0);
+    const paid = parseFloat((enrollment && enrollment.total_course_paid) || 0);
+    const balance = Math.max(price - paid, 0);
+    const pct = price > 0 ? Math.min((paid / price) * 100, 100) : 100;
+    const isFullyPaid = paid >= price || price === 0;
+    const hasPaidSomething = paid > 0;
+
+    // Lessons unlock in proportion to payment percentage
+    const totalLessons = lessons.length || 0;
+    const unlockedCount = isFullyPaid
+        ? totalLessons
+        : Math.floor((pct / 100) * totalLessons);
+
+    const lessonIds = lessons.map(l => l.id);
+    const unlockedSet = new Set(lessonIds.slice(0, unlockedCount));
+
+    return {
+        price, paid, balance, pct,
+        isFullyPaid, hasPaidSomething,
+        totalLessons, unlockedCount, unlockedSet,
+        isLocked: !isFullyPaid && !hasPaidSomething ? 'no_payment' : (!isFullyPaid ? 'partial' : null),
+    };
+}
+
+function isLessonUnlocked(access, lessonId) {
+    if (access.isFullyPaid) return true;
+    return access.unlockedSet.has(lessonId);
+}
+
+/* ═══════════════════════════════════════════════════════════
+   ⭐ NEW PROFESSIONAL LEARNING PAGE ⭐
+   ═══════════════════════════════════════════════════════════ */
+async function openCourseLearning(courseId, lessonId) {
+    setLoading(true);
+    try {
+        // Verify admission is paid
+        const admissionCheck = currentUser && (currentUser.activationFeePaid === true || currentUser.admissionStatus === 'approved' || currentUser.admissionStatus === 'active');
+        if (currentUser.role !== 'admin' && !admissionCheck) {
+            let app = null;
+            try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
+            const paid = app && app.payment_status === 'paid';
+            if (!paid) {
+                alert('⚠️ Please pay the $0.75 admission fee first.');
+                showApp();
+                return;
+            }
+        }
+
+        const [{ course, modules, lessons }, progressData, enrollmentsData] = await Promise.all([
+            api(`/courses/${courseId}`),
+            api(`/progress/${courseId}`),
+            api('/enrollments'),
+        ]);
+
+        const enrollment = (enrollmentsData.enrollments || []).find(e => e.course_id === courseId);
+        const completedArr = progressData.completed || [];
+        const access = computeCourseAccess(course, enrollment, lessons || []);
+
+        nxCourse = {
+            id: courseId,
+            course,
+            modules: modules || [],
+            lessons: lessons || [],
+            completed: new Set(completedArr),
+            enrollment: enrollment || null,
+            access,
+        };
+
+        // Pick first unlocked lesson, or first lesson
+        const firstUnlocked = (lessons || []).find(l => isLessonUnlocked(access, l.id));
+        nxLessonId = lessonId && isLessonUnlocked(access, lessonId)
+            ? lessonId
+            : (firstUnlocked ? firstUnlocked.id : (lessons[0] ? lessons[0].id : null));
+
+        nxTab = 'notes';
+        nxNavTab = 'modules';
+
+        document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+        document.getElementById('page-learning').classList.add('active');
+        document.getElementById('pageIndicator').textContent = 'Learning';
+        updateSidebarActive('student-courses');
+        if (window.innerWidth <= 768) closeSidebar();
+        await renderNxLearning();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    } catch (err) {
+        console.error(err);
+        alert('❌ Failed to load course: ' + (err.data?.error || err.message));
+    } finally {
+        setLoading(false);
+    }
+}
+
+async function renderNxLearning() {
+    const c = document.getElementById('nxLearningContent');
+    if (!nxCourse) { c.innerHTML = '<div class="empty-state">Course not loaded.</div>'; return; }
+
+    const { course, modules, lessons, completed, enrollment, access } = nxCourse;
+    const totalLessons = lessons.length;
+    const doneCount = lessons.filter(l => completed.has(l.id)).length;
+    const progressPct = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
+    const headerRingC = 2 * Math.PI * 34;
+    const headerRingOffset = headerRingC - (progressPct / 100) * headerRingC;
+
+    // Admission block — student must pay $0.75 first
+    if (currentUser.role !== 'admin' && !access.hasPaidSomething && !enrollment) {
+        c.innerHTML = `
+          <div class="nx-admission-block">
+            <div class="icon"><i class="fas fa-lock"></i></div>
+            <h2>Enroll to access this course</h2>
+            <p>You need to enroll in this course and make your first payment to unlock learning content.</p>
+            <button class="pay-btn" onclick="navigateTo('student-courses')">
+              <i class="fas fa-arrow-left"></i> Back to My Courses
+            </button>
+          </div>`;
+        return;
+    }
+
+    // Build payment banner
+    const paymentBanner = buildPaymentBanner(access);
+
+    c.innerHTML = `
+      <!-- TOP NAV -->
+      <div class="nx-course-nav">
+        <div class="nx-course-nav-inner">
+          ${renderNxNavTab('overview','Overview','fa-home')}
+          ${renderNxNavTab('modules','Modules','fa-layer-group')}
+          ${renderNxNavTab('discussion','Discussion','fa-comments')}
+          ${renderNxNavTab('assignments','Assignments','fa-file-alt')}
+          ${renderNxNavTab('exam','Exam','fa-pencil-alt')}
+          ${renderNxNavTab('certificate','Certificate','fa-certificate')}
+        </div>
+      </div>
+
+      <!-- HEADER -->
+      <div class="nx-course-header">
+        <div class="nx-course-header-inner">
+          <div class="nx-course-header-left">
+            <div class="nx-course-header-icon"><i class="fas fa-laptop-code"></i></div>
+            <div class="nx-course-header-meta">
+              <h1>${esc(course.title)}</h1>
+              <p>${esc(course.description || '')}</p>
+              <div class="nx-course-header-badges">
+                <span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span>
+                <span><i class="fas fa-tag"></i> ${esc(course.category || 'General')}</span>
+                <span><i class="fas fa-layer-group"></i> ${modules.length} Modules</span>
+                <span><i class="fas fa-play-circle"></i> ${totalLessons} Lessons</span>
+              </div>
+            </div>
+          </div>
+          <div class="nx-header-progress">
+            <div class="nx-header-ring">
+              <svg viewBox="0 0 80 80">
+                <circle class="bg" cx="40" cy="40" r="34"/>
+                <circle class="fg" cx="40" cy="40" r="34" stroke-dasharray="${headerRingC}" stroke-dashoffset="${headerRingOffset}"/>
+              </svg>
+              <div class="txt">${progressPct}%</div>
+            </div>
+            <div class="lbl">Course Progress</div>
+            <div class="cnt">${doneCount} of ${totalLessons} lessons completed</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PAYMENT BANNER -->
+      <div style="max-width:1400px;margin:1rem auto 0;padding:0 1.5rem">
+        ${paymentBanner}
+      </div>
+
+      <!-- BODY -->
+      <div class="nx-body">
+        <div class="nx-modules" id="nxModules"></div>
+        <div class="nx-lesson-main" id="nxLessonMain"></div>
+        <div class="nx-side" id="nxSide"></div>
+      </div>
+    `;
+
+    renderNxModules();
+    renderNxLessonMain();
+    renderNxSide();
+}
+
+function buildPaymentBanner(access) {
+    const { price, paid, balance, pct, isFullyPaid } = access;
+    let cls = '';
+    if (isFullyPaid) cls = 'full';
+    else if (!access.hasPaidSomething) cls = 'locked';
+    const statusText = isFullyPaid ? '✅ Fully Paid' : (!access.hasPaidSomething ? '🔒 No payment yet' : `🔓 ${pct.toFixed(0)}% unlocked`);
+    return `
+      <div class="nx-payment-banner ${cls}">
+        <div class="info">
+          <div class="label">Course Payment · ${statusText}</div>
+          <div class="numbers">
+            <span>Payment: <strong>${pct.toFixed(0)}%</strong></span>
+            <span>Paid: <strong>${fmtMoney(paid)}</strong></span>
+            <span class="balance">Balance: <strong>${fmtMoney(balance)}</strong></span>
+          </div>
+          <div class="nx-payment-progress"><div class="fill" style="width:${pct}%"></div></div>
+        </div>
+        <div class="actions">
+          ${!isFullyPaid ? `<button class="btn btn-success" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>` : ''}
+        </div>
+      </div>`;
+}
+
+function renderNxNavTab(id, label, icon) {
+    const active = nxNavTab === id ? 'active' : '';
+    return `<button class="nx-course-nav-tab ${active}" onclick="switchNxNavTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`;
+}
+
+function switchNxNavTab(tab) {
+    nxNavTab = tab;
+    if (tab === 'overview' || tab === 'modules') { renderNxLearning(); return; }
+    if (tab === 'discussion') { navigateTo('student-groups'); return; }
+    if (tab === 'assignments') { nxTab = 'assignment'; renderNxLearning(); return; }
+    if (tab === 'exam') { navigateTo('student-exams'); return; }
+    if (tab === 'certificate') { navigateTo('student-certificates'); return; }
+}
+
+function renderNxModules() {
+    const { modules, lessons, completed, access } = nxCourse;
+    const container = document.getElementById('nxModules');
+    if (!container) return;
+
+    const currentLesson = lessons.find(l => l.id === nxLessonId);
+    const activeModuleId = currentLesson ? currentLesson.module_id : (modules[0] && modules[0].id);
+
+    container.innerHTML = modules.map((mod, mi) => {
+        const modLessons = lessons.filter(l => l.module_id === mod.id);
+        const modDone = modLessons.filter(l => completed.has(l.id)).length;
+        const isActive = mod.id === activeModuleId;
+        const modPct = modLessons.length ? Math.round((modDone / modLessons.length) * 100) : 0;
+
+        return `
+          <div class="nx-module ${isActive ? 'active' : ''}" data-module-id="${mod.id}">
+            <div class="nx-module-head" onclick="toggleNxModule('${mod.id}')">
+              <div class="nx-module-num">${mi + 1}</div>
+              <div class="nx-module-info">
+                <div class="nx-module-title">${esc(mod.title)}</div>
+                <div class="nx-module-sub">${modDone} / ${modLessons.length} lessons</div>
+              </div>
+              <i class="fas fa-chevron-down nx-module-chevron"></i>
+            </div>
+            <div class="nx-module-bar"><div class="nx-module-bar-fill" style="width:${modPct}%"></div></div>
+            <div class="nx-lessons">
+              ${modLessons.map((les, li) => {
+                  const isDone = completed.has(les.id);
+                  const isCurrent = les.id === nxLessonId;
+                  const unlocked = isLessonUnlocked(access, les.id);
+                  const icon = !unlocked ? 'fa-lock' : (isDone ? 'fa-check' : (les.video_url ? 'fa-play' : 'fa-file-alt'));
+                  const sub = les.video_url ? 'Video' : (les.assignment ? 'Assignment' : 'Text');
+                  return `
+                    <div class="nx-lesson ${isCurrent ? 'active' : ''} ${isDone ? 'completed' : ''} ${!unlocked ? 'locked' : ''}"
+                         onclick="${unlocked ? `selectNxLesson('${les.id}')` : `showLockedMessage()`}">
+                      <div class="nx-lesson-icon"><i class="fas ${icon}"></i></div>
+                      <div class="nx-lesson-info">
+                        <div class="nx-lesson-title">${mi + 1}.${li + 1} ${esc(les.title)}</div>
+                        <div class="nx-lesson-sub">
+                          <i class="fas ${unlocked ? (les.video_url ? 'fa-video' : 'fa-file-alt') : 'fa-lock'}"></i>
+                          ${unlocked ? sub : 'Locked'}${unlocked && les.duration_minutes ? ' · ' + les.duration_minutes + ' min' : ''}
+                        </div>
+                      </div>
+                      ${isDone ? '<i class="fas fa-check-circle nx-lesson-check"></i>' : (!unlocked ? '<i class="fas fa-lock nx-lesson-lock"></i>' : '')}
+                    </div>
+                  `;
+              }).join('')}
+            </div>
+          </div>
+        `;
+    }).join('');
+}
+
+function showLockedMessage() {
+    const access = nxCourse.access;
+    const needed = Math.ceil((access.paid + 0.01) / access.price * 100);
+    alert(`🔒 This lesson is locked.\n\nYou've paid ${access.pct.toFixed(0)}% of this course.\nPay more to unlock this lesson.\n\nBalance: ${fmtMoney(access.balance)}`);
+}
+
+function renderNxLessonMain() {
+    const { course, modules, lessons, completed, access } = nxCourse;
+    const lesson = lessons.find(l => l.id === nxLessonId);
+    const main = document.getElementById('nxLessonMain');
+    if (!main) return;
+
+    if (!lesson) {
+        main.innerHTML = '<div class="empty-state" style="padding:3rem;text-align:center">No lessons in this course yet.</div>';
+        return;
+    }
+
+    // If this lesson is locked
+    if (!isLessonUnlocked(access, lesson.id)) {
+        main.innerHTML = `
+          <div class="nx-locked">
+            <div class="lock-icon"><i class="fas fa-lock"></i></div>
+            <h3>🔒 Locked — Complete more course payment to continue</h3>
+            <p>You've unlocked ${access.pct.toFixed(0)}% of this course (${access.unlockedCount} of ${access.totalLessons} lessons).<br>
+            Pay more to unlock the remaining content.</p>
+            <div style="margin:1rem 0;font-size:0.9rem;color:#92400E">
+              <strong>Balance: ${fmtMoney(access.balance)}</strong>
+            </div>
+            <button class="pay-btn" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Make Payment</button>
+          </div>`;
+        return;
+    }
+
+    const modLessons = lessons.filter(l => l.module_id === lesson.module_id);
+    const lessonIdx = modLessons.findIndex(l => l.id === lesson.id);
+    const mod = modules.find(m => m.id === lesson.module_id);
+    const modNum = modules.findIndex(m => m.id === lesson.module_id) + 1;
+    const lessonNumber = `${modNum}.${lessonIdx + 1}`;
+    const isDone = completed.has(lesson.id);
+    const lessonGlobalIdx = lessons.findIndex(l => l.id === lesson.id);
+    const prevLesson = lessons[lessonGlobalIdx - 1];
+    const nextLesson = lessons[lessonGlobalIdx + 1];
+    const nextUnlocked = nextLesson && isLessonUnlocked(access, nextLesson.id);
+
+    main.innerHTML = `
+      <div class="nx-breadcrumb">
+        <span class="lnk" onclick="navigateTo('student-courses')">← Back</span>
+        <span style="color:#B8C7D6">|</span>
+        <span>Module ${modNum}: ${esc(mod ? mod.title : '')}</span>
+      </div>
+
+      <div class="nx-lesson-title-row">
+        <h1 class="nx-lesson-title">${lessonNumber} ${esc(lesson.title)}</h1>
+        ${isDone ? '<span class="nx-completed-badge"><i class="fas fa-check"></i> Completed</span>' : ''}
+      </div>
+
+      <div class="nx-lesson-meta">
+        ${lesson.video_url ? '<span><i class="fas fa-play-circle"></i> Video</span>' : ''}
+        ${lesson.duration_minutes ? `<span><i class="fas fa-clock"></i> ${lesson.duration_minutes} minutes</span>` : ''}
+        <span><i class="fas fa-calendar"></i> Last updated: ${lesson.updated_at ? fmtDate(lesson.updated_at) : fmtDate(new Date())}</span>
+      </div>
+
+      ${lesson.video_url ? `
+      <div class="nx-video">
+        <video controls preload="metadata">
+          <source src="${esc(lesson.video_url)}" type="video/mp4">
+          Your browser doesn't support video.
+        </video>
+      </div>` : ''}
+
+      <div class="nx-overview">
+        <h3>Lesson Overview</h3>
+        <p>${esc(lesson.description || lesson.notes || 'In this lesson, you will learn the key concepts and practical skills covered in this module.')}</p>
+      </div>
+
+      ${lesson.notes ? `
+      <div class="nx-key-topics">
+        <h4>📌 Key Topics</h4>
+        <ul>
+          ${lesson.notes.split('\n').filter(l => l.trim()).slice(0, 6).map(line =>
+            `<li><i class="fas fa-check"></i> <span>${esc(line.replace(/^[-•*]\s*/, ''))}</span></li>`
+          ).join('')}
+        </ul>
+      </div>` : ''}
+
+      <div class="nx-tabs">
+        ${renderNxTab('notes', 'Notes', 'fa-book')}
+        ${renderNxTab('resources', 'Resources', 'fa-paperclip')}
+        ${renderNxTab('discussion', 'Discussion', 'fa-comments')}
+        ${renderNxTab('assignment', 'Assignment', 'fa-file-signature')}
+      </div>
+
+      <div class="nx-tab-content ${nxTab === 'notes' ? 'active' : ''}" data-tab="notes">
+        <h4>Lesson Notes</h4>
+        <div class="nx-notes-body">${esc(lesson.notes || 'No detailed notes for this lesson.')}</div>
+      </div>
+
+      <div class="nx-tab-content ${nxTab === 'resources' ? 'active' : ''}" data-tab="resources">
+        ${renderNxResources(lesson)}
+      </div>
+
+      <div class="nx-tab-content ${nxTab === 'discussion' ? 'active' : ''}" data-tab="discussion">
+        <div class="nx-discussion">
+          <i class="fas fa-comments"></i>
+          <h4>Discuss this course</h4>
+          <p>Join the course group to ask questions and connect with other learners.</p>
+          <button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group Discussion</button>
+        </div>
+      </div>
+
+      <div class="nx-tab-content ${nxTab === 'assignment' ? 'active' : ''}" data-tab="assignment">
+        <h4>Assignment</h4>
+        ${lesson.assignment ? `<div class="nx-assignment">${esc(lesson.assignment)}</div>` : '<div class="empty-state" style="padding:1.5rem">No assignment for this lesson.</div>'}
+      </div>
+
+      <div class="nx-actions">
+        <button class="nx-btn nx-btn-complete ${isDone ? 'done' : ''}" onclick="toggleNxComplete('${lesson.id}')">
+          <i class="fas fa-${isDone ? 'check-circle' : 'circle'}"></i>
+          ${isDone ? 'Marked Complete' : 'Mark Lesson Complete'}
+        </button>
+        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+          ${prevLesson && isLessonUnlocked(access, prevLesson.id) ? `<button class="nx-btn nx-btn-prev" onclick="selectNxLesson('${prevLesson.id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}
+          ${nextLesson ? (nextUnlocked
+            ? `<button class="nx-btn nx-btn-next" onclick="selectNxLesson('${nextLesson.id}')">Next Lesson <i class="fas fa-arrow-right"></i></button>`
+            : `<button class="nx-btn nx-btn-next" onclick="openPayCourseModal('${nxCourse.id}')" style="background:#FEF3C7;color:#D97706;border:2px solid #FDE68A"><i class="fas fa-lock"></i> Unlock Next</button>`
+          ) : ''}
+        </div>
+      </div>
+    `;
+}
+
+function renderNxTab(id, label, icon) {
+    const active = nxTab === id ? 'active' : '';
+    return `<button class="nx-tab ${active}" onclick="switchNxTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`;
+}
+
+function renderNxResources(lesson) {
+    const pdfs = lesson.pdfs || [];
+    const images = lesson.images || [];
+    const items = [];
+    pdfs.forEach(p => {
+        const isPdf = (p.name || '').toLowerCase().endsWith('.pdf');
+        items.push(`<a href="${esc(p.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon ${isPdf ? '' : 'doc'}"><i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-alt'}"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(p.name || 'Attachment')}</div><div class="nx-resource-meta">${isPdf ? 'PDF Document' : 'Document'}</div></div><i class="fas fa-download nx-resource-dl"></i></a>`);
+    });
+    images.forEach(im => {
+        items.push(`<a href="${esc(im.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon img"><i class="fas fa-image"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(im.name || 'Image')}</div><div class="nx-resource-meta">Image</div></div><i class="fas fa-external-link-alt nx-resource-dl"></i></a>`);
+    });
+    if (!items.length) return '<div class="empty-state" style="padding:1.5rem">No additional resources for this lesson.</div>';
+    return `<h4>Download Resources</h4>${items.join('')}`;
+}
+
+function renderNxSide() {
+    const { course, modules, lessons, completed, access } = nxCourse;
+    const container = document.getElementById('nxSide');
+    if (!container) return;
+
+    const totalLessons = lessons.length;
+    const doneCount = lessons.filter(l => completed.has(l.id)).length;
+    const progressPct = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
+    const ringC = 2 * Math.PI * 30;
+    const ringOffset = ringC - (progressPct / 100) * ringC;
+
+    const modProgress = modules.map((mod, mi) => {
+        const modLessons = lessons.filter(l => l.module_id === mod.id);
+        const modDone = modLessons.filter(l => completed.has(l.id)).length;
+        const allDone = modLessons.length > 0 && modDone === modLessons.length;
+        return `<div class="nx-mod-progress ${allDone ? 'done' : ''}"><div class="left"><span class="circle"><i class="fas fa-check"></i></span> Module ${mi + 1}</div><div class="count">${modDone}/${modLessons.length}</div></div>`;
+    }).join('');
+
+    const currentLesson = lessons.find(l => l.id === nxLessonId);
+    const nextLesson = currentLesson ? lessons[lessons.findIndex(l => l.id === currentLesson.id) + 1] : null;
+    const nextUnlocked = nextLesson && isLessonUnlocked(access, nextLesson.id);
+
+    container.innerHTML = `
+      <div class="nx-progress">
+        <div class="nx-progress-head">
+          <div class="nx-progress-ring">
+            <svg viewBox="0 0 70 70">
+              <circle class="bg" cx="35" cy="35" r="30"/>
+              <circle class="fg" cx="35" cy="35" r="30" stroke-dasharray="${ringC}" stroke-dashoffset="${ringOffset}"/>
+            </svg>
+            <div class="txt">${progressPct}%</div>
+          </div>
+          <div class="nx-progress-info">
+            <div class="big">Course Progress</div>
+            <div class="sub">${doneCount} of ${totalLessons} lessons</div>
+            <div class="nx-progress-bar"><div class="nx-progress-bar-fill" style="width:${progressPct}%"></div></div>
+          </div>
+        </div>
+        ${modProgress}
+        ${nextLesson && nextUnlocked ? `<button class="nx-continue-btn" onclick="selectNxLesson('${nextLesson.id}')">Continue Learning <i class="fas fa-arrow-right"></i></button>` : ''}
+      </div>
+
+      <div class="nx-card">
+        <div class="nx-card-title"><i class="fas fa-circle-info"></i> Course Information</div>
+        <div class="nx-card-body" style="padding:0.75rem 1.25rem">
+          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-barcode"></i> Course Code</span><span class="nx-info-value">${esc(course.code || '—')}</span></div>
+          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-signal"></i> Level</span><span class="nx-info-value">${esc(course.level || 'Beginner')}</span></div>
+          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-tag"></i> Category</span><span class="nx-info-value">${esc(course.category || '—')}</span></div>
+          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-clock"></i> Duration</span><span class="nx-info-value">${esc(course.duration || 'Self-paced')}</span></div>
+          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-dollar-sign"></i> Price</span><span class="nx-info-value">${fmtMoney(access.price)}</span></div>
+        </div>
+      </div>
+
+      <div class="nx-join-card">
+        <div class="nx-join-icon"><i class="fas fa-users"></i></div>
+        <h4>Join Group</h4>
+        <p>Join the course group to discuss, ask questions and get updates from the admin.</p>
+        <button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group</button>
+      </div>
+
+      ${nextLesson ? `
+      <div class="nx-next-card" onclick="${nextUnlocked ? `selectNxLesson('${nextLesson.id}')` : `openPayCourseModal('${nxCourse.id}')`}">
+        <div class="label">${nextUnlocked ? 'Next Lesson' : '🔒 Locked'}</div>
+        <div class="row">
+          <div class="ico"><i class="fas ${nextUnlocked ? (nextLesson.video_url ? 'fa-play' : 'fa-file-alt') : 'fa-lock'}"></i></div>
+          <div class="txt">
+            <div class="t">${esc(nextLesson.title)}</div>
+            <div class="d">${nextUnlocked ? (nextLesson.video_url ? 'Video' : 'Text') + (nextLesson.duration_minutes ? ' · ' + nextLesson.duration_minutes + ' min' : '') : 'Pay to unlock'}</div>
+          </div>
+          <i class="fas fa-chevron-right arrow"></i>
+        </div>
+      </div>` : ''}
+    `;
+}
+
+function toggleNxModule(moduleId) {
+    const el = document.querySelector(`.nx-module[data-module-id="${moduleId}"]`);
+    if (el) el.classList.toggle('active');
+}
+async function selectNxLesson(lessonId) {
+    if (!isLessonUnlocked(nxCourse.access, lessonId)) { showLockedMessage(); return; }
+    nxLessonId = lessonId;
+    nxTab = 'notes';
+    nxNavTab = 'modules';
+    await renderNxLearning();
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+function switchNxTab(tab) {
+    nxTab = tab;
+    document.querySelectorAll('.nx-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.nx-tab-content').forEach(t => t.classList.remove('active'));
+    const btn = Array.from(document.querySelectorAll('.nx-tab')).find(b => b.getAttribute('onclick')?.includes(`'${tab}'`));
+    if (btn) btn.classList.add('active');
+    const content = document.querySelector(`.nx-tab-content[data-tab="${tab}"]`);
+    if (content) content.classList.add('active');
+}
+async function toggleNxComplete(lessonId) {
+    try {
+        const courseId = nxCourse.id;
+        if (nxCourse.completed.has(lessonId)) {
+            await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'DELETE' });
+            nxCourse.completed.delete(lessonId);
+        } else {
+            await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'POST' });
+            nxCourse.completed.add(lessonId);
+        }
+        await renderNxLearning();
+    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+}
+
+/* ═══════════════════════════════════════════════════════════
+   LEGACY COURSE VIEWER (fallback — not called now)
+   ═══════════════════════════════════════════════════════════ */
 async function renderStudentCourseViewer() {
     if (!currentCourseView) return;
     const c = document.getElementById('studentCourseViewerContent');
@@ -1430,10 +2190,10 @@ async function renderLessonView(lessonId) {
         const { completed } = await api(`/progress/${currentCourseView.courseId}`);
         const done = completed.includes(les.id);
         let html = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backToCourseModules()"><i class="fas fa-arrow-left"></i> Modules</button><div style="font-size:0.9rem;color:var(--text-secondary)">${esc(course.title)} • ${idx + 1}/${modLessons.length}</div></div><h2>${esc(les.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(les.description || '')}</p>`;
-        if (les.video_url) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-video" style="color:var(--gold)"></i> Video</h3><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video controls preload="metadata" style="width:100%;height:100%"><source src="${esc(les.video_url)}" type="video/mp4"><source src="${esc(les.video_url)}" type="video/webm">Your browser does not support video.</video></div><div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem"><a href="${esc(les.video_url)}" target="_blank" style="color:var(--blue)"><i class="fas fa-external-link-alt"></i> Open video in new tab</a></div></div>`; }
+        if (les.video_url) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-video" style="color:var(--gold)"></i> Video</h3><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video controls preload="metadata" style="width:100%;height:100%"><source src="${esc(les.video_url)}" type="video/mp4"></video></div></div>`; }
         if (les.notes && les.notes.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> Learning Materials</h3><div style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.95rem">${esc(les.notes)}</div></div>`; }
         if (les.assignment && les.assignment.trim()) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-tasks" style="color:var(--gold)"></i> Assignment</h3><div style="background:#fef3c7;border-left:4px solid var(--warning);padding:1rem;border-radius:8px;color:#78350f">${esc(les.assignment)}</div></div>`; }
-        if (les.pdfs && les.pdfs.length) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> PDFs</h3>${les.pdfs.map(p => `<a href="${esc(p.path)}" target="_blank" class="lesson-material"><i class="fas fa-file-pdf file-icon" style="color:var(--danger)"></i><span class="mat-name">${esc(p.name)}</span><i class="fas fa-download" style="color:var(--blue)"></i></a>`).join('')}</div>`; }
+        if (les.pdfs && les.pdfs.length) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> PDFs</h3>${les.pdfs.map(p => `<a href="${esc(p.path)}" target="_blank" class="lesson-material"><i class="fas fa-file-pdf" style="color:var(--danger)"></i><span style="flex:1;color:var(--navy);font-weight:600">${esc(p.name)}</span><i class="fas fa-download" style="color:var(--blue)"></i></a>`).join('')}</div>`; }
         if (les.images && les.images.length) { html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-images" style="color:var(--gold)"></i> Images</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem">${les.images.map(im => `<a href="${esc(im.path)}" target="_blank"><img src="${esc(im.path)}" style="width:100%;border-radius:10px;border:2px solid #e2e8f0"></a>`).join('')}</div></div>`; }
         html += `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:space-between;margin-top:1.5rem"><button class="btn ${done ? 'btn-outline' : 'btn-success'}" onclick="toggleLessonComplete('${les.id}')"><i class="fas fa-${done ? 'check-circle' : 'circle'}"></i> ${done ? 'Completed' : 'Mark Complete'}</button><div style="display:flex;gap:0.5rem">${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="openLesson('${modLessons[idx - 1].id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}${idx < modLessons.length - 1 ? `<button class="btn btn-primary btn-sm" onclick="openLesson('${modLessons[idx + 1].id}')">Next <i class="fas fa-arrow-right"></i></button>` : ''}</div></div>`;
         c.innerHTML = html;
@@ -1448,12 +2208,16 @@ async function toggleLessonComplete(lessonId) {
         await renderLessonView(lessonId);
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
+
+/* ═══════════════════════════════════════════════════════════
+   PAYMENT MODAL
+   ═══════════════════════════════════════════════════════════ */
 let payCourseTarget = null;
 async function openPayCourseModal(courseId) {
     try {
         const { enrollments } = await api('/enrollments');
         const e = enrollments.find(x => x.course_id === courseId);
-        if (!e) return;
+        if (!e) { alert('You are not enrolled in this course.'); return; }
         payCourseTarget = e;
         const paid = parseFloat(e.total_course_paid || 0);
         const price = parseFloat(e.course_price || e.price || 0);
@@ -1477,16 +2241,22 @@ async function processCoursePayment(e) {
         closePayCourseModal();
         const b = r.balances || {};
         alert(`✅ Payment successful!\n\nRemaining: ${fmtMoney(b.remaining_balance || 0)}\nUnlocked: ${(b.payment_percentage || 0).toFixed(0)}%`);
-        await updateStudentDashboard();
-        await renderStudentWallet();
+        if (nxCourse) await openCourseLearning(nxCourse.id, nxLessonId);
+        else { await updateStudentDashboard(); await renderStudentWallet(); }
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   STUDENT — RESULTS / EXAMS / CERTIFICATES / PROFILE
+   ═══════════════════════════════════════════════════════════ */
 async function renderStudentResults() { const c = document.getElementById('studentResultsTable'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { results } = await api('/progress/results/all'); if (!results.length) { c.innerHTML = '<div class="empty-state">No results yet.</div>'; return; } c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Course</th><th>Type</th><th>Score</th><th>%</th><th>Status</th><th>Date</th></tr></thead><tbody>${results.map(r => `<tr><td>${esc(r.course_title)}</td><td>${r.assessment_type === 'exam' ? 'Final Exam' : 'CAT'}</td><td>${r.score}/${r.total_marks}</td><td>${parseFloat(r.percentage).toFixed(1)}%</td><td><span class="badge ${r.passed ? 'badge-success' : 'badge-danger'}">${r.passed ? 'PASSED' : 'FAILED'}</span></td><td>${fmtDate(r.submitted_at)}</td></tr>`).join('')}</tbody></table></div>`; } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function renderStudentExams() { const c = document.getElementById('studentExamsContent'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { enrollments } = await api('/enrollments'); if (!enrollments.length) { c.innerHTML = '<div class="empty-state">Enroll in a course first.</div>'; return; } c.innerHTML = enrollments.map(e => { const allDone = e.completed_lessons >= e.total_lessons && e.total_lessons > 0; return `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(e.title)}</h4><div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.3rem">Lessons: ${e.completed_lessons}/${e.total_lessons}</div><div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>📝 CAT</strong></div>${allDone ? `<button class="btn btn-warning btn-sm" onclick="alert('Coming soon')">Start CAT</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div><div style="margin-top:0.5rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>🎓 Exam</strong></div>${allDone ? `<button class="btn btn-success btn-sm" onclick="alert('Coming soon')">Start Exam</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div></div>`; }).join(''); } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function renderStudentCertificates() { const c = document.getElementById('studentCertificatesList'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { certificates } = await api('/certificates/me'); if (!certificates.length) { c.innerHTML = '<div class="empty-state">No certificates yet.</div>'; return; } c.innerHTML = certificates.map(cert => `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(cert.certificate_id)}</h4><p>${esc(cert.course_name)}</p><p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p></div>`).join(''); } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 function renderStudentProfile() { document.getElementById('studentProfileContent').innerHTML = `<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)"><div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem"><div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc((currentUser.full_name || 'U').charAt(0))}</div><div><h2>${esc(currentUser.full_name)}</h2><p>${esc(currentUser.email)}</p></div></div><div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${esc(currentUser.username)}" disabled></div><div class="form-group"><label>Role</label><input type="text" value="${esc(currentUser.role)}" disabled></div></div></div>`; }
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — DASHBOARD / APPS / STUDENTS
+   ═══════════════════════════════════════════════════════════ */
 async function updateAdminDashboard() {
     try {
         const stats = await api('/admin/stats');
@@ -1554,7 +2324,6 @@ async function confirmApprove() {
         await updateCounts();
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
-
 function openRejectModal(appId, mode) {
     rejectTargetId = appId;
     document.getElementById('rejectReasonModal').dataset.mode = mode || 'application';
@@ -1614,33 +2383,8 @@ async function viewStudentSponsorship(studentId) {
         if (!s) return;
         const sp = s.sponsorship || { type: 'none', amount: 0, percentage: 0 };
         const cardClass = sp.type === 'full' ? 'full' : sp.type === 'partial' ? 'partial' : '';
-        document.getElementById('appDetailsContent').innerHTML = `
-            <h2>Sponsorship — ${esc(s.full_name)}</h2>
-            <div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem">
-                <div style="font-size:1.3rem;font-weight:800;color:var(--navy)">
-                    ${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}
-                </div>
-                ${sp.type !== 'none' ? `<div style="margin-top:0.5rem;font-size:0.95rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}
-                ${sp.percentage ? `<div style="margin-top:0.3rem;font-size:0.9rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}
-                ${sp.sponsor_name ? `<div style="margin-top:0.3rem;font-size:0.9rem">Sponsor: <strong>${esc(sp.sponsor_name)}</strong></div>` : ''}
-            </div>
-            <div class="form-group"><label>Sponsorship Type</label>
-                <select id="spType_${studentId}">
-                    <option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option>
-                    <option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option>
-                    <option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option>
-                </select>
-            </div>
-            <div class="form-row">
-                <div class="form-group"><label>Amount Sponsored ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div>
-                <div class="form-group"><label>Coverage Percentage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div>
-            </div>
-            <div class="form-group"><label>Sponsor Name (optional)</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}" placeholder="e.g., XYZ Foundation"></div>
-        `;
-        document.getElementById('appDetailsFooter').innerHTML = `
-            <button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button>
-            <button class="btn btn-success" onclick="saveStudentSponsorship('${studentId}')">Save</button>
-        `;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div>${sp.type !== 'none' ? `<div style="margin-top:0.5rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}${sp.percentage ? `<div style="margin-top:0.3rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}</div><div class="form-group"><label>Sponsorship Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount Sponsored ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage Percentage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div><div class="form-group"><label>Sponsor Name (optional)</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}" placeholder="e.g., XYZ Foundation"></div>`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button><button class="btn btn-success" onclick="saveStudentSponsorship('${studentId}')">Save</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
@@ -1657,6 +2401,9 @@ async function saveStudentSponsorship(studentId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN — COURSES
+   ═══════════════════════════════════════════════════════════ */
 async function renderAdminCourses() {
     const c = document.getElementById('adminCoursesList');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1731,8 +2478,7 @@ function initBuilder() {
 function goToStep(n) {
     currentStep = n;
     document.querySelectorAll('.step-content').forEach(el => el.classList.add('hidden'));
-    const t = document.getElementById('step-' + n);
-    if (t) t.classList.remove('hidden');
+    const t = document.getElementById('step-' + n); if (t) t.classList.remove('hidden');
     if (n === 4) buildPreview();
     if (n === 3) { renderExamQuestionsBuilder(); renderCATQuestionsBuilder(); }
     if (n === 2) renderModules();
@@ -1751,8 +2497,7 @@ function saveBasicInfo() {
     goToStep(1);
 }
 function handleImageUpload(e) {
-    const f = e.target.files[0];
-    if (!f) return;
+    const f = e.target.files[0]; if (!f) return;
     uploadedImageFile = f;
     const r = new FileReader();
     r.onload = ev => { document.getElementById('imagePreview').src = ev.target.result; document.getElementById('imagePreviewContainer').style.display = 'block'; };
@@ -1839,15 +2584,13 @@ function editLesson(mi, li) {
 }
 function closeLessonEditor() { document.getElementById('lessonEditorModal').classList.remove('active'); }
 async function handleLesVideo(e) {
-    const file = e.target.files[0];
-    if (!file) return;
+    const file = e.target.files[0]; if (!file) return;
     if (file.size > 500 * 1024 * 1024) { alert('⚠️ Max 500 MB'); e.target.value = ''; return; }
     document.getElementById('lesVideoEl').src = URL.createObjectURL(file);
     document.getElementById('lesVideoPreview').style.display = 'block';
     try {
         setLoading(true);
-        const fd = new FormData();
-        fd.append('file', file);
+        const fd = new FormData(); fd.append('file', file);
         const r = await apiForm('/uploads/lesson-video?scope=lessons', fd);
         lessonDraft.videoFile = r.path;
         alert('✅ Video uploaded');
@@ -1952,9 +2695,9 @@ async function renderRevenue() { try { const stats = await api('/admin/stats'); 
 async function renderAdminPayments() { const c = document.getElementById('adminPaymentsList'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { transactions } = await api('/payments'); if (!transactions.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No payments.</p>'; return; } c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Student</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${esc(t.student_name || '?')}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Admission' : esc(t.course_title || 'Course')}</td><td><strong>${fmtMoney(t.amount)}</strong></td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`; } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function verifyCertificate() { const token = document.getElementById('verifyToken').value.trim(); const r = document.getElementById('verifyResult'); if (!token) { r.innerHTML = ''; return; } try { const data = await api(`/certificates/verify/${encodeURIComponent(token)}`); if (data.valid) r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p></div>`; else r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3></div>`; } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3></div>`; } }
 
-/* ============================================================
-   GROUPS / DISCUSSION FEATURE
-   ============================================================ */
+/* ═══════════════════════════════════════════════════════════
+   GROUPS / DISCUSSION
+   ═══════════════════════════════════════════════════════════ */
 async function renderAdminGroups() {
     const c = document.getElementById('adminGroupsList');
     const statsEl = document.getElementById('adminGroupsStats');
@@ -1966,11 +2709,7 @@ async function renderAdminGroups() {
         const totalMembers = groups.reduce((s, g) => s + (g.member_count || 0), 0);
         const totalMessages = groups.reduce((s, g) => s + (g.message_count || 0), 0);
         const activeToday = groups.filter(g => g.last_activity && (Date.now() - new Date(g.last_activity).getTime()) < 86400000).length;
-        if (statsEl) statsEl.innerHTML = `
-          <div class="summary-card"><div class="num">${total}</div><div class="lbl">Total Groups</div></div>
-          <div class="summary-card gold"><div class="num">${totalMembers}</div><div class="lbl">Total Members</div></div>
-          <div class="summary-card green"><div class="num">${totalMessages}</div><div class="lbl">Messages</div></div>
-          <div class="summary-card purple"><div class="num">${activeToday}</div><div class="lbl">Active Today</div></div>`;
+        if (statsEl) statsEl.innerHTML = `<div class="summary-card"><div class="num">${total}</div><div class="lbl">Total Groups</div></div><div class="summary-card gold"><div class="num">${totalMembers}</div><div class="lbl">Total Members</div></div><div class="summary-card green"><div class="num">${totalMessages}</div><div class="lbl">Messages</div></div><div class="summary-card purple"><div class="num">${activeToday}</div><div class="lbl">Active Today</div></div>`;
         const badge = document.getElementById('adminGroupCount');
         if (badge) badge.textContent = total;
         if (!groups.length) { c.innerHTML = '<div class="empty-state">No groups yet. Create one to get started.</div>'; return; }
@@ -1988,9 +2727,7 @@ async function renderAdminGroups() {
               <button class="action-btn reject" onclick="openDeleteGroupModal('${g.id}')" title="Delete"><i class="fas fa-trash"></i></button>
             </div></td>
           </tr>`).join('')}</tbody></table></div>`;
-    } catch (err) {
-        c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`;
-    }
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`; }
 }
 function openCreateGroupModal() {
     document.getElementById('groupModalTitle').textContent = 'Create Group';
@@ -2081,8 +2818,7 @@ async function renderStudentGroups() {
               <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.5rem 0;min-height:2.5rem">${esc((g.description || '').slice(0, 90))}${(g.description || '').length > 90 ? '…' : ''}</p>
               <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
                 ${g.is_member
-                  ? `<button class="btn btn-primary btn-sm" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i> Open Chat</button>
-                     <button class="btn btn-outline btn-sm" onclick="leaveGroup('${g.id}')"><i class="fas fa-sign-out-alt"></i> Leave</button>`
+                  ? `<button class="btn btn-primary btn-sm" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i> Open Chat</button><button class="btn btn-outline btn-sm" onclick="leaveGroup('${g.id}')"><i class="fas fa-sign-out-alt"></i> Leave</button>`
                   : `<button class="btn btn-success btn-sm" onclick="joinGroup('${g.id}')" ${g.visibility === 'private' ? 'disabled title="Private group"' : ''}><i class="fas fa-plus"></i> Join</button>`}
               </div>
             </div>
@@ -2090,11 +2826,7 @@ async function renderStudentGroups() {
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`; }
 }
 async function joinGroup(groupId) { try { await api(`/groups/${groupId}/join`, { method: 'POST' }); alert('✅ Joined group!'); await renderStudentGroups(); } catch (err) { alert('❌ ' + (err.data?.error || err.message)); } }
-async function leaveGroup(groupId) {
-    if (!confirm('Leave this group?')) return;
-    try { await api(`/groups/${groupId}/leave`, { method: 'POST' }); alert('👋 Left group'); await renderStudentGroups(); }
-    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-}
+async function leaveGroup(groupId) { if (!confirm('Leave this group?')) return; try { await api(`/groups/${groupId}/leave`, { method: 'POST' }); alert('👋 Left group'); await renderStudentGroups(); } catch (err) { alert('❌ ' + (err.data?.error || err.message)); } }
 async function openGroupChat(groupId) {
     currentGroup = { id: groupId };
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -2103,9 +2835,7 @@ async function openGroupChat(groupId) {
     if (window.innerWidth <= 768) closeSidebar();
     await renderGroupChat();
     if (groupsPollInterval) clearInterval(groupsPollInterval);
-    groupsPollInterval = setInterval(() => {
-        if (document.getElementById('page-group-chat').classList.contains('active')) loadGroupMessages(true);
-    }, 5000);
+    groupsPollInterval = setInterval(() => { if (document.getElementById('page-group-chat').classList.contains('active')) loadGroupMessages(true); }, 5000);
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 async function renderGroupChat() {
@@ -2137,9 +2867,7 @@ async function renderGroupChat() {
             <textarea id="groupMsgInput" placeholder="Type your message..." rows="1" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:0.95rem;resize:none;max-height:120px"></textarea>
             <button class="btn btn-primary" onclick="sendGroupMessage()"><i class="fas fa-paper-plane"></i></button>
           </div>`;
-        document.getElementById('groupMsgInput').addEventListener('keydown', e => {
-            if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGroupMessage(); }
-        });
+        document.getElementById('groupMsgInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGroupMessage(); } });
         await loadGroupMessages();
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
 }
@@ -2179,6 +2907,27 @@ function backFromGroupChat() {
     else navigateTo('student-groups');
 }
 
+/* ═══════════════════════════════════════════════════════════
+   UTILITIES / BOOT
+   ═══════════════════════════════════════════════════════════ */
+async function updateCounts() {
+    if (!currentUser) return;
+    try {
+        if (currentUser.role === 'admin') {
+            const { counts } = await api('/admin/stats');
+            document.getElementById('studentCount').textContent = counts.students;
+            document.getElementById('courseCount').textContent = counts.courses;
+            const pendingApps = (counts.applications.payment_due || 0) + (counts.applications.paid || 0);
+            document.getElementById('appCount').textContent = pendingApps;
+            try { const { groups } = await api('/groups'); const el = document.getElementById('adminGroupCount'); if (el) el.textContent = groups.length; } catch (e) {}
+        } else {
+            const { enrollments } = await api('/enrollments');
+            document.getElementById('studentEnrollCount').textContent = enrollments.length;
+            try { const { groups } = await api('/groups'); const mine = groups.filter(g => g.is_member).length; const el = document.getElementById('studentGroupCount'); if (el) el.textContent = mine; } catch (e) {}
+        }
+    } catch (e) {}
+}
+
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
 
 (async function boot() {
@@ -2187,8 +2936,7 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
     else goHome();
 })();
 
-console.log('🎓 Nexora Academy v9.9 — API:', API_BASE);
-
+console.log('🎓 Nexora Academy v10.0 — Payment Access Control + Pro Layout');
 </script>
 </body>
 </html>
