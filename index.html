@@ -1045,7 +1045,7 @@ function updateSidebarActive(page) {
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => el.classList.remove('active'));
     document.querySelectorAll('.sidebar-menu .menu-item').forEach(el => { if (el.onclick && el.onclick.toString().includes(`'${page}'`)) el.classList.add('active'); });
 }
-const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion','student-profile':'Profile','group-chat':'Group Chat' 'learning': 'Learning'};
+  const PAGE_NAMES = { 'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications','admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates','admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course','student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion','student-profile':'Profile','group-chat':'Group Chat','learning':'Learning'};
 async function navigateTo(page) {
     if (!currentUser) { showLogin(); return; }
     if (page === 'student-course-viewer') {
