@@ -4,31 +4,55 @@ const db = require('../db');
 const { asyncHandler, logActivity } = require('../utils');
 const { requireAuth, requireApprovedStudent } = require('../middleware');
 
-// GET /api/enrollments — current user's enrollments
+// GET /api/enrollments – current user's enrollments
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
-    const r = await db.query(
-        `SELECT e.id, e.enrolled_at, e.completed_at,
-                c.id AS course_id, c.title, c.code, c.instructor_name,
-                c.duration, c.price, c.cover_image_url,
-                COALESCE(paid.total, 0) AS paid,
-                (SELECT COUNT(*)::int FROM lessons l
-                  JOIN modules m ON m.id = l.module_id
-                  WHERE m.course_id = c.id AND l.published = TRUE) AS total_lessons,
-                (SELECT COUNT(*)::int FROM lesson_progress lp
-                  WHERE lp.user_id = e.user_id AND lp.course_id = c.id) AS completed_lessons
-         FROM enrollments e
-         JOIN courses c ON c.id = e.course_id
-         LEFT JOIN (
+    const r = await db.query(`
+        SELECT
+            e.id,
+            e.enrolled_at,
+            e.completed_at,
+            c.id AS course_id,
+            c.title,
+            c.code,
+            c.instructor_name,
+            c.duration,
+            c.cover_image_url,
+            -- ⭐ course_price: the price the student is paying
+            c.price::numeric AS course_price,
+            -- ⭐ total_course_paid: SUM of completed COURSE_PAYMENT transactions
+            COALESCE(paid.total, 0)::numeric AS total_course_paid,
+            -- ⭐ remaining_balance: price − paid (never negative)
+            GREATEST(c.price - COALESCE(paid.total, 0), 0)::numeric AS remaining_balance,
+            -- ⭐ payment_percentage: 0..100 with floating-point tolerance
+            CASE
+                WHEN c.price <= 0 THEN 100
+                WHEN COALESCE(paid.total, 0) >= c.price - 0.01 THEN 100
+                ELSE ROUND((COALESCE(paid.total, 0) / c.price) * 100, 2)
+            END AS payment_percentage,
+            -- ⭐ fully_paid: boolean flag
+            (c.price > 0 AND COALESCE(paid.total, 0) >= c.price - 0.01) AS fully_paid,
+            -- ⭐ initial_payment (25%)
+            ROUND(c.price * 0.25, 2)::numeric AS initial_payment,
+            -- ⭐ lesson counts
+            (SELECT COUNT(*)::int FROM lessons l
+                JOIN modules m ON m.id = l.module_id
+                WHERE m.course_id = c.id AND l.published = TRUE) AS total_lessons,
+            (SELECT COUNT(*)::int FROM lesson_progress lp
+                WHERE lp.user_id = e.user_id AND lp.course_id = c.id) AS completed_lessons
+        FROM enrollments e
+        JOIN courses c ON c.id = e.course_id
+        LEFT JOIN (
             SELECT course_id, SUM(amount) AS total
             FROM transactions
-            WHERE user_id = $1 AND payment_type = 'COURSE_PAYMENT'
+            WHERE user_id = $1
+              AND payment_type = 'COURSE_PAYMENT'
               AND status = 'completed'
             GROUP BY course_id
-         ) paid ON paid.course_id = c.id
-         WHERE e.user_id = $1
-         ORDER BY e.enrolled_at DESC`,
-        [req.user.user_id]
-    );
+        ) AS paid ON paid.course_id = c.id
+        WHERE e.user_id = $1
+        ORDER BY e.enrolled_at DESC
+    `, [req.user.id]);
+
     res.json({ enrollments: r.rows });
 }));
 
@@ -55,11 +79,14 @@ router.post('/', requireAuth, requireApprovedStudent, asyncHandler(async (req, r
              VALUES ($1, $2)
              ON CONFLICT (user_id, course_id) DO NOTHING
              RETURNING *`,
-            [req.user.user_id, course_id]
+            [req.user.id, course_id]
         );
 
-        await logActivity(client, req.user.user_id, 'enrollment',
-            'Enrolled in course', `Course ID: ${course_id}`);
+        if (r.rows.length) {
+            await logActivity(client, req.user.id, 'enrollment',
+                'Enrolled in course', `Course ID: ${course_id}`);
+        }
+
         await client.query('COMMIT');
 
         if (!r.rows.length) {
