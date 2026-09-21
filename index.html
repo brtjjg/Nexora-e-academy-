@@ -2963,6 +2963,72 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
     if (currentUser) showApp();
     else goHome();
 })();
+  /* ============================================================
+   CERTIFICATE DISPLAY (with view buttons)
+   ============================================================ */
+async function renderStudentCertificates() {
+    const c = document.getElementById('studentCertificatesList');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { certificates } = await api('/certificates/me');
+        if (!certificates.length) {
+            c.innerHTML = '<div class="empty-state">No certificates yet. Complete a course to earn one.</div>';
+            return;
+        }
+        c.innerHTML = certificates.map(cert => `
+            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)">
+                <h4>${esc(cert.certificate_id)}</h4>
+                <p>${esc(cert.course_name)}</p>
+                <p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p>
+                <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+                    <button class="btn btn-primary btn-sm" onclick="openCertificateModal('${esc(cert.certificate_id)}')">
+                        <i class="fas fa-eye"></i> View Certificate
+                    </button>
+                    <button class="btn btn-outline btn-sm" onclick="window.open('/certificate.html?id=${encodeURIComponent(cert.certificate_id)}','_blank')">
+                        <i class="fas fa-external-link-alt"></i> Open in New Tab
+                    </button>
+                </div>
+            </div>
+        `).join('');
+    } catch (err) {
+        c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>';
+    }
+}
+
+/* ============================================================
+   ADMIN CERTIFICATE DISPLAY (with view buttons)
+   ============================================================ */
+async function renderAdminCertificates() {
+    const c = document.getElementById('adminCertificatesList');
+    if (!c) return;
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    try {
+        const { certificates } = await api('/certificates');
+        if (!certificates.length) {
+            c.innerHTML = '<p style="color:var(--text-secondary)">No certificates issued yet.</p>';
+            return;
+        }
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr>
+                <th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th><th>Actions</th>
+            </tr></thead>
+            <tbody>${certificates.map(x => `<tr>
+                <td><strong>${esc(x.certificate_id)}</strong></td>
+                <td>${esc(x.student_name)}</td>
+                <td>${esc(x.course_name)}</td>
+                <td>${fmtDate(x.issued_date)}</td>
+                <td>
+                    <button class="action-btn view" onclick="openCertificateModal('${esc(x.certificate_id)}')" title="View">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </td>
+            </tr>`).join('')}</tbody>
+        </table></div>`;
+    } catch (err) {
+        c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>';
+    }
+}
 
 console.log('🎓 Nexora Academy v10.0 — Payment Access Control + Pro Layout');
 </script>
