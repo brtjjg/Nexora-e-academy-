@@ -1620,19 +1620,37 @@ async function openCourseViewer(courseId) {
 /* ═══════════════════════════════════════════════════════════
    ⭐ PAYMENT-BASED ACCESS CONTROL ENGINE ⭐
    ═══════════════════════════════════════════════════════════ */
+
 function computeCourseAccess(course, enrollment, lessons) {
     const price = parseFloat((enrollment && enrollment.course_price) || course.price || 0);
     const paid = parseFloat((enrollment && enrollment.total_course_paid) || 0);
     const balance = Math.max(price - paid, 0);
-    const pct = price > 0 ? Math.min((paid / price) * 100, 100) : 100;
-    const isFullyPaid = paid >= price || price === 0;
+
+    // Robust percentage — guard against floating point
+    let pct = 0;
+    if (price <= 0) {
+        pct = 100;
+    } else if (paid >= price - 0.01) {   // treat within 1 cent as fully paid
+        pct = 100;
+    } else {
+        pct = Math.min((paid / price) * 100, 100);
+    }
+
+    const isFullyPaid = pct >= 100;
     const hasPaidSomething = paid > 0;
 
-    // Lessons unlock in proportion to payment percentage
     const totalLessons = lessons.length || 0;
-    const unlockedCount = isFullyPaid
-        ? totalLessons
-        : Math.floor((pct / 100) * totalLessons);
+    let unlockedCount;
+    if (totalLessons === 0) {
+        unlockedCount = 0;
+    } else if (isFullyPaid) {
+        unlockedCount = totalLessons;
+    } else if (!hasPaidSomething) {
+        unlockedCount = 0;
+    } else {
+        // At least 1 lesson unlocked if they've paid anything
+        unlockedCount = Math.max(1, Math.floor((pct / 100) * totalLessons));
+    }
 
     const lessonIds = lessons.map(l => l.id);
     const unlockedSet = new Set(lessonIds.slice(0, unlockedCount));
@@ -1641,15 +1659,15 @@ function computeCourseAccess(course, enrollment, lessons) {
         price, paid, balance, pct,
         isFullyPaid, hasPaidSomething,
         totalLessons, unlockedCount, unlockedSet,
-        isLocked: !isFullyPaid && !hasPaidSomething ? 'no_payment' : (!isFullyPaid ? 'partial' : null),
+        isLocked: isFullyPaid ? null : (!hasPaidSomething ? 'no_payment' : 'partial'),
     };
 }
 
 function isLessonUnlocked(access, lessonId) {
-    if (access.isFullyPaid) return true;
+    if (access.isFullyPaid) return true;       // ← always unlocked if fully paid
+    if (access.pct >= 100) return true;        // ← double-safety
     return access.unlockedSet.has(lessonId);
 }
-
 /* ═══════════════════════════════════════════════════════════
    ⭐ NEW PROFESSIONAL LEARNING PAGE ⭐
    ═══════════════════════════════════════════════════════════ */
