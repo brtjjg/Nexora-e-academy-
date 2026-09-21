@@ -2157,19 +2157,28 @@ function switchNxTab(tab) {
     const content = document.querySelector(`.nx-tab-content[data-tab="${tab}"]`);
     if (content) content.classList.add('active');
 }
-async function toggleNxComplete(lessonId) {
+  async function toggleNxComplete(lessonId) {
     try {
         const courseId = nxCourse.id;
+        let result;
         if (nxCourse.completed.has(lessonId)) {
-            await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'DELETE' });
+            result = await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'DELETE' });
             nxCourse.completed.delete(lessonId);
         } else {
-            await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'POST' });
+            result = await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'POST' });
             nxCourse.completed.add(lessonId);
+
+            // 🎉 Certificate was just issued!
+            if (result.certificateIssued) {
+                alert(`🎓 Congratulations!\n\nYou've completed "${nxCourse.course.title}"!\n\nYour certificate has been issued.\n\nGo to "My Certificates" to view it.`);
+                setTimeout(() => navigateTo('student-certificates'), 500);
+            }
         }
         await renderNxLearning();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
-}
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+  }
 
 /* ═══════════════════════════════════════════════════════════
    LEGACY COURSE VIEWER (fallback — not called now)
