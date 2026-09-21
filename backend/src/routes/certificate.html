@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Certificate — Nexora Academy</title>
+<meta name="description" content="Verify and view a Nexora Academy certificate of course completion.">
+<meta name="robots" content="noindex, follow">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Great+Vibes&family=Playfair+Display:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="certificate.css">
+</head>
+<body>
+<div class="cert-page-wrap">
+  <div class="cert-loading" id="certLoading">
+    <i class="fas fa-spinner fa-spin"></i>
+    <div>Loading certificate...</div>
+  </div>
+  <div class="cert-error hidden" id="certError">
+    <i class="fas fa-exclamation-triangle"></i>
+    <h2>Certificate not found</h2>
+    <p>The certificate ID you provided is invalid or has been revoked.</p>
+    <a href="/" class="cert-btn cert-btn-primary">Go to Nexora Academy</a>
+  </div>
+  <div id="certRender"></div>
+</div>
+<script src="certificate.js"></script>
+</body>
+</html>
