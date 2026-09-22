@@ -129,13 +129,21 @@ router.post('/:id/modules', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ module: r.rows[0] });
 }));
 
-// POST /api/courses/:id/lessons — add lesson
+/* ═══════════════════════════════════════════════════════════
+   LESSONS — with automatic assignment creation
+   ═══════════════════════════════════════════════════════════ */
+
+// POST /api/courses/:id/lessons — add lesson (+ assignment if provided)
 router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
     const { module_id, title, description, position, notes, assignment,
             video_url, published } = req.body;
     if (!module_id || !title) {
         return res.status(400).json({ error: 'module_id and title required' });
     }
+
+    const adminId = req.user.user_id || req.user.id;
+
+    // Insert lesson
     const r = await db.query(
         `INSERT INTO lessons (module_id, title, description, position, notes,
             assignment, video_url, published)
@@ -146,10 +154,173 @@ router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
         [module_id, title, description || null, position || null,
          notes || null, assignment || null, video_url || null, published]
     );
-    res.status(201).json({ lesson: r.rows[0] });
+
+    const lesson = r.rows[0];
+
+    // If a lesson has assignment text, auto-create the assignment record
+    if (assignment && assignment.trim().length > 0) {
+        try {
+            // Get course_id from module
+            const mod = await db.query(
+                `SELECT course_id FROM modules WHERE id = $1`,
+                [module_id]
+            );
+            const courseId = mod.rows[0]?.course_id;
+            if (courseId) {
+                await db.query(`
+                    INSERT INTO assignments (
+                        course_id, module_id, lesson_id,
+                        title, instructions, max_marks,
+                        allow_text, allow_file, allowed_file_types, max_file_mb,
+                        allow_resubmission, max_attempts,
+                        status, created_by
+                    )
+                    VALUES ($1, $2, $3, $4, $5, 20, TRUE, TRUE, 'pdf,docx,jpg,png', 10, TRUE, 2, 'published', $6)
+                    ON CONFLICT DO NOTHING
+                `, [courseId, module_id, lesson.id, title, assignment, adminId]);
+                console.log('[lesson:create] Auto-created assignment for lesson', lesson.id);
+            }
+        } catch (err) {
+            console.error('[lesson:create] Failed to create assignment:', err.message);
+            // Don't fail the whole lesson creation if assignment fails
+        }
+    }
+
+    res.status(201).json({ lesson });
 }));
 
-// POST /api/courses/:id/questions — add exam or CAT question
+// PUT /api/courses/:id/lessons/:lessonId — update lesson (+ sync assignment)
+router.put('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
+    const { lessonId } = req.params;
+    const adminId = req.user.user_id || req.user.id;
+    const fields = ['title','description','position','notes','assignment','video_url','published'];
+    const updates = [];
+    const values = [];
+    fields.forEach(f => {
+        if (f in req.body) {
+            values.push(req.body[f]);
+            updates.push(`${f} = $${values.length}`);
+        }
+    });
+    if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+    values.push(lessonId);
+
+    const r = await db.query(
+        `UPDATE lessons SET ${updates.join(', ')} WHERE id = $${values.length} RETURNING *`,
+        values
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Lesson not found' });
+    const lesson = r.rows[0];
+
+    // Sync assignment record
+    if ('assignment' in req.body) {
+        try {
+            // Check if assignment already exists
+            const existing = await db.query(
+                `SELECT id FROM assignments WHERE lesson_id = $1`,
+                [lessonId]
+            );
+
+            if (existing.rows.length) {
+                if (req.body.assignment && req.body.assignment.trim().length > 0) {
+                    // Update the assignment instructions + title
+                    await db.query(`
+                        UPDATE assignments
+                        SET instructions = $1, title = $2, updated_at = NOW()
+                        WHERE lesson_id = $3
+                    `, [req.body.assignment, lesson.title, lessonId]);
+                }
+                // If assignment text is empty, leave the assignment row (admin can delete separately)
+            } else if (req.body.assignment && req.body.assignment.trim().length > 0) {
+                // Create new assignment
+                const mod = await db.query(
+                    `SELECT course_id FROM modules WHERE id = $1`,
+                    [lesson.module_id]
+                );
+                const courseId = mod.rows[0]?.course_id;
+                if (courseId) {
+                    await db.query(`
+                        INSERT INTO assignments (
+                            course_id, module_id, lesson_id,
+                            title, instructions, max_marks,
+                            allow_text, allow_file, allowed_file_types, max_file_mb,
+                            allow_resubmission, max_attempts,
+                            status, created_by
+                        )
+                        VALUES ($1, $2, $3, $4, $5, 20, TRUE, TRUE, 'pdf,docx,jpg,png', 10, TRUE, 2, 'published', $6)
+                    `, [courseId, lesson.module_id, lesson.id, lesson.title, req.body.assignment, adminId]);
+                    console.log('[lesson:update] Auto-created assignment for lesson', lesson.id);
+                }
+            }
+        } catch (err) {
+            console.error('[lesson:update] Assignment sync failed:', err.message);
+        }
+    }
+
+    res.json({ lesson });
+}));
+
+// DELETE /api/courses/:id/lessons/:lessonId — delete lesson (+ cascade assignment)
+router.delete('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
+    const { lessonId } = req.params;
+    // Delete assignment first (FK has ON DELETE SET NULL, but we want clean removal)
+    await db.query(`DELETE FROM assignments WHERE lesson_id = $1`, [lessonId]).catch(() => {});
+    const r = await db.query(`DELETE FROM lessons WHERE id = $1 RETURNING id`, [lessonId]);
+    if (!r.rows.length) return res.status(404).json({ error: 'Lesson not found' });
+    res.json({ ok: true });
+}));
+
+/* ═══════════════════════════════════════════════════════════
+   ASSIGNMENT SETTINGS — admin can fine-tune after creation
+   ═══════════════════════════════════════════════════════════ */
+
+// PUT /api/courses/:id/assignments/:lessonId — update assignment settings
+router.put('/:id/assignments/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
+    const { lessonId } = req.params;
+    const {
+        title, instructions, max_marks,
+        allow_text, allow_file, allowed_file_types, max_file_mb,
+        due_date, allow_resubmission, max_attempts, status,
+    } = req.body;
+
+    const updates = [];
+    const values = [];
+    const map = { title, instructions, max_marks, allow_text, allow_file,
+                  allowed_file_types, max_file_mb, due_date,
+                  allow_resubmission, max_attempts, status };
+    Object.entries(map).forEach(([key, val]) => {
+        if (val !== undefined) {
+            values.push(val);
+            updates.push(`${key} = $${values.length}`);
+        }
+    });
+
+    if (!updates.length) return res.status(400).json({ error: 'No fields to update' });
+    values.push(lessonId);
+
+    const r = await db.query(
+        `UPDATE assignments SET ${updates.join(', ')}, updated_at = NOW()
+         WHERE lesson_id = $${values.length}
+         RETURNING *`,
+        values
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Assignment not found for this lesson' });
+    res.json({ assignment: r.rows[0] });
+}));
+
+// GET /api/courses/:id/assignments/:lessonId — get assignment settings
+router.get('/:id/assignments/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
+    const r = await db.query(
+        `SELECT * FROM assignments WHERE lesson_id = $1`,
+        [req.params.lessonId]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'No assignment for this lesson' });
+    res.json({ assignment: r.rows[0] });
+}));
+
+/* ═══════════════════════════════════════════════════════════
+   QUESTIONS (exam / CAT)
+   ═══════════════════════════════════════════════════════════ */
 router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     const { question_type, question_text, options, correct_index, marks, position } = req.body;
     if (!['exam','cat'].includes(question_type)) {
@@ -171,7 +342,9 @@ router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ question: r.rows[0] });
 }));
 
-// PUT /api/courses/:id/discount — create or update discount
+/* ═══════════════════════════════════════════════════════════
+   DISCOUNT
+   ═══════════════════════════════════════════════════════════ */
 router.put('/:id/discount', requireAdmin, asyncHandler(async (req, res) => {
     const { enabled, original_price, discount_price, label, ends_at } = req.body;
     if (enabled && (!discount_price || discount_price >= original_price)) {
