@@ -2022,9 +2022,12 @@ function renderNxLessonMain() {
       </div>
 
       <div class="nx-tab-content ${nxTab === 'assignment' ? 'active' : ''}" data-tab="assignment">
-        <h4>Assignment</h4>
-        ${lesson.assignment ? `<div class="nx-assignment">${esc(lesson.assignment)}</div>` : '<div class="empty-state" style="padding:1.5rem">No assignment for this lesson.</div>'}
-      </div>
+    <h4>Assignment</h4>
+    ${lesson.assignment ? `<div class="nx-assignment">${esc(lesson.assignment)}</div>` : ''}
+    <div id="assignmentPanel" style="margin-top:1.5rem">
+        <div class="empty-state" style="padding:1rem">Loading assignment...</div>
+    </div>
+</div>
 
       <div class="nx-actions">
         <button class="nx-btn nx-btn-complete ${isDone ? 'done' : ''}" onclick="toggleNxComplete('${lesson.id}')">
