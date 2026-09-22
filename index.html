@@ -604,6 +604,11 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
+<div class="menu-item" onclick="navigateTo('admin-assignments')">
+<div class="menu-item" onclick="navigateTo('admin-assignments')">  
+<i class="fas fa-tasks"></i><span>Assignments</span>
+<span class="badge-count" id="adminAssignmentsCount">0</span>
+</div>
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
@@ -924,6 +929,14 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="adminGroupsStats" class="summary-cards"></div>
 <div id="adminGroupsList" style="margin-top:1rem"></div>
 </div>
+
+  <div id="page-admin-assignments" class="page">
+  <h2 style="color:var(--navy);margin-bottom:1.5rem">
+    <i class="fas fa-tasks" style="color:var(--gold)"></i> Assignment Submissions
+  </h2>
+  <div id="adminAssignmentsStats" class="summary-cards"></div>
+  <div id="adminAssignmentsList"></div>
+  </div>
 
 <div id="page-admin-revenue" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-chart-line" style="color:var(--gold)"></i> Revenue</h2><div id="revenueStats" class="stats-grid"></div></div>
 <div id="page-admin-payments" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-credit-card" style="color:var(--gold)"></i> All Payments</h2><div id="adminPaymentsList"></div></div>
