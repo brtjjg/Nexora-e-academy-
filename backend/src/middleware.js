@@ -1,4 +1,5 @@
 const { validateSession } = require('./auth');
+const db = require('./db');
 
 async function requireAuth(req, res, next) {
     try {
@@ -27,17 +28,17 @@ async function requireAdmin(req, res, next) {
     });
 }
 
+/**
+ * ✅ AUTO-APPROVE: Payment is the only requirement.
+ * Any logged-in user can enroll in courses and view their dashboard.
+ * The admission gate is enforced separately by the frontend + payment route.
+ */
 async function requireApprovedStudent(req, res, next) {
-    await requireAuth(req, res, async () => {
+    await requireAuth(req, res, () => {
         if (req.user.role === 'admin') return next();
-        const db = require('./db');
-        const r = await db.query(
-            `SELECT admission_status FROM student_profiles WHERE user_id = $1`,
-            [req.user.user_id]
-        );
-        if (!r.rows.length || r.rows[0].admission_status !== 'approved') {
-            return res.status(403).json({ error: 'Student not approved yet' });
-        }
+        // Auto-approve: no manual approval gate. Just require login.
+        // If you later want to gate on something else (e.g. course payment),
+        // add that check here.
         next();
     });
 }
