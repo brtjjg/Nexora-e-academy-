@@ -2044,6 +2044,8 @@ function renderNxLessonMain() {
       </div>
     `;
 }
+  // Load assignment submission panel
+if (lesson && lesson.id) loadAssignmentPanel(lesson.id);
 
 function renderNxTab(id, label, icon) {
     const active = nxTab === id ? 'active' : '';
