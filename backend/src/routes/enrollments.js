@@ -4,8 +4,9 @@ const db = require('../db');
 const { asyncHandler, logActivity } = require('../utils');
 const { requireAuth, requireApprovedStudent } = require('../middleware');
 
-// GET /api/enrollments – current user's enrollments
+// GET /api/enrollments — current user's enrollments
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
+    const userId = req.user.user_id || req.user.id;
     const r = await db.query(`
         SELECT
             e.id,
@@ -17,23 +18,16 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
             c.instructor_name,
             c.duration,
             c.cover_image_url,
-            -- ⭐ course_price: the price the student is paying
             c.price::numeric AS course_price,
-            -- ⭐ total_course_paid: SUM of completed COURSE_PAYMENT transactions
             COALESCE(paid.total, 0)::numeric AS total_course_paid,
-            -- ⭐ remaining_balance: price − paid (never negative)
             GREATEST(c.price - COALESCE(paid.total, 0), 0)::numeric AS remaining_balance,
-            -- ⭐ payment_percentage: 0..100 with floating-point tolerance
             CASE
                 WHEN c.price <= 0 THEN 100
                 WHEN COALESCE(paid.total, 0) >= c.price - 0.01 THEN 100
                 ELSE ROUND((COALESCE(paid.total, 0) / c.price) * 100, 2)
             END AS payment_percentage,
-            -- ⭐ fully_paid: boolean flag
             (c.price > 0 AND COALESCE(paid.total, 0) >= c.price - 0.01) AS fully_paid,
-            -- ⭐ initial_payment (25%)
             ROUND(c.price * 0.25, 2)::numeric AS initial_payment,
-            -- ⭐ lesson counts
             (SELECT COUNT(*)::int FROM lessons l
                 JOIN modules m ON m.id = l.module_id
                 WHERE m.course_id = c.id AND l.published = TRUE) AS total_lessons,
@@ -51,15 +45,26 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
         ) AS paid ON paid.course_id = c.id
         WHERE e.user_id = $1
         ORDER BY e.enrolled_at DESC
-    `, [req.user.id]);
-
+    `, [userId]);
     res.json({ enrollments: r.rows });
 }));
 
 // POST /api/enrollments
 router.post('/', requireAuth, requireApprovedStudent, asyncHandler(async (req, res) => {
+    const userId = req.user.user_id || req.user.id;
     const { course_id } = req.body;
-    if (!course_id) return res.status(400).json({ error: 'course_id required' });
+
+    // ⭐ Debug logging — helps spot missing values
+    console.log('[enroll] req.user:', JSON.stringify(req.user));
+    console.log('[enroll] userId:', userId, 'course_id:', course_id);
+
+    if (!userId) {
+        console.error('[enroll] ❌ userId is missing!');
+        return res.status(401).json({ error: 'User context missing' });
+    }
+    if (!course_id) {
+        return res.status(400).json({ error: 'course_id required' });
+    }
 
     const client = await db.getClient();
     try {
@@ -79,11 +84,11 @@ router.post('/', requireAuth, requireApprovedStudent, asyncHandler(async (req, r
              VALUES ($1, $2)
              ON CONFLICT (user_id, course_id) DO NOTHING
              RETURNING *`,
-            [req.user.id, course_id]
+            [userId, course_id]
         );
 
         if (r.rows.length) {
-            await logActivity(client, req.user.id, 'enrollment',
+            await logActivity(client, userId, 'enrollment',
                 'Enrolled in course', `Course ID: ${course_id}`);
         }
 
