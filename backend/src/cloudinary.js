@@ -1,4 +1,3 @@
-// backend/src/cloudinary.js
 const cloudinary = require('cloudinary').v2;
 const { Readable } = require('stream');
 
@@ -9,18 +8,13 @@ cloudinary.config({
     secure: true,
 });
 
-/**
- * Upload a buffer to Cloudinary.
- * Simplified — no use_filename or unique_filename to avoid signature issues.
- */
 function uploadBuffer(buffer, opts = {}) {
     return new Promise((resolve, reject) => {
         const uploadStream = cloudinary.uploader.upload_stream(
             {
                 folder: opts.folder || 'nexora/uploads',
                 resource_type: opts.resource_type || 'auto',
-                // ⚠️ Removed: use_filename, unique_filename, overwrite
-                // These can cause signature mismatches on some SDK versions
+                // Removed: use_filename, unique_filename (signature issues)
             },
             (err, result) => {
                 if (err) return reject(err);
