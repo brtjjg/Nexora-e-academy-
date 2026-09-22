@@ -1296,6 +1296,7 @@ const PAGE_NAMES = {
   'admin-groups':'Groups / Discussion',
   'admin-revenue':'Revenue',
   'admin-payments':'Payments',
+  'admin-assignments':'Assignments',
   'student-dashboard':'Dashboard',
   'student-wallet':'Wallet',
   'student-courses':'My Courses',
@@ -1376,6 +1377,7 @@ async function navigateTo(page) {
         else if (page === 'student-certificates') await renderStudentCertificates();
         else if (page === 'student-profile') renderStudentProfile();
         else if (page === 'notifications') await renderNotificationPrefs();
+        else if (page === 'admin-assignments') await renderAdminAssignments();
     } catch (err) { console.error(err); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
