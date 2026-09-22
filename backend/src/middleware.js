@@ -12,7 +12,12 @@ async function requireAuth(req, res, next) {
             return res.status(403).json({ error: 'Account not active' });
         }
 
-        req.user = user;
+        // ⭐ Normalize: ensure BOTH id and user_id are set
+        req.user = {
+            ...user,
+            id: user.id || user.user_id,
+            user_id: user.user_id || user.id,
+        };
         next();
     } catch (err) {
         next(err);
@@ -29,16 +34,13 @@ async function requireAdmin(req, res, next) {
 }
 
 /**
- * ✅ AUTO-APPROVE: Payment is the only requirement.
- * Any logged-in user can enroll in courses and view their dashboard.
- * The admission gate is enforced separately by the frontend + payment route.
+ * Auto-approve: any logged-in user can enroll.
+ * No manual admission_status gate.
  */
 async function requireApprovedStudent(req, res, next) {
     await requireAuth(req, res, () => {
         if (req.user.role === 'admin') return next();
-        // Auto-approve: no manual approval gate. Just require login.
-        // If you later want to gate on something else (e.g. course payment),
-        // add that check here.
+        // Auto-approve — logged-in users can proceed
         next();
     });
 }
