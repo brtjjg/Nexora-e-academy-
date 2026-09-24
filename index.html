@@ -2460,7 +2460,6 @@ function saveBasicInfo() {
     currentCourseData.category = document.getElementById('courseCategory').value;
     currentCourseData.level = document.getElementById('courseLevel').value;
     currentCourseData.description = document.getElementById('courseDescription').value;
-    currentCourseData.instructor_name = document.getElementById('courseInstructor').value;
     currentCourseData.duration = document.getElementById('courseDuration').value;
     if (!currentCourseData.title) { alert('⚠️ Title required'); return; }
     goToStep(1);
