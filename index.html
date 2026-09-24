@@ -1028,10 +1028,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
 <div><h4>Support</h4><ul>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
-<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
+<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
 </ul></div>
 <div><h4>Connect</h4><ul>
-<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
+<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook</a></li>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> Email Support</a></li>
 </ul></div>
 <div class="bottom">&copy; 2026 <span class="gold">Nexora Academy</span>. All rights reserved.</div>
@@ -2426,7 +2426,7 @@ async function editCourse(courseId) {
 }
 function initBuilder() {
     if (!currentCourseData || !currentCourseData.id) {
-        currentCourseData = { title: '', code: '', category: 'IT & Technology', level: 'Beginner', description: '', instructor_name: '', duration: '', price: 0, initial_payment_percent: 25, status: 'draft', cat_pass_mark: 50, exam_pass_mark: 50, cat_unlock_hours: 24, exam_unlock_hours: 72, modules: [], discount: { enabled: false, originalPrice: 0, discountPrice: 0, endsAt: null, label: '' } };
+        currentCourseData = { title: '', code: '', category: 'IT & Technology', level: 'Beginner', description: '', duration: '', price: 0, initial_payment_percent: 25, status: 'draft', cat_pass_mark: 50, exam_pass_mark: 50, cat_unlock_hours: 24, exam_unlock_hours: 72, modules: [], discount: { enabled: false, originalPrice: 0, discountPrice: 0, endsAt: null, label: '' } };
         examQuestions = []; catQuestions = [];
         document.getElementById('builderTitle').textContent = 'Create New Course';
         ['courseTitle','courseCode','courseDescription','courseDuration','courseInstructor'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
