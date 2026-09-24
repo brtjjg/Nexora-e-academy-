@@ -60,36 +60,31 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // POST /api/courses — create
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const {
-        title, code, category, level, description, instructor_name,
-        duration, cover_image_url, price, initial_payment_percent,
-        cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
-        status,
-    } = req.body;
-    if (!title) return res.status(400).json({ error: 'Title required' });
+    title, code, category, level, description,
+    duration, cover_image_url, price, initial_payment_percent,
+    cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
+    status,
+} = req.body;
 
-    const r = await db.query(
-        `INSERT INTO courses (title, code, category, level, description,
-            instructor_name, duration, cover_image_url, price,
-            initial_payment_percent, cat_pass_mark, exam_pass_mark,
-            cat_unlock_hours, exam_unlock_hours, status, created_by)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16)
-         RETURNING *`,
-        [title, code || null, category || null, level || null,
-         description || null, instructor_name || null, duration || null,
-         cover_image_url || null, price || 0, initial_payment_percent || 25,
-         cat_pass_mark || 50, exam_pass_mark || 50,
-         cat_unlock_hours || 24, exam_unlock_hours || 72,
-         status || 'draft', req.user.user_id]
-    );
-    res.status(201).json({ course: r.rows[0] });
-}));
+    `INSERT INTO courses (title, code, category, level, description,
+    duration, cover_image_url, price,
+    initial_payment_percent, cat_pass_mark, exam_pass_mark,
+    cat_unlock_hours, exam_unlock_hours, status, created_by)
+ VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+ RETURNING *`,
+[title, code || null, category || null, level || null,
+ description || null, duration || null,
+ cover_image_url || null, price || 0, initial_payment_percent || 25,
+ cat_pass_mark || 50, exam_pass_mark || 50,
+ cat_unlock_hours || 24, exam_unlock_hours || 72,
+ status || 'draft', req.user.user_id]
 
 // PUT /api/courses/:id — update
 router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const fields = ['title','code','category','level','description',
-        'instructor_name','duration','cover_image_url','price',
-        'initial_payment_percent','cat_pass_mark','exam_pass_mark',
-        'cat_unlock_hours','exam_unlock_hours','status'];
+    'duration','cover_image_url','price',
+    'initial_payment_percent','cat_pass_mark','exam_pass_mark',
+    'cat_unlock_hours','exam_unlock_hours','status'];
     const updates = [];
     const values = [];
     fields.forEach(f => {
