@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<link rel="stylesheet" href="certificate.css">
 <!-- Google Tag Manager -->
 <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
 new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
@@ -22,7 +21,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta property="og:type" content="website" />
 <meta property="og:url" content="https://nexora-e-academy.vercel.app/" />
 <meta property="og:title" content="Nexora Academy — Learn. Grow. Achieve." />
-<meta property="og:description" content="Build practical, career-focused skills with expert instructors. Pay in installments. Earn recognized certificates." />
+<meta property="og:description" content="Build practical, career-focused skills. Pay in installments. Earn recognized certificates." />
 <meta property="og:image" content="https://nexora-e-academy.vercel.app/og-image.jpg" />
 <meta property="og:site_name" content="Nexora Academy" />
 
@@ -49,6 +48,7 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="certificate.css">
 
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VF0CF8P62S"></script>
 <script>
@@ -59,9 +59,6 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 </script>
 
 <style>
-/* ═══════════════════════════════════════════════════════════
-   ROOT VARIABLES
-   ═══════════════════════════════════════════════════════════ */
 :root{
   --navy:#0B1F3A;--navy-light:#172B4D;--blue:#29A9E8;--blue-dark:#1E8BC3;
   --gold:#D4A63A;--gold-light:#E8C84A;--gold-dark:#A67C1E;
@@ -79,7 +76,6 @@ a{text-decoration:none;color:inherit}
 .hidden{display:none!important}
 .text-center{text-align:center}
 
-/* TOP NAV */
 .top-nav{background:var(--navy);padding:10px 24px;border-bottom:3px solid var(--gold);position:sticky;top:0;z-index:1001}
 .top-nav .container{display:flex;justify-content:space-between;align-items:center;max-width:1200px;margin:0 auto;flex-wrap:wrap;gap:1rem}
 .top-nav .brand{display:flex;align-items:center;gap:10px;cursor:pointer}
@@ -100,7 +96,6 @@ a{text-decoration:none;color:inherit}
 .top-nav .nav-links .user-info{display:flex;align-items:center;gap:8px;color:var(--white)}
 .top-nav .nav-links .user-info .avatar{width:32px;height:32px;border-radius:50%;background:var(--blue);color:var(--white);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.8rem}
 
-/* SIDEBAR */
 .sidebar-toggle-bar{background:var(--navy-light);padding:10px 24px;border-bottom:1px solid rgba(255,255,255,0.05);display:none;align-items:center;gap:12px}
 .sidebar-toggle-bar.visible{display:flex}
 .sidebar-toggle-bar .toggle-btn{background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--white);font-size:1.2rem;cursor:pointer;padding:8px 16px;border-radius:50px;display:flex;align-items:center;gap:10px;font-family:inherit}
@@ -129,7 +124,6 @@ a{text-decoration:none;color:inherit}
 .page{display:none}
 .page.active{display:block}
 
-/* LANDING */
 .landing-hero{text-align:center;padding:4rem 0 3rem}
 .landing-hero .badge-tag{display:inline-block;background:rgba(212,166,58,0.15);border:1px solid rgba(212,166,58,0.3);color:var(--gold);padding:6px 18px;border-radius:50px;font-size:0.75rem;font-weight:700;letter-spacing:2px;margin-bottom:1.5rem}
 .landing-hero h1{font-size:3.5rem;font-weight:800;color:var(--navy);line-height:1.15;margin-bottom:1.2rem}
@@ -166,7 +160,6 @@ a{text-decoration:none;color:inherit}
 .stat-card.green{border-left-color:var(--success)}
 .stat-card.purple{border-left-color:#8B5CF6}
 
-/* FORMS */
 .form-group{margin-bottom:1.5rem}
 .form-group label{display:block;font-weight:600;margin-bottom:0.4rem;color:var(--navy);font-size:0.9rem}
 .form-group label .required{color:var(--danger)}
@@ -322,7 +315,6 @@ table tbody tr:hover{background:#f8fafc}
 .chat-meta .chat-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem}
 .chat-meta .chat-avatar.admin{background:var(--gold)}
 
-/* NX LEARNING PAGE */
 .nx-learning{background:#F5F8FC;min-height:100vh;padding:0}
 .nx-course-nav{background:#FFFFFF;border-bottom:1px solid #D9E5F2;position:sticky;top:64px;z-index:50;box-shadow:0 1px 3px rgba(20,43,74,0.04)}
 .nx-course-nav-inner{max-width:1400px;margin:0 auto;padding:0 1.5rem;display:flex;gap:0.25rem;overflow-x:auto;-webkit-overflow-scrolling:touch}
@@ -515,10 +507,7 @@ table tbody tr:hover{background:#f8fafc}
 </style>
 </head>
 <body>
-<!-- Google Tag Manager (noscript) -->
-<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-POPX4NXC"
-height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
-<!-- End Google Tag Manager (noscript) -->
+<noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-POPX4NXC" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 
 <nav class="top-nav">
 <div class="container">
@@ -563,10 +552,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
-<div class="menu-item" onclick="navigateTo('admin-assignments')">
-  <i class="fas fa-tasks"></i><span>Assignments</span>
-  <span class="badge-count" id="adminAssignmentsCount">0</span>
-</div>
+<div class="menu-item" onclick="navigateTo('admin-assignments')"><i class="fas fa-tasks"></i><span>Assignments</span><span class="badge-count" id="adminAssignmentsCount">0</span></div>
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
 <div class="menu-item" onclick="navigateTo('admin-certificates')"><i class="fas fa-certificate"></i><span>Certificates</span></div>
@@ -608,7 +594,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <button class="btn btn-outline-hero" onclick="showCoursesPublic()"><i class="fas fa-book-open"></i> Browse Courses</button>
 </div>
 </section>
-<section class="landing-stats" id="homeStats">
+<section class="landing-stats">
 <div class="stat"><h3><span id="statStudents">—</span></h3><p>Active Students</p></div>
 <div class="stat"><h3><span id="statCourses">—</span></h3><p>Available Courses</p></div>
 <div class="stat"><h3><span id="statCertificates">—</span></h3><p>Certificates Issued</p></div>
@@ -620,6 +606,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div class="feature"><div class="feature-icon"><i class="fas fa-globe-africa"></i></div><h3>Learn Anywhere</h3><p>Access from any device.</p></div>
 <div class="feature"><div class="feature-icon"><i class="fas fa-users"></i></div><h3>Community</h3><p>Join discussions and study groups.</p></div>
 </section>
+</div>
 
 <div id="page-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> All Courses</h2><div id="allCoursesList" class="courses-grid"></div></div>
 
@@ -709,26 +696,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <h2><i class="fas fa-id-card" style="color:var(--gold)"></i> Upload Documents</h2>
 <p style="color:var(--text-secondary);text-align:center;margin-bottom:1rem;font-size:0.9rem">Upload up to 4 documents. National ID (front) is required.</p>
 <div style="background:#eff6ff;border-left:4px solid var(--blue);padding:0.75rem 1rem;border-radius:8px;margin-bottom:1.25rem;font-size:0.85rem;color:#1e40af"><i class="fas fa-info-circle"></i> <strong>Required:</strong> National ID (front). <strong>Optional:</strong> ID back, certificate, passport.</div>
-<div class="form-group">
-<label>National ID — Front <span class="required">*</span></label>
-<div class="file-upload-container" onclick="document.getElementById('doc_national_front').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (front)</div><div class="upload-hint">PNG, JPG up to 5MB</div><input type="file" id="doc_national_front" accept="image/*" onchange="handleDocumentUpload(event,'national_front')"></div>
-<div id="preview_national_front" style="margin-top:0.5rem;display:none"></div>
-</div>
-<div class="form-group">
-<label>National ID — Back <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
-<div class="file-upload-container" onclick="document.getElementById('doc_national_back').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (back)</div><input type="file" id="doc_national_back" accept="image/*" onchange="handleDocumentUpload(event,'national_back')"></div>
-<div id="preview_national_back" style="margin-top:0.5rem;display:none"></div>
-</div>
-<div class="form-group">
-<label>Academic Certificate <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
-<div class="file-upload-container" onclick="document.getElementById('doc_certificate').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-certificate"></i></div><div class="upload-text">Click to upload certificate</div><input type="file" id="doc_certificate" accept="image/*" onchange="handleDocumentUpload(event,'certificate')"></div>
-<div id="preview_certificate" style="margin-top:0.5rem;display:none"></div>
-</div>
-<div class="form-group">
-<label>Passport Photo <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label>
-<div class="file-upload-container" onclick="document.getElementById('doc_passport').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-user-circle"></i></div><div class="upload-text">Click to upload passport photo</div><input type="file" id="doc_passport" accept="image/*" onchange="handleDocumentUpload(event,'passport')"></div>
-<div id="preview_passport" style="margin-top:0.5rem;display:none"></div>
-</div>
+<div class="form-group"><label>National ID — Front <span class="required">*</span></label><div class="file-upload-container" onclick="document.getElementById('doc_national_front').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (front)</div><div class="upload-hint">PNG, JPG up to 5MB</div><input type="file" id="doc_national_front" accept="image/*" onchange="handleDocumentUpload(event,'national_front')"></div><div id="preview_national_front" style="margin-top:0.5rem;display:none"></div></div>
+<div class="form-group"><label>National ID — Back <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label><div class="file-upload-container" onclick="document.getElementById('doc_national_back').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-id-card"></i></div><div class="upload-text">Click to upload ID (back)</div><input type="file" id="doc_national_back" accept="image/*" onchange="handleDocumentUpload(event,'national_back')"></div><div id="preview_national_back" style="margin-top:0.5rem;display:none"></div></div>
+<div class="form-group"><label>Academic Certificate <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label><div class="file-upload-container" onclick="document.getElementById('doc_certificate').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-certificate"></i></div><div class="upload-text">Click to upload certificate</div><input type="file" id="doc_certificate" accept="image/*" onchange="handleDocumentUpload(event,'certificate')"></div><div id="preview_certificate" style="margin-top:0.5rem;display:none"></div></div>
+<div class="form-group"><label>Passport Photo <span style="color:var(--text-secondary);font-weight:400">(optional)</span></label><div class="file-upload-container" onclick="document.getElementById('doc_passport').click()" style="padding:1rem"><div class="upload-icon" style="font-size:1.8rem"><i class="fas fa-user-circle"></i></div><div class="upload-text">Click to upload passport photo</div><input type="file" id="doc_passport" accept="image/*" onchange="handleDocumentUpload(event,'passport')"></div><div id="preview_passport" style="margin-top:0.5rem;display:none"></div></div>
 <div id="docUploadSummary" style="background:var(--bg);padding:0.75rem;border-radius:10px;margin-bottom:1rem;font-size:0.85rem"></div>
 <div style="display:flex;gap:0.5rem">
 <button type="button" class="btn btn-outline" onclick="regGoBack(1)"><i class="fas fa-arrow-left"></i> Back</button>
@@ -741,14 +712,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <i class="fas fa-receipt" style="font-size:3.5rem;color:var(--gold);margin-bottom:1rem"></i>
 <h2 style="color:var(--navy)">Application Received!</h2>
 <p style="color:var(--text-secondary);margin:1rem 0">Pay the admission processing fee of <strong>$0.75</strong>.</p>
-<div style="background:var(--bg);padding:1rem;border-radius:12px;margin:1rem 0;text-align:left;font-size:0.9rem">
-<div><strong>Application ID:</strong> <span id="regAppId" style="color:var(--gold);font-weight:700">—</span></div>
-<div style="margin-top:0.3rem"><strong>Status:</strong> <span class="badge status-payment_due">AWAITING PAYMENT</span></div>
-</div>
-<div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:12px;margin:1rem 0">
-<div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Admission Fee</div>
-<div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.75</div>
-</div>
+<div style="background:var(--bg);padding:1rem;border-radius:12px;margin:1rem 0;text-align:left;font-size:0.9rem"><div><strong>Application ID:</strong> <span id="regAppId" style="color:var(--gold);font-weight:700">—</span></div><div style="margin-top:0.3rem"><strong>Status:</strong> <span class="badge status-payment_due">AWAITING PAYMENT</span></div></div>
+<div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:12px;margin:1rem 0"><div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Admission Fee</div><div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.75</div></div>
 <button class="btn btn-success btn-block" id="payFeeBtn" onclick="payActivationFee()"><i class="fas fa-credit-card"></i> Pay $0.75 Now</button>
 <div id="feeFlash" style="margin-top:1rem"></div>
 </div>
@@ -758,10 +723,7 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div style="text-align:center;padding:1rem 0">
 <i class="fas fa-check-circle" style="font-size:3.5rem;color:var(--success);margin-bottom:1rem"></i>
 <h2 style="color:var(--navy)">You're Admitted!</h2>
-<div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid var(--success);padding:1.5rem;border-radius:12px;margin:1rem 0">
-<div style="font-size:0.75rem;letter-spacing:2px;color:#166534;text-transform:uppercase;font-weight:700">Admission Number</div>
-<div id="regAdmissionNumber" style="font-size:1.8rem;font-weight:900;color:var(--navy);margin:0.5rem 0;letter-spacing:2px">—</div>
-</div>
+<div style="background:linear-gradient(135deg,#dcfce7,#f0fdf4);border:2px solid var(--success);padding:1.5rem;border-radius:12px;margin:1rem 0"><div style="font-size:0.75rem;letter-spacing:2px;color:#166534;text-transform:uppercase;font-weight:700">Admission Number</div><div id="regAdmissionNumber" style="font-size:1.8rem;font-weight:900;color:var(--navy);margin:0.5rem 0;letter-spacing:2px">—</div></div>
 <button class="btn btn-primary btn-block" onclick="goToDashboard()"><i class="fas fa-tachometer-alt"></i> Go to Dashboard</button>
 </div>
 </div>
@@ -772,13 +734,8 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div id="page-student-dashboard" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-tachometer-alt" style="color:var(--gold)"></i> My Dashboard</h2><div id="studentDashboardContent"></div></div>
 <div id="page-student-wallet" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-wallet" style="color:var(--gold)"></i> Wallet & Payments</h2><div id="studentWalletContent"></div></div>
 <div id="page-student-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> My Courses</h2><div id="studentCoursesList"></div></div>
-
-<div id="page-learning" class="page">
-  <div class="nx-learning" id="nxLearningContent"></div>
-</div>
-
+<div id="page-learning" class="page"><div class="nx-learning" id="nxLearningContent"></div></div>
 <div id="page-student-course-viewer" class="page"><div id="studentCourseViewerContent"></div></div>
-
 <div id="page-student-results" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-clipboard-list" style="color:var(--gold)"></i> My Results</h2><div id="studentResultsTable"></div></div>
 <div id="page-student-exams" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-pencil-alt" style="color:var(--gold)"></i> My Exams & CATs</h2><div id="studentExamsContent"></div></div>
 <div id="page-student-certificates" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-certificate" style="color:var(--gold)"></i> My Certificates</h2><div id="studentCertificatesList"></div></div>
@@ -899,124 +856,21 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 </div>
 </div>
 
-<div class="modal-backdrop" id="appDetailsModal">
-<div class="modal-box">
-<h2><i class="fas fa-file-alt"></i> Details</h2>
-<div id="appDetailsContent"></div>
-<div id="appDetailsFooter" style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap"><button type="button" class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button></div>
-</div>
-</div>
+<div class="modal-backdrop" id="appDetailsModal"><div class="modal-box"><h2><i class="fas fa-file-alt"></i> Details</h2><div id="appDetailsContent"></div><div id="appDetailsFooter" style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem;flex-wrap:wrap"><button type="button" class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button></div></div></div>
 
-<div class="modal-backdrop" id="rejectReasonModal">
-<div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject</h2>
-<div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="4" placeholder="Enter the reason..."></textarea></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()">Confirm Reject</button></div>
-</div>
-</div>
+<div class="modal-backdrop" id="rejectReasonModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-times-circle" style="color:var(--danger)"></i> Reject</h2><div class="form-group"><label>Reason <span class="required">*</span></label><textarea id="rejectReasonText" rows="4" placeholder="Enter the reason..."></textarea></div><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeRejectModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmReject()">Confirm Reject</button></div></div></div>
 
-<div class="modal-backdrop" id="approveConfirmModal">
-<div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2>
-<p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Confirm approval?</p>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()">Confirm Approve</button></div>
-</div>
-</div>
+<div class="modal-backdrop" id="approveConfirmModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2><p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Confirm approval?</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()">Confirm Approve</button></div></div></div>
 
-<div class="modal-backdrop" id="payCourseModal">
-<div class="modal-box" style="max-width:520px">
-<h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2>
-<div id="payCourseInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem"></div>
-<form onsubmit="processCoursePayment(event)">
-<div class="form-group"><label>Amount ($) *</label><input type="number" id="payAmount" step="0.01" min="0.5" required></div>
-<div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option><option value="paypal">🌐 PayPal</option></select></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closePayCourseModal()">Cancel</button><button type="submit" class="btn btn-success">Pay</button></div>
-</form>
-</div>
-</div>
+<div class="modal-backdrop" id="payCourseModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2><div id="payCourseInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem"></div><form onsubmit="processCoursePayment(event)"><div class="form-group"><label>Amount ($) *</label><input type="number" id="payAmount" step="0.01" min="0.5" required></div><div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option><option value="paypal">🌐 PayPal</option></select></div><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closePayCourseModal()">Cancel</button><button type="submit" class="btn btn-success">Pay</button></div></form></div></div>
 
-<div class="modal-backdrop" id="lessonEditorModal">
-<div class="modal-box" style="max-width:720px">
-<h2><i class="fas fa-play-circle"></i> <span id="lessonEditorTitle">Add Lesson</span></h2>
-<input type="hidden" id="lessonEditModuleIdx">
-<input type="hidden" id="lessonEditLessonIdx">
-<div class="form-row">
-<div class="form-group"><label>Lesson Title <span class="required">*</span></label><input type="text" id="lesTitle"></div>
-<div class="form-group"><label>Order</label><input type="number" id="lesOrder" min="1" value="1"></div>
-</div>
-<div class="form-group"><label>Short Description</label><input type="text" id="lesDescription"></div>
-<div class="form-group">
-<label>Video</label>
-<div class="file-upload-container" onclick="document.getElementById('lesVideoInput').click()">
-<div class="upload-icon"><i class="fas fa-video"></i></div>
-<div class="upload-text">Tap to choose a video file</div>
-<div class="upload-hint">MP4, WebM, MOV — up to 500MB</div>
-<input type="file" id="lesVideoInput" accept="video/*" onchange="handleLesVideo(event)">
-</div>
-<div id="lesVideoPreview" style="margin-top:0.75rem;display:none">
-<div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video id="lesVideoEl" controls style="width:100%;height:100%"></video></div>
-<button type="button" class="btn btn-danger btn-sm" style="margin-top:0.5rem" onclick="removeLesVideo()"><i class="fas fa-trash"></i> Remove video</button>
-</div>
-</div>
-<div class="form-group"><label>Learning Materials / Notes</label><textarea id="lesNotes" rows="5"></textarea></div>
-<div class="form-group"><label>Assignment</label><textarea id="lesAssignment" rows="3"></textarea></div>
-<div class="form-group">
-<label>Attach PDFs (optional)</label>
-<div class="file-upload-container" onclick="document.getElementById('lesPdfInput').click()">
-<div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
-<div class="upload-text">Tap to choose PDF files</div>
-<input type="file" id="lesPdfInput" accept=".pdf,.doc,.docx" multiple onchange="handleLesPdfs(event)">
-</div>
-<div id="lesPdfList" style="margin-top:0.5rem"></div>
-</div>
-<div class="form-group">
-<label>Attach Images (optional)</label>
-<div class="file-upload-container" onclick="document.getElementById('lesImgInput').click()">
-<div class="upload-icon"><i class="fas fa-images"></i></div>
-<div class="upload-text">Tap to choose images</div>
-<input type="file" id="lesImgInput" accept="image/*" multiple onchange="handleLesImages(event)">
-</div>
-<div id="lesImgList" style="margin-top:0.5rem"></div>
-</div>
-<div class="form-group"><label>Visibility</label><select id="lesPublished"><option value="published">Published</option><option value="draft">Draft</option></select></div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeLessonEditor()">Cancel</button><button type="button" class="btn btn-success" onclick="saveLesson()"><i class="fas fa-save"></i> Save Lesson</button></div>
-</div>
-</div>
+<div class="modal-backdrop" id="lessonEditorModal"><div class="modal-box" style="max-width:720px"><h2><i class="fas fa-play-circle"></i> <span id="lessonEditorTitle">Add Lesson</span></h2><input type="hidden" id="lessonEditModuleIdx"><input type="hidden" id="lessonEditLessonIdx"><div class="form-row"><div class="form-group"><label>Lesson Title <span class="required">*</span></label><input type="text" id="lesTitle"></div><div class="form-group"><label>Order</label><input type="number" id="lesOrder" min="1" value="1"></div></div><div class="form-group"><label>Short Description</label><input type="text" id="lesDescription"></div><div class="form-group"><label>Video</label><div class="file-upload-container" onclick="document.getElementById('lesVideoInput').click()"><div class="upload-icon"><i class="fas fa-video"></i></div><div class="upload-text">Tap to choose a video file</div><div class="upload-hint">MP4, WebM, MOV — up to 500MB</div><input type="file" id="lesVideoInput" accept="video/*" onchange="handleLesVideo(event)"></div><div id="lesVideoPreview" style="margin-top:0.75rem;display:none"><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video id="lesVideoEl" controls style="width:100%;height:100%"></video></div><button type="button" class="btn btn-danger btn-sm" style="margin-top:0.5rem" onclick="removeLesVideo()"><i class="fas fa-trash"></i> Remove video</button></div></div><div class="form-group"><label>Learning Materials / Notes</label><textarea id="lesNotes" rows="5"></textarea></div><div class="form-group"><label>Assignment</label><textarea id="lesAssignment" rows="3"></textarea></div><div class="form-group"><label>Attach PDFs (optional)</label><div class="file-upload-container" onclick="document.getElementById('lesPdfInput').click()"><div class="upload-icon"><i class="fas fa-file-pdf"></i></div><div class="upload-text">Tap to choose PDF files</div><input type="file" id="lesPdfInput" accept=".pdf,.doc,.docx" multiple onchange="handleLesPdfs(event)"></div><div id="lesPdfList" style="margin-top:0.5rem"></div></div><div class="form-group"><label>Attach Images (optional)</label><div class="file-upload-container" onclick="document.getElementById('lesImgInput').click()"><div class="upload-icon"><i class="fas fa-images"></i></div><div class="upload-text">Tap to choose images</div><input type="file" id="lesImgInput" accept="image/*" multiple onchange="handleLesImages(event)"></div><div id="lesImgList" style="margin-top:0.5rem"></div></div><div class="form-group"><label>Visibility</label><select id="lesPublished"><option value="published">Published</option><option value="draft">Draft</option></select></div><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeLessonEditor()">Cancel</button><button type="button" class="btn btn-success" onclick="saveLesson()"><i class="fas fa-save"></i> Save Lesson</button></div></div></div>
 
-<div class="modal-backdrop" id="groupModal">
-<div class="modal-box" style="max-width:560px">
-<h2><i class="fas fa-users" style="color:var(--gold)"></i> <span id="groupModalTitle">Create Group</span></h2>
-<input type="hidden" id="groupEditId">
-<div class="form-group"><label>Group Name <span class="required">*</span></label><input type="text" id="groupName" placeholder="e.g., Web Development Cohort 2026"></div>
-<div class="form-group"><label>Description</label><textarea id="groupDescription" rows="3" placeholder="What is this group about?"></textarea></div>
-<div class="form-row">
-<div class="form-group"><label>Category</label><select id="groupCategory"><option>General</option><option>Course Support</option><option>Study Group</option><option>Announcements</option></select></div>
-<div class="form-group"><label>Visibility</label><select id="groupVisibility"><option value="public">Public (anyone can join)</option><option value="private">Private (invite only)</option></select></div>
-</div>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end">
-<button type="button" class="btn btn-outline" onclick="closeGroupModal()">Cancel</button>
-<button type="button" class="btn btn-success" onclick="saveGroup()"><i class="fas fa-save"></i> Save</button>
-</div>
-</div>
-</div>
+<div class="modal-backdrop" id="groupModal"><div class="modal-box" style="max-width:560px"><h2><i class="fas fa-users" style="color:var(--gold)"></i> <span id="groupModalTitle">Create Group</span></h2><input type="hidden" id="groupEditId"><div class="form-group"><label>Group Name <span class="required">*</span></label><input type="text" id="groupName" placeholder="e.g., Web Development Cohort 2026"></div><div class="form-group"><label>Description</label><textarea id="groupDescription" rows="3" placeholder="What is this group about?"></textarea></div><div class="form-row"><div class="form-group"><label>Category</label><select id="groupCategory"><option>General</option><option>Course Support</option><option>Study Group</option><option>Announcements</option></select></div><div class="form-group"><label>Visibility</label><select id="groupVisibility"><option value="public">Public (anyone can join)</option><option value="private">Private (invite only)</option></select></div></div><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeGroupModal()">Cancel</button><button type="button" class="btn btn-success" onclick="saveGroup()"><i class="fas fa-save"></i> Save</button></div></div></div>
 
-<div class="modal-backdrop" id="deleteGroupModal">
-<div class="modal-box" style="max-width:480px">
-<h2><i class="fas fa-trash" style="color:var(--danger)"></i> Delete Group</h2>
-<p style="color:var(--text-secondary);margin-bottom:1.5rem">This will permanently remove the group and all its messages. This cannot be undone.</p>
-<div style="display:flex;gap:0.5rem;justify-content:flex-end">
-<button type="button" class="btn btn-outline" onclick="closeDeleteGroupModal()">Cancel</button>
-<button type="button" class="btn btn-danger" onclick="confirmDeleteGroup()">Delete</button>
-</div>
-</div>
-</div>
+<div class="modal-backdrop" id="deleteGroupModal"><div class="modal-box" style="max-width:480px"><h2><i class="fas fa-trash" style="color:var(--danger)"></i> Delete Group</h2><p style="color:var(--text-secondary);margin-bottom:1.5rem">This will permanently remove the group and all its messages. This cannot be undone.</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeDeleteGroupModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmDeleteGroup()">Delete</button></div></div></div>
 
-<div class="modal-backdrop" id="loadingModal">
-<div class="modal-box" style="max-width:320px;text-align:center">
-<i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i>
-<p style="margin-top:1rem;color:var(--text-secondary)">Please wait...</p>
-</div>
-</div>
+<div class="modal-backdrop" id="loadingModal"><div class="modal-box" style="max-width:320px;text-align:center"><i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i><p style="margin-top:1rem;color:var(--text-secondary)">Please wait...</p></div></div>
 
 <footer class="footer">
 <div class="container">
@@ -1028,10 +882,10 @@ height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
 <div><h4>Quick Links</h4><ul><li><a onclick="goHome()">Home</a></li><li><a onclick="showCoursesPublic()">Courses</a></li><li><a onclick="showVerifyPublic()">Verify</a></li></ul></div>
 <div><h4>Support</h4><ul>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> nexo27716@gmail.com</a></li>
-<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp</a></li>
+<li><a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" target="_blank" rel="noopener"><i class="fab fa-whatsapp"></i> WhatsApp Group</a></li>
 </ul></div>
 <div><h4>Connect</h4><ul>
-<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook</a></li>
+<li><a href="https://facebook.com/groups/2560631744449743/" target="_blank" rel="noopener"><i class="fab fa-facebook"></i> Facebook Group</a></li>
 <li><a href="mailto:nexo27716@gmail.com"><i class="fas fa-envelope"></i> Email Support</a></li>
 </ul></div>
 <div class="bottom">&copy; 2026 <span class="gold">Nexora Academy</span>. All rights reserved.</div>
@@ -1077,7 +931,6 @@ let currentGroup = null;
 let studentGroupTab = 'mine';
 let groupsPollInterval = null;
 let deleteGroupId = null;
-
 let nxCourse = null;
 let nxLessonId = null;
 let nxTab = 'notes';
@@ -1098,9 +951,6 @@ function renderPriceHTML(course) {
     return `<span style="color:var(--gold);font-weight:700;font-size:1.1rem">${fmtMoney(course.price)}</span>`;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   AUTH
-   ═══════════════════════════════════════════════════════════ */
 async function bootSession() { try { const { user } = await api('/auth/me'); currentUser = user; } catch (e) { currentUser = null; } }
 async function loginUser(e) {
     e.preventDefault();
@@ -1116,9 +966,6 @@ async function loginUser(e) {
 }
 async function logout() { try { await api('/auth/logout', { method: 'POST' }); } catch (e) {} currentUser = null; closeSidebar(); if (groupsPollInterval) clearInterval(groupsPollInterval); goHome(); }
 
-/* ═══════════════════════════════════════════════════════════
-   NAVIGATION
-   ═══════════════════════════════════════════════════════════ */
 function goHome() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('page-landing').classList.add('active');
@@ -1127,6 +974,7 @@ function goHome() {
     document.getElementById('sidebar').classList.remove('open');
     document.getElementById('sidebarOverlay').classList.remove('active');
     updateTopNav();
+    loadHomeStats();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 async function showCoursesPublic() {
@@ -1173,9 +1021,23 @@ function updateTopNav() {
     }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   SHOW APP — ADMISSION GATE (PAYMENT-BASED)
-   ═══════════════════════════════════════════════════════════ */
+async function loadHomeStats() {
+    try {
+        const res = await fetch(`${API_BASE}/public/stats`);
+        const data = await res.json();
+        const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val ?? '0'; };
+        set('statStudents', data.students);
+        set('statCourses', data.courses);
+        set('statCertificates', data.certificates);
+        set('statGroups', data.groups);
+    } catch (e) {
+        ['statStudents','statCourses','statCertificates','statGroups'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.textContent === '—') el.textContent = '0';
+        });
+    }
+}
+
 async function showApp() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('sidebarToggleBar').classList.add('visible');
@@ -1236,29 +1098,12 @@ function updateSidebarActive(page) {
 }
 
 const PAGE_NAMES = {
-  'admin-dashboard':'Admin Dashboard',
-  'admin-students':'Students',
-  'admin-applications':'Applications',
-  'admin-courses':'Courses',
-  'admin-builder':'Add Course',
-  'admin-exams':'Exams',
-  'admin-certificates':'Certificates',
-  'admin-groups':'Groups / Discussion',
-  'admin-revenue':'Revenue',
-  'admin-payments':'Payments',
-  'admin-assignments':'Assignments',
-  'student-dashboard':'Dashboard',
-  'student-wallet':'Wallet',
-  'student-courses':'My Courses',
-  'student-course-viewer':'Course',
-  'student-results':'Results',
-  'student-exams':'Exams',
-  'student-certificates':'Certificates',
-  'student-groups':'Groups / Discussion',
-  'student-profile':'Profile',
-  'group-chat':'Group Chat',
-  'notifications':'Notifications',
-  'learning':'Learning'
+  'admin-dashboard':'Admin Dashboard','admin-students':'Students','admin-applications':'Applications',
+  'admin-courses':'Courses','admin-builder':'Add Course','admin-exams':'Exams','admin-certificates':'Certificates',
+  'admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','admin-assignments':'Assignments',
+  'student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course',
+  'student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion',
+  'student-profile':'Profile','group-chat':'Group Chat','notifications':'Notifications','learning':'Learning'
 };
 
 async function navigateTo(page) {
@@ -1332,9 +1177,6 @@ async function navigateTo(page) {
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NOTIFICATIONS
-   ═══════════════════════════════════════════════════════════ */
 async function renderNotificationPrefs() {
     const c = document.getElementById('notificationPrefsContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
@@ -1349,15 +1191,12 @@ async function renderNotificationPrefs() {
             { key: 'email_course_completion', label: 'Course completion', desc: 'You complete a course', icon: 'fa-trophy' },
             { key: 'email_certificate_issued', label: 'Certificate issued', desc: 'You earn a certificate', icon: 'fa-certificate' },
             { key: 'email_exam_reminders', label: 'Exam reminders', desc: 'CAT/exam unlocks soon', icon: 'fa-pencil-alt' },
-            { key: 'email_weekly_digest', label: 'Weekly progress digest', desc: 'Weekly summary of your learning', icon: 'fa-chart-line' },
+            { key: 'email_weekly_digest', label: 'Weekly progress digest', desc: 'Weekly summary of your learning', icon: 'fa-chart-line' }
         ];
         c.innerHTML = `
           <div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem">
             <label style="display:flex;align-items:center;justify-content:space-between;gap:1rem;cursor:pointer">
-              <div>
-                <div style="font-weight:700;color:var(--navy);font-size:1.05rem"><i class="fas fa-envelope" style="color:var(--gold)"></i> Email notifications</div>
-                <div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">Master switch — turn off to disable all emails</div>
-              </div>
+              <div><div style="font-weight:700;color:var(--navy);font-size:1.05rem"><i class="fas fa-envelope" style="color:var(--gold)"></i> Email notifications</div><div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.2rem">Master switch — turn off to disable all emails</div></div>
               <input type="checkbox" id="pref_master" ${p.email_enabled !== false ? 'checked' : ''} style="width:48px;height:26px;accent-color:var(--blue);cursor:pointer" onchange="savePref('email_enabled', this.checked)">
             </label>
           </div>
@@ -1371,8 +1210,7 @@ async function renderNotificationPrefs() {
                     <div><div style="font-weight:600;color:var(--navy);font-size:0.95rem">${t.label}</div><div style="font-size:0.8rem;color:var(--text-secondary)">${t.desc}</div></div>
                   </div>
                   <input type="checkbox" id="pref_${t.key}" ${p[t.key] !== false ? 'checked' : ''} style="width:22px;height:22px;accent-color:var(--blue);cursor:pointer" onchange="savePref('${t.key}', this.checked)">
-                </label>
-              `).join('')}
+                </label>`).join('')}
             </div>
           </div>
           <div style="text-align:center;margin-top:1.5rem;color:var(--text-secondary);font-size:0.85rem"><i class="fas fa-info-circle"></i> Changes are saved automatically</div>`;
@@ -1388,9 +1226,6 @@ async function savePref(key, value) {
     } catch (err) { alert('Failed to save: ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   COUNTRIES / PASSWORD / REGISTER
-   ═══════════════════════════════════════════════════════════ */
 function filterCountries(q) {
     const dd = document.getElementById('countryDropdown'); if (!dd) return;
     const term = (q || '').toLowerCase().trim();
@@ -1479,9 +1314,6 @@ async function payActivationFee() {
 }
 function goToDashboard() { showApp(); }
 
-/* ═══════════════════════════════════════════════════════════
-   DOCUMENT UPLOAD
-   ═══════════════════════════════════════════════════════════ */
 function handleDocumentUpload(event, docType) {
     const f = event.target.files[0]; if (!f) return;
     if (f.size > 2 * 1024 * 1024) { alert('⚠️ Max 2MB per file.'); event.target.value = ''; return; }
@@ -1503,9 +1335,6 @@ function updateDocSummary() {
     sum.innerHTML = `<strong>📎 ${count} document${count !== 1 ? 's' : ''} selected</strong>`;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   COURSE CARD
-   ═══════════════════════════════════════════════════════════ */
 function renderCourseCardHTML(course, mode, extra = {}) {
     const totalLessons = course.lesson_count || 0;
     const totalModules = course.module_count || 0;
@@ -1513,7 +1342,8 @@ function renderCourseCardHTML(course, mode, extra = {}) {
     let actionBtn;
     if (mode === 'public') actionBtn = `<button class="btn btn-primary btn-sm" onclick="showRegister()">Enroll</button>`;
     else if (mode === 'admin') actionBtn = `<div class="course-card-actions"><button class="btn btn-primary btn-sm" onclick="editCourse('${course.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-warning btn-sm" onclick="toggleCourseStatus('${course.id}', '${course.status}')"><i class="fas fa-${course.status === 'published' ? 'eye-slash' : 'eye'}"></i></button><button class="btn btn-danger btn-sm" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button></div>`;
-    <div class="course-meta"><span><i class="fas fa-clock"></i> ${esc(course.duration || 'Self-paced')}</span><span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
+    else if (mode === 'student') actionBtn = extra.enrolled ? `<button class="btn btn-primary btn-sm" onclick="openCourseViewer('${course.id}')"><i class="fas fa-play-circle"></i> Open</button>` : `<button class="btn btn-primary btn-sm" onclick="enrollInCourse('${course.id}')">Enroll</button>`;
+    return `<div class="course-card"><div class="course-image">${course.cover_image_url ? `<img src="${esc(course.cover_image_url)}" style="width:100%;height:100%;object-fit:cover">` : ''}</div><div class="course-body"><h3 class="course-title">${esc(course.title)}</h3><div class="course-meta"><span><i class="fas fa-clock"></i> ${esc(course.duration || 'Self-paced')}</span><span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
 }
 async function renderPublicCourses() {
     const c = document.getElementById('allCoursesList');
@@ -1525,16 +1355,13 @@ async function renderPublicCourses() {
     } catch (err) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">Failed to load courses.</div>'; }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ENROLLED CARD
-   ═══════════════════════════════════════════════════════════ */
 function renderEnrolledCard(e) {
     const paid = parseFloat(e.total_course_paid || 0);
     const price = parseFloat(e.course_price || e.price || 0);
     const rem = parseFloat(e.remaining_balance || Math.max(price - paid, 0));
     const unlockPct = parseFloat(e.payment_percentage || (price ? (paid / price) * 100 : 0));
     const lessonPct = e.total_lessons ? Math.round((e.completed_lessons / e.total_lessons) * 100) : 0;
-    return `<div class="enrolled-card"><h4>${esc(e.title)}</h4><div class="meta">${esc(e.instructor_name || '')} • ${esc(e.duration || '')} • ${e.total_lessons} lessons</div><div class="stats-line"><div class="stat-box"><div class="lbl">Course Price</div><div class="val">${fmtMoney(price)}</div></div><div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(paid)}</div></div><div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(rem)}</div></div><div class="stat-box"><div class="lbl">Unlocked</div><div class="val">${unlockPct.toFixed(0)}%</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${unlockPct}%"></div></div><div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem">Lessons: ${e.completed_lessons || 0}/${e.total_lessons || 0} (${lessonPct}%)</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem"><button class="btn btn-primary btn-sm" onclick="openCourseViewer('${e.course_id}')"><i class="fas fa-play-circle"></i> Open</button>${rem > 0 ? `<button class="btn btn-success btn-sm" onclick="openPayCourseModal('${e.course_id}')"><i class="fas fa-credit-card"></i> Pay</button>` : '<span class="badge badge-success">✅ Fully Paid</span>'}</div></div>`;
+    return `<div class="enrolled-card"><h4>${esc(e.title)}</h4><div class="meta">${esc(e.duration || '')} • ${e.total_lessons} lessons</div><div class="stats-line"><div class="stat-box"><div class="lbl">Course Price</div><div class="val">${fmtMoney(price)}</div></div><div class="stat-box"><div class="lbl">Paid</div><div class="val" style="color:var(--success)">${fmtMoney(paid)}</div></div><div class="stat-box"><div class="lbl">Remaining</div><div class="val" style="color:${rem > 0 ? 'var(--danger)' : 'var(--success)'}">${fmtMoney(rem)}</div></div><div class="stat-box"><div class="lbl">Unlocked</div><div class="val">${unlockPct.toFixed(0)}%</div></div></div><div class="progress-bar"><div class="progress-fill" style="width:${unlockPct}%"></div></div><div style="font-size:0.8rem;color:var(--text-secondary);margin-top:0.3rem">Lessons: ${e.completed_lessons || 0}/${e.total_lessons || 0} (${lessonPct}%)</div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem"><button class="btn btn-primary btn-sm" onclick="openCourseViewer('${e.course_id}')"><i class="fas fa-play-circle"></i> Open</button>${rem > 0 ? `<button class="btn btn-success btn-sm" onclick="openPayCourseModal('${e.course_id}')"><i class="fas fa-credit-card"></i> Pay</button>` : '<span class="badge badge-success">✅ Fully Paid</span>'}</div></div>`;
 }
 
 async function updateStudentDashboard() {
@@ -1575,39 +1402,26 @@ async function enrollInCourse(courseId) {
     catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   COURSE OPEN
-   ═══════════════════════════════════════════════════════════ */
-async function openCourseViewer(courseId) {
-    await openCourseLearning(courseId);
-}
+async function openCourseViewer(courseId) { await openCourseLearning(courseId); }
 
-/* ═══════════════════════════════════════════════════════════
-   PAYMENT-BASED ACCESS CONTROL
-   ═══════════════════════════════════════════════════════════ */
 function computeCourseAccess(course, enrollment, lessons) {
     const price = parseFloat((enrollment && enrollment.course_price) || course.price || 0);
     const paid = parseFloat((enrollment && enrollment.total_course_paid) || 0);
     const balance = Math.max(price - paid, 0);
-
     let pct = 0;
     if (price <= 0) pct = 100;
     else if (paid >= price - 0.01) pct = 100;
     else pct = Math.min((paid / price) * 100, 100);
-
     const isFullyPaid = pct >= 100;
     const hasPaidSomething = paid > 0;
-
     const totalLessons = lessons.length || 0;
     let unlockedCount;
     if (totalLessons === 0) unlockedCount = 0;
     else if (isFullyPaid) unlockedCount = totalLessons;
     else if (!hasPaidSomething) unlockedCount = 0;
     else unlockedCount = Math.max(1, Math.floor((pct / 100) * totalLessons));
-
     const lessonIds = lessons.map(l => l.id);
     const unlockedSet = new Set(lessonIds.slice(0, unlockedCount));
-
     return { price, paid, balance, pct, isFullyPaid, hasPaidSomething, totalLessons, unlockedCount, unlockedSet, isLocked: isFullyPaid ? null : (!hasPaidSomething ? 'no_payment' : 'partial') };
 }
 function isLessonUnlocked(access, lessonId) {
@@ -1616,9 +1430,6 @@ function isLessonUnlocked(access, lessonId) {
     return access.unlockedSet.has(lessonId);
 }
 
-/* ═══════════════════════════════════════════════════════════
-   NX LEARNING PAGE
-   ═══════════════════════════════════════════════════════════ */
 async function openCourseLearning(courseId, lessonId) {
     setLoading(true);
     try {
@@ -1629,25 +1440,17 @@ async function openCourseLearning(courseId, lessonId) {
             const paid = app && app.payment_status === 'paid';
             if (!paid) { alert('⚠️ Please pay the $0.75 admission fee first.'); showApp(); return; }
         }
-
         const [{ course, modules, lessons }, progressData, enrollmentsData] = await Promise.all([
-            api(`/courses/${courseId}`),
-            api(`/progress/${courseId}`),
-            api('/enrollments'),
+            api(`/courses/${courseId}`), api(`/progress/${courseId}`), api('/enrollments')
         ]);
-
         const enrollment = (enrollmentsData.enrollments || []).find(e => e.course_id === courseId);
         const completedArr = progressData.completed || [];
         const access = computeCourseAccess(course, enrollment, lessons || []);
-
         nxCourse = { id: courseId, course, modules: modules || [], lessons: lessons || [], completed: new Set(completedArr), enrollment: enrollment || null, access };
-
         const firstUnlocked = (lessons || []).find(l => isLessonUnlocked(access, l.id));
         nxLessonId = lessonId && isLessonUnlocked(access, lessonId) ? lessonId : (firstUnlocked ? firstUnlocked.id : (lessons[0] ? lessons[0].id : null));
-
         nxTab = 'notes';
         nxNavTab = 'modules';
-
         document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
         document.getElementById('page-learning').classList.add('active');
         document.getElementById('pageIndicator').textContent = 'Learning';
@@ -1655,120 +1458,49 @@ async function openCourseLearning(courseId, lessonId) {
         if (window.innerWidth <= 768) closeSidebar();
         await renderNxLearning();
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    } catch (err) {
-        console.error(err);
-        alert('❌ Failed to load course: ' + (err.data?.error || err.message));
-    } finally {
-        setLoading(false);
-    }
+    } catch (err) { console.error(err); alert('❌ Failed to load course: ' + (err.data?.error || err.message)); }
+    finally { setLoading(false); }
 }
 
 async function renderNxLearning() {
     const c = document.getElementById('nxLearningContent');
     if (!nxCourse) { c.innerHTML = '<div class="empty-state">Course not loaded.</div>'; return; }
-
     const { course, modules, lessons, completed, enrollment, access } = nxCourse;
     const totalLessons = lessons.length;
     const doneCount = lessons.filter(l => completed.has(l.id)).length;
     const progressPct = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
     const headerRingC = 2 * Math.PI * 34;
     const headerRingOffset = headerRingC - (progressPct / 100) * headerRingC;
-
     if (currentUser.role !== 'admin' && !access.hasPaidSomething && !enrollment) {
-        c.innerHTML = `
-          <div class="nx-admission-block">
-            <div class="icon"><i class="fas fa-lock"></i></div>
-            <h2>Enroll to access this course</h2>
-            <p>You need to enroll in this course and make your first payment to unlock learning content.</p>
-            <button class="pay-btn" onclick="navigateTo('student-courses')"><i class="fas fa-arrow-left"></i> Back to My Courses</button>
-          </div>`;
+        c.innerHTML = `<div class="nx-admission-block"><div class="icon"><i class="fas fa-lock"></i></div><h2>Enroll to access this course</h2><p>You need to enroll in this course and make your first payment to unlock learning content.</p><button class="pay-btn" onclick="navigateTo('student-courses')"><i class="fas fa-arrow-left"></i> Back to My Courses</button></div>`;
         return;
     }
-
-    const paymentBanner = buildPaymentBanner(access);
-
     c.innerHTML = `
-      <div class="nx-course-nav">
-        <div class="nx-course-nav-inner">
-          ${renderNxNavTab('overview','Overview','fa-home')}
-          ${renderNxNavTab('modules','Modules','fa-layer-group')}
-          ${renderNxNavTab('discussion','Discussion','fa-comments')}
-          ${renderNxNavTab('assignments','Assignments','fa-file-alt')}
-          ${renderNxNavTab('exam','Exam','fa-pencil-alt')}
-          ${renderNxNavTab('certificate','Certificate','fa-certificate')}
-        </div>
-      </div>
-
-      <div class="nx-course-header">
-        <div class="nx-course-header-inner">
-          <div class="nx-course-header-left">
-            <div class="nx-course-header-icon"><i class="fas fa-laptop-code"></i></div>
-            <div class="nx-course-header-meta">
-              <h1>${esc(course.title)}</h1>
-              <p>${esc(course.description || '')}</p>
-              <div class="nx-course-header-badges">
-                <span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span>
-                <span><i class="fas fa-tag"></i> ${esc(course.category || 'General')}</span>
-                <span><i class="fas fa-layer-group"></i> ${modules.length} Modules</span>
-                <span><i class="fas fa-play-circle"></i> ${totalLessons} Lessons</span>
-              </div>
-            </div>
-          </div>
-          <div class="nx-header-progress">
-            <div class="nx-header-ring">
-              <svg viewBox="0 0 80 80">
-                <circle class="bg" cx="40" cy="40" r="34"/>
-                <circle class="fg" cx="40" cy="40" r="34" stroke-dasharray="${headerRingC}" stroke-dashoffset="${headerRingOffset}"/>
-              </svg>
-              <div class="txt">${progressPct}%</div>
-            </div>
-            <div class="lbl">Course Progress</div>
-            <div class="cnt">${doneCount} of ${totalLessons} lessons completed</div>
-          </div>
-        </div>
-      </div>
-
-      <div style="max-width:1400px;margin:1rem auto 0;padding:0 1.5rem">${paymentBanner}</div>
-
-      <div class="nx-body">
-        <div class="nx-modules" id="nxModules"></div>
-        <div class="nx-lesson-main" id="nxLessonMain"></div>
-        <div class="nx-side" id="nxSide"></div>
-      </div>
-    `;
-
+      <div class="nx-course-nav"><div class="nx-course-nav-inner">
+        ${renderNxNavTab('overview','Overview','fa-home')}${renderNxNavTab('modules','Modules','fa-layer-group')}${renderNxNavTab('discussion','Discussion','fa-comments')}${renderNxNavTab('assignments','Assignments','fa-file-alt')}${renderNxNavTab('exam','Exam','fa-pencil-alt')}${renderNxNavTab('certificate','Certificate','fa-certificate')}
+      </div></div>
+      <div class="nx-course-header"><div class="nx-course-header-inner">
+        <div class="nx-course-header-left"><div class="nx-course-header-icon"><i class="fas fa-laptop-code"></i></div>
+        <div class="nx-course-header-meta"><h1>${esc(course.title)}</h1><p>${esc(course.description || '')}</p>
+        <div class="nx-course-header-badges"><span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span><span><i class="fas fa-tag"></i> ${esc(course.category || 'General')}</span><span><i class="fas fa-layer-group"></i> ${modules.length} Modules</span><span><i class="fas fa-play-circle"></i> ${totalLessons} Lessons</span></div></div></div>
+        <div class="nx-header-progress"><div class="nx-header-ring"><svg viewBox="0 0 80 80"><circle class="bg" cx="40" cy="40" r="34"/><circle class="fg" cx="40" cy="40" r="34" stroke-dasharray="${headerRingC}" stroke-dashoffset="${headerRingOffset}"/></svg><div class="txt">${progressPct}%</div></div><div class="lbl">Course Progress</div><div class="cnt">${doneCount} of ${totalLessons} lessons completed</div></div>
+      </div></div>
+      <div style="max-width:1400px;margin:1rem auto 0;padding:0 1.5rem">${buildPaymentBanner(access)}</div>
+      <div class="nx-body"><div class="nx-modules" id="nxModules"></div><div class="nx-lesson-main" id="nxLessonMain"></div><div class="nx-side" id="nxSide"></div></div>`;
     renderNxModules();
     renderNxLessonMain();
     renderNxSide();
 }
 
 function buildPaymentBanner(access) {
-    const { price, paid, balance, pct, isFullyPaid } = access;
+    const { paid, balance, pct, isFullyPaid } = access;
     let cls = '';
     if (isFullyPaid) cls = 'full';
     else if (!access.hasPaidSomething) cls = 'locked';
     const statusText = isFullyPaid ? '✅ Fully Paid' : (!access.hasPaidSomething ? '🔒 No payment yet' : `🔓 ${pct.toFixed(0)}% unlocked`);
-    return `
-      <div class="nx-payment-banner ${cls}">
-        <div class="info">
-          <div class="label">Course Payment · ${statusText}</div>
-          <div class="numbers">
-            <span>Payment: <strong>${pct.toFixed(0)}%</strong></span>
-            <span>Paid: <strong>${fmtMoney(paid)}</strong></span>
-            <span class="balance">Balance: <strong>${fmtMoney(balance)}</strong></span>
-          </div>
-          <div class="nx-payment-progress"><div class="fill" style="width:${pct}%"></div></div>
-        </div>
-        <div class="actions">
-          ${!isFullyPaid ? `<button class="btn btn-success" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>` : ''}
-        </div>
-      </div>`;
+    return `<div class="nx-payment-banner ${cls}"><div class="info"><div class="label">Course Payment · ${statusText}</div><div class="numbers"><span>Payment: <strong>${pct.toFixed(0)}%</strong></span><span>Paid: <strong>${fmtMoney(paid)}</strong></span><span class="balance">Balance: <strong>${fmtMoney(balance)}</strong></span></div><div class="nx-payment-progress"><div class="fill" style="width:${pct}%"></div></div></div><div class="actions">${!isFullyPaid ? `<button class="btn btn-success" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Pay Now</button>` : ''}</div></div>`;
 }
-
-function renderNxNavTab(id, label, icon) {
-    const active = nxNavTab === id ? 'active' : '';
-    return `<button class="nx-course-nav-tab ${active}" onclick="switchNxNavTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`;
-}
+function renderNxNavTab(id, label, icon) { return `<button class="nx-course-nav-tab ${nxNavTab === id ? 'active' : ''}" onclick="switchNxNavTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`; }
 function switchNxNavTab(tab) {
     nxNavTab = tab;
     if (tab === 'overview' || tab === 'modules') { renderNxLearning(); return; }
@@ -1780,54 +1512,20 @@ function switchNxNavTab(tab) {
 
 function renderNxModules() {
     const { modules, lessons, completed, access } = nxCourse;
-    const container = document.getElementById('nxModules');
-    if (!container) return;
-
+    const container = document.getElementById('nxModules'); if (!container) return;
     const currentLesson = lessons.find(l => l.id === nxLessonId);
     const activeModuleId = currentLesson ? currentLesson.module_id : (modules[0] && modules[0].id);
-
     container.innerHTML = modules.map((mod, mi) => {
         const modLessons = lessons.filter(l => l.module_id === mod.id);
         const modDone = modLessons.filter(l => completed.has(l.id)).length;
         const isActive = mod.id === activeModuleId;
         const modPct = modLessons.length ? Math.round((modDone / modLessons.length) * 100) : 0;
-
-        return `
-          <div class="nx-module ${isActive ? 'active' : ''}" data-module-id="${mod.id}">
-            <div class="nx-module-head" onclick="toggleNxModule('${mod.id}')">
-              <div class="nx-module-num">${mi + 1}</div>
-              <div class="nx-module-info">
-                <div class="nx-module-title">${esc(mod.title)}</div>
-                <div class="nx-module-sub">${modDone} / ${modLessons.length} lessons</div>
-              </div>
-              <i class="fas fa-chevron-down nx-module-chevron"></i>
-            </div>
-            <div class="nx-module-bar"><div class="nx-module-bar-fill" style="width:${modPct}%"></div></div>
-            <div class="nx-lessons">
-              ${modLessons.map((les, li) => {
-                  const isDone = completed.has(les.id);
-                  const isCurrent = les.id === nxLessonId;
-                  const unlocked = isLessonUnlocked(access, les.id);
-                  const icon = !unlocked ? 'fa-lock' : (isDone ? 'fa-check' : (les.video_url ? 'fa-play' : 'fa-file-alt'));
-                  const sub = les.video_url ? 'Video' : (les.assignment ? 'Assignment' : 'Text');
-                  return `
-                    <div class="nx-lesson ${isCurrent ? 'active' : ''} ${isDone ? 'completed' : ''} ${!unlocked ? 'locked' : ''}"
-                         onclick="${unlocked ? `selectNxLesson('${les.id}')` : `showLockedMessage()`}">
-                      <div class="nx-lesson-icon"><i class="fas ${icon}"></i></div>
-                      <div class="nx-lesson-info">
-                        <div class="nx-lesson-title">${mi + 1}.${li + 1} ${esc(les.title)}</div>
-                        <div class="nx-lesson-sub">
-                          <i class="fas ${unlocked ? (les.video_url ? 'fa-video' : 'fa-file-alt') : 'fa-lock'}"></i>
-                          ${unlocked ? sub : 'Locked'}${unlocked && les.duration_minutes ? ' · ' + les.duration_minutes + ' min' : ''}
-                        </div>
-                      </div>
-                      ${isDone ? '<i class="fas fa-check-circle nx-lesson-check"></i>' : (!unlocked ? '<i class="fas fa-lock nx-lesson-lock"></i>' : '')}
-                    </div>
-                  `;
-              }).join('')}
-            </div>
-          </div>
-        `;
+        return `<div class="nx-module ${isActive ? 'active' : ''}" data-module-id="${mod.id}"><div class="nx-module-head" onclick="toggleNxModule('${mod.id}')"><div class="nx-module-num">${mi + 1}</div><div class="nx-module-info"><div class="nx-module-title">${esc(mod.title)}</div><div class="nx-module-sub">${modDone} / ${modLessons.length} lessons</div></div><i class="fas fa-chevron-down nx-module-chevron"></i></div><div class="nx-module-bar"><div class="nx-module-bar-fill" style="width:${modPct}%"></div></div><div class="nx-lessons">${modLessons.map((les, li) => {
+            const isDone = completed.has(les.id), isCurrent = les.id === nxLessonId, unlocked = isLessonUnlocked(access, les.id);
+            const icon = !unlocked ? 'fa-lock' : (isDone ? 'fa-check' : (les.video_url ? 'fa-play' : 'fa-file-alt'));
+            const sub = les.video_url ? 'Video' : (les.assignment ? 'Assignment' : 'Text');
+            return `<div class="nx-lesson ${isCurrent ? 'active' : ''} ${isDone ? 'completed' : ''} ${!unlocked ? 'locked' : ''}" onclick="${unlocked ? `selectNxLesson('${les.id}')` : `showLockedMessage()`}"><div class="nx-lesson-icon"><i class="fas ${icon}"></i></div><div class="nx-lesson-info"><div class="nx-lesson-title">${mi + 1}.${li + 1} ${esc(les.title)}</div><div class="nx-lesson-sub"><i class="fas ${unlocked ? (les.video_url ? 'fa-video' : 'fa-file-alt') : 'fa-lock'}"></i>${unlocked ? sub : 'Locked'}${unlocked && les.duration_minutes ? ' · ' + les.duration_minutes + ' min' : ''}</div></div>${isDone ? '<i class="fas fa-check-circle nx-lesson-check"></i>' : (!unlocked ? '<i class="fas fa-lock nx-lesson-lock"></i>' : '')}</div>`;
+        }).join('')}</div></div>`;
     }).join('');
 }
 
@@ -1839,26 +1537,12 @@ function showLockedMessage() {
 function renderNxLessonMain() {
     const { course, modules, lessons, completed, access } = nxCourse;
     const lesson = lessons.find(l => l.id === nxLessonId);
-    const main = document.getElementById('nxLessonMain');
-    if (!main) return;
-
-    if (!lesson) {
-        main.innerHTML = '<div class="empty-state" style="padding:3rem;text-align:center">No lessons in this course yet.</div>';
-        return;
-    }
-
+    const main = document.getElementById('nxLessonMain'); if (!main) return;
+    if (!lesson) { main.innerHTML = '<div class="empty-state" style="padding:3rem;text-align:center">No lessons in this course yet.</div>'; return; }
     if (!isLessonUnlocked(access, lesson.id)) {
-        main.innerHTML = `
-          <div class="nx-locked">
-            <div class="lock-icon"><i class="fas fa-lock"></i></div>
-            <h3>🔒 Locked — Complete more course payment to continue</h3>
-            <p>You've unlocked ${access.pct.toFixed(0)}% of this course (${access.unlockedCount} of ${access.totalLessons} lessons).<br>Pay more to unlock the remaining content.</p>
-            <div style="margin:1rem 0;font-size:0.9rem;color:#92400E"><strong>Balance: ${fmtMoney(access.balance)}</strong></div>
-            <button class="pay-btn" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Make Payment</button>
-          </div>`;
+        main.innerHTML = `<div class="nx-locked"><div class="lock-icon"><i class="fas fa-lock"></i></div><h3>🔒 Locked — Complete more course payment to continue</h3><p>You've unlocked ${access.pct.toFixed(0)}% of this course (${access.unlockedCount} of ${access.totalLessons} lessons).<br>Pay more to unlock the remaining content.</p><div style="margin:1rem 0;font-size:0.9rem;color:#92400E"><strong>Balance: ${fmtMoney(access.balance)}</strong></div><button class="pay-btn" onclick="openPayCourseModal('${nxCourse.id}')"><i class="fas fa-credit-card"></i> Make Payment</button></div>`;
         return;
     }
-
     const modLessons = lessons.filter(l => l.module_id === lesson.module_id);
     const lessonIdx = modLessons.findIndex(l => l.id === lesson.id);
     const mod = modules.find(m => m.id === lesson.module_id);
@@ -1869,196 +1553,55 @@ function renderNxLessonMain() {
     const prevLesson = lessons[lessonGlobalIdx - 1];
     const nextLesson = lessons[lessonGlobalIdx + 1];
     const nextUnlocked = nextLesson && isLessonUnlocked(access, nextLesson.id);
-
     main.innerHTML = `
-      <div class="nx-breadcrumb">
-        <span class="lnk" onclick="navigateTo('student-courses')">← Back</span>
-        <span style="color:#B8C7D6">|</span>
-        <span>Module ${modNum}: ${esc(mod ? mod.title : '')}</span>
-      </div>
-
-      <div class="nx-lesson-title-row">
-        <h1 class="nx-lesson-title">${lessonNumber} ${esc(lesson.title)}</h1>
-        ${isDone ? '<span class="nx-completed-badge"><i class="fas fa-check"></i> Completed</span>' : ''}
-      </div>
-
-      <div class="nx-lesson-meta">
-        ${lesson.video_url ? '<span><i class="fas fa-play-circle"></i> Video</span>' : ''}
-        ${lesson.duration_minutes ? `<span><i class="fas fa-clock"></i> ${lesson.duration_minutes} minutes</span>` : ''}
-        <span><i class="fas fa-calendar"></i> Last updated: ${lesson.updated_at ? fmtDate(lesson.updated_at) : fmtDate(new Date())}</span>
-      </div>
-
-      ${lesson.video_url ? `
-      <div class="nx-video">
-        <video controls preload="metadata">
-          <source src="${esc(lesson.video_url)}" type="video/mp4">
-          Your browser doesn't support video.
-        </video>
-      </div>` : ''}
-
-      <div class="nx-overview">
-        <h3>Lesson Overview</h3>
-        <p>${esc(lesson.description || lesson.notes || 'In this lesson, you will learn the key concepts and practical skills covered in this module.')}</p>
-      </div>
-
-      ${lesson.notes ? `
-      <div class="nx-key-topics">
-        <h4>📌 Key Topics</h4>
-        <ul>
-          ${lesson.notes.split('\n').filter(l => l.trim()).slice(0, 6).map(line => `<li><i class="fas fa-check"></i> <span>${esc(line.replace(/^[-•*]\s*/, ''))}</span></li>`).join('')}
-        </ul>
-      </div>` : ''}
-
-      <div class="nx-tabs">
-        ${renderNxTab('notes', 'Notes', 'fa-book')}
-        ${renderNxTab('resources', 'Resources', 'fa-paperclip')}
-        ${renderNxTab('discussion', 'Discussion', 'fa-comments')}
-        ${renderNxTab('assignment', 'Assignment', 'fa-file-signature')}
-      </div>
-
-      <div class="nx-tab-content ${nxTab === 'notes' ? 'active' : ''}" data-tab="notes">
-        <h4>Lesson Notes</h4>
-        <div class="nx-notes-body">${esc(lesson.notes || 'No detailed notes for this lesson.')}</div>
-      </div>
-
-      <div class="nx-tab-content ${nxTab === 'resources' ? 'active' : ''}" data-tab="resources">
-        ${renderNxResources(lesson)}
-      </div>
-
-      <div class="nx-tab-content ${nxTab === 'discussion' ? 'active' : ''}" data-tab="discussion">
-        <div class="nx-discussion">
-          <i class="fas fa-comments"></i>
-          <h4>Discuss this course</h4>
-          <p>Join the course group to ask questions and connect with other learners.</p>
-          <button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group Discussion</button>
-        </div>
-      </div>
-
-      <div class="nx-tab-content ${nxTab === 'assignment' ? 'active' : ''}" data-tab="assignment">
-        <h4>Assignment</h4>
-        ${lesson.assignment ? `<div class="nx-assignment">${esc(lesson.assignment)}</div>` : ''}
-        <div id="assignmentPanel" style="margin-top:1.5rem">
-          <div class="empty-state" style="padding:1rem">Loading assignment...</div>
-        </div>
-      </div>
-
-      <div class="nx-actions">
-        <button class="nx-btn nx-btn-complete ${isDone ? 'done' : ''}" onclick="toggleNxComplete('${lesson.id}')">
-          <i class="fas fa-${isDone ? 'check-circle' : 'circle'}"></i>
-          ${isDone ? 'Marked Complete' : 'Mark Lesson Complete'}
-        </button>
-        <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-          ${prevLesson && isLessonUnlocked(access, prevLesson.id) ? `<button class="nx-btn nx-btn-prev" onclick="selectNxLesson('${prevLesson.id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}
-          ${nextLesson ? (nextUnlocked
-            ? `<button class="nx-btn nx-btn-next" onclick="selectNxLesson('${nextLesson.id}')">Next Lesson <i class="fas fa-arrow-right"></i></button>`
-            : `<button class="nx-btn nx-btn-next" onclick="openPayCourseModal('${nxCourse.id}')" style="background:#FEF3C7;color:#D97706;border:2px solid #FDE68A"><i class="fas fa-lock"></i> Unlock Next</button>`
-          ) : ''}
-        </div>
-      </div>
-    `;
-
+      <div class="nx-breadcrumb"><span class="lnk" onclick="navigateTo('student-courses')">← Back</span><span style="color:#B8C7D6">|</span><span>Module ${modNum}: ${esc(mod ? mod.title : '')}</span></div>
+      <div class="nx-lesson-title-row"><h1 class="nx-lesson-title">${lessonNumber} ${esc(lesson.title)}</h1>${isDone ? '<span class="nx-completed-badge"><i class="fas fa-check"></i> Completed</span>' : ''}</div>
+      <div class="nx-lesson-meta">${lesson.video_url ? '<span><i class="fas fa-play-circle"></i> Video</span>' : ''}${lesson.duration_minutes ? `<span><i class="fas fa-clock"></i> ${lesson.duration_minutes} minutes</span>` : ''}<span><i class="fas fa-calendar"></i> Last updated: ${lesson.updated_at ? fmtDate(lesson.updated_at) : fmtDate(new Date())}</span></div>
+      ${lesson.video_url ? `<div class="nx-video"><video controls preload="metadata"><source src="${esc(lesson.video_url)}" type="video/mp4">Your browser doesn't support video.</video></div>` : ''}
+      <div class="nx-overview"><h3>Lesson Overview</h3><p>${esc(lesson.description || lesson.notes || 'In this lesson, you will learn the key concepts and practical skills covered in this module.')}</p></div>
+      ${lesson.notes ? `<div class="nx-key-topics"><h4>📌 Key Topics</h4><ul>${lesson.notes.split('\n').filter(l => l.trim()).slice(0, 6).map(line => `<li><i class="fas fa-check"></i> <span>${esc(line.replace(/^[-•*]\s*/, ''))}</span></li>`).join('')}</ul></div>` : ''}
+      <div class="nx-tabs">${renderNxTab('notes', 'Notes', 'fa-book')}${renderNxTab('resources', 'Resources', 'fa-paperclip')}${renderNxTab('discussion', 'Discussion', 'fa-comments')}${renderNxTab('assignment', 'Assignment', 'fa-file-signature')}</div>
+      <div class="nx-tab-content ${nxTab === 'notes' ? 'active' : ''}" data-tab="notes"><h4>Lesson Notes</h4><div class="nx-notes-body">${esc(lesson.notes || 'No detailed notes for this lesson.')}</div></div>
+      <div class="nx-tab-content ${nxTab === 'resources' ? 'active' : ''}" data-tab="resources">${renderNxResources(lesson)}</div>
+      <div class="nx-tab-content ${nxTab === 'discussion' ? 'active' : ''}" data-tab="discussion"><div class="nx-discussion"><i class="fas fa-comments"></i><h4>Discuss this course</h4><p>Join the course group to ask questions and connect with other learners.</p><button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group Discussion</button></div></div>
+      <div class="nx-tab-content ${nxTab === 'assignment' ? 'active' : ''}" data-tab="assignment"><h4>Assignment</h4>${lesson.assignment ? `<div class="nx-assignment">${esc(lesson.assignment)}</div>` : ''}<div id="assignmentPanel" style="margin-top:1.5rem"><div class="empty-state" style="padding:1rem">Loading assignment...</div></div></div>
+      <div class="nx-actions"><button class="nx-btn nx-btn-complete ${isDone ? 'done' : ''}" onclick="toggleNxComplete('${lesson.id}')"><i class="fas fa-${isDone ? 'check-circle' : 'circle'}"></i> ${isDone ? 'Marked Complete' : 'Mark Lesson Complete'}</button><div style="display:flex;gap:0.5rem;flex-wrap:wrap">${prevLesson && isLessonUnlocked(access, prevLesson.id) ? `<button class="nx-btn nx-btn-prev" onclick="selectNxLesson('${prevLesson.id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}${nextLesson ? (nextUnlocked ? `<button class="nx-btn nx-btn-next" onclick="selectNxLesson('${nextLesson.id}')">Next Lesson <i class="fas fa-arrow-right"></i></button>` : `<button class="nx-btn nx-btn-next" onclick="openPayCourseModal('${nxCourse.id}')" style="background:#FEF3C7;color:#D97706;border:2px solid #FDE68A"><i class="fas fa-lock"></i> Unlock Next</button>`) : ''}</div></div>`;
     if (lesson && lesson.id) loadAssignmentPanel(lesson.id);
 }
 
-function renderNxTab(id, label, icon) {
-    const active = nxTab === id ? 'active' : '';
-    return `<button class="nx-tab ${active}" onclick="switchNxTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`;
-}
-
+function renderNxTab(id, label, icon) { return `<button class="nx-tab ${nxTab === id ? 'active' : ''}" onclick="switchNxTab('${id}')"><i class="fas ${icon}"></i> ${label}</button>`; }
 function renderNxResources(lesson) {
-    const pdfs = lesson.pdfs || [];
-    const images = lesson.images || [];
-    const items = [];
-    pdfs.forEach(p => {
-        const isPdf = (p.name || '').toLowerCase().endsWith('.pdf');
-        items.push(`<a href="${esc(p.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon ${isPdf ? '' : 'doc'}"><i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-alt'}"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(p.name || 'Attachment')}</div><div class="nx-resource-meta">${isPdf ? 'PDF Document' : 'Document'}</div></div><i class="fas fa-download nx-resource-dl"></i></a>`);
-    });
-    images.forEach(im => {
-        items.push(`<a href="${esc(im.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon img"><i class="fas fa-image"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(im.name || 'Image')}</div><div class="nx-resource-meta">Image</div></div><i class="fas fa-external-link-alt nx-resource-dl"></i></a>`);
-    });
+    const pdfs = lesson.pdfs || [], images = lesson.images || [], items = [];
+    pdfs.forEach(p => { const isPdf = (p.name || '').toLowerCase().endsWith('.pdf'); items.push(`<a href="${esc(p.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon ${isPdf ? '' : 'doc'}"><i class="fas ${isPdf ? 'fa-file-pdf' : 'fa-file-alt'}"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(p.name || 'Attachment')}</div><div class="nx-resource-meta">${isPdf ? 'PDF Document' : 'Document'}</div></div><i class="fas fa-download nx-resource-dl"></i></a>`); });
+    images.forEach(im => { items.push(`<a href="${esc(im.path)}" target="_blank" class="nx-resource"><div class="nx-resource-icon img"><i class="fas fa-image"></i></div><div class="nx-resource-info"><div class="nx-resource-name">${esc(im.name || 'Image')}</div><div class="nx-resource-meta">Image</div></div><i class="fas fa-external-link-alt nx-resource-dl"></i></a>`); });
     if (!items.length) return '<div class="empty-state" style="padding:1.5rem">No additional resources for this lesson.</div>';
     return `<h4>Download Resources</h4>${items.join('')}`;
 }
 
 function renderNxSide() {
     const { course, modules, lessons, completed, access } = nxCourse;
-    const container = document.getElementById('nxSide');
-    if (!container) return;
-
+    const container = document.getElementById('nxSide'); if (!container) return;
     const totalLessons = lessons.length;
     const doneCount = lessons.filter(l => completed.has(l.id)).length;
     const progressPct = totalLessons ? Math.round((doneCount / totalLessons) * 100) : 0;
-    const ringC = 2 * Math.PI * 30;
-    const ringOffset = ringC - (progressPct / 100) * ringC;
-
+    const ringC = 2 * Math.PI * 30, ringOffset = ringC - (progressPct / 100) * ringC;
     const modProgress = modules.map((mod, mi) => {
         const modLessons = lessons.filter(l => l.module_id === mod.id);
         const modDone = modLessons.filter(l => completed.has(l.id)).length;
         const allDone = modLessons.length > 0 && modDone === modLessons.length;
         return `<div class="nx-mod-progress ${allDone ? 'done' : ''}"><div class="left"><span class="circle"><i class="fas fa-check"></i></span> Module ${mi + 1}</div><div class="count">${modDone}/${modLessons.length}</div></div>`;
     }).join('');
-
     const currentLesson = lessons.find(l => l.id === nxLessonId);
     const nextLesson = currentLesson ? lessons[lessons.findIndex(l => l.id === currentLesson.id) + 1] : null;
     const nextUnlocked = nextLesson && isLessonUnlocked(access, nextLesson.id);
-
     container.innerHTML = `
-      <div class="nx-progress">
-        <div class="nx-progress-head">
-          <div class="nx-progress-ring">
-            <svg viewBox="0 0 70 70">
-              <circle class="bg" cx="35" cy="35" r="30"/>
-              <circle class="fg" cx="35" cy="35" r="30" stroke-dasharray="${ringC}" stroke-dashoffset="${ringOffset}"/>
-            </svg>
-            <div class="txt">${progressPct}%</div>
-          </div>
-          <div class="nx-progress-info">
-            <div class="big">Course Progress</div>
-            <div class="sub">${doneCount} of ${totalLessons} lessons</div>
-            <div class="nx-progress-bar"><div class="nx-progress-bar-fill" style="width:${progressPct}%"></div></div>
-          </div>
-        </div>
-        ${modProgress}
-        ${nextLesson && nextUnlocked ? `<button class="nx-continue-btn" onclick="selectNxLesson('${nextLesson.id}')">Continue Learning <i class="fas fa-arrow-right"></i></button>` : ''}
-      </div>
-
-      <div class="nx-card">
-        <div class="nx-card-title"><i class="fas fa-circle-info"></i> Course Information</div>
-        <div class="nx-card-body" style="padding:0.75rem 1.25rem">
-          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-barcode"></i> Course Code</span><span class="nx-info-value">${esc(course.code || '—')}</span></div>
-          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-signal"></i> Level</span><span class="nx-info-value">${esc(course.level || 'Beginner')}</span></div>
-          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-tag"></i> Category</span><span class="nx-info-value">${esc(course.category || '—')}</span></div>
-          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-clock"></i> Duration</span><span class="nx-info-value">${esc(course.duration || 'Self-paced')}</span></div>
-          <div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-dollar-sign"></i> Price</span><span class="nx-info-value">${fmtMoney(access.price)}</span></div>
-        </div>
-      </div>
-
-      <div class="nx-join-card">
-        <div class="nx-join-icon"><i class="fas fa-users"></i></div>
-        <h4>Join Group</h4>
-        <p>Join the course group to discuss, ask questions and get updates from the admin.</p>
-        <button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group</button>
-      </div>
-
-      ${nextLesson ? `
-      <div class="nx-next-card" onclick="${nextUnlocked ? `selectNxLesson('${nextLesson.id}')` : `openPayCourseModal('${nxCourse.id}')`}">
-        <div class="label">${nextUnlocked ? 'Next Lesson' : '🔒 Locked'}</div>
-        <div class="row">
-          <div class="ico"><i class="fas ${nextUnlocked ? (nextLesson.video_url ? 'fa-play' : 'fa-file-alt') : 'fa-lock'}"></i></div>
-          <div class="txt">
-            <div class="t">${esc(nextLesson.title)}</div>
-            <div class="d">${nextUnlocked ? (nextLesson.video_url ? 'Video' : 'Text') + (nextLesson.duration_minutes ? ' · ' + nextLesson.duration_minutes + ' min' : '') : 'Pay to unlock'}</div>
-          </div>
-          <i class="fas fa-chevron-right arrow"></i>
-        </div>
-      </div>` : ''}
-    `;
+      <div class="nx-progress"><div class="nx-progress-head"><div class="nx-progress-ring"><svg viewBox="0 0 70 70"><circle class="bg" cx="35" cy="35" r="30"/><circle class="fg" cx="35" cy="35" r="30" stroke-dasharray="${ringC}" stroke-dashoffset="${ringOffset}"/></svg><div class="txt">${progressPct}%</div></div><div class="nx-progress-info"><div class="big">Course Progress</div><div class="sub">${doneCount} of ${totalLessons} lessons</div><div class="nx-progress-bar"><div class="nx-progress-bar-fill" style="width:${progressPct}%"></div></div></div></div>${modProgress}${nextLesson && nextUnlocked ? `<button class="nx-continue-btn" onclick="selectNxLesson('${nextLesson.id}')">Continue Learning <i class="fas fa-arrow-right"></i></button>` : ''}</div>
+      <div class="nx-card"><div class="nx-card-title"><i class="fas fa-circle-info"></i> Course Information</div><div class="nx-card-body" style="padding:0.75rem 1.25rem"><div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-barcode"></i> Course Code</span><span class="nx-info-value">${esc(course.code || '—')}</span></div><div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-signal"></i> Level</span><span class="nx-info-value">${esc(course.level || 'Beginner')}</span></div><div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-tag"></i> Category</span><span class="nx-info-value">${esc(course.category || '—')}</span></div><div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-clock"></i> Duration</span><span class="nx-info-value">${esc(course.duration || 'Self-paced')}</span></div><div class="nx-info-row"><span class="nx-info-label"><i class="fas fa-dollar-sign"></i> Price</span><span class="nx-info-value">${fmtMoney(access.price)}</span></div></div></div>
+      <div class="nx-join-card"><div class="nx-join-icon"><i class="fas fa-users"></i></div><h4>Join Group</h4><p>Join the course group to discuss, ask questions and get updates from the admin.</p><button class="nx-join-btn" onclick="navigateTo('student-groups')"><i class="fas fa-users"></i> Join Group</button></div>
+      ${nextLesson ? `<div class="nx-next-card" onclick="${nextUnlocked ? `selectNxLesson('${nextLesson.id}')` : `openPayCourseModal('${nxCourse.id}')`}"><div class="label">${nextUnlocked ? 'Next Lesson' : '🔒 Locked'}</div><div class="row"><div class="ico"><i class="fas ${nextUnlocked ? (nextLesson.video_url ? 'fa-play' : 'fa-file-alt') : 'fa-lock'}"></i></div><div class="txt"><div class="t">${esc(nextLesson.title)}</div><div class="d">${nextUnlocked ? (nextLesson.video_url ? 'Video' : 'Text') + (nextLesson.duration_minutes ? ' · ' + nextLesson.duration_minutes + ' min' : '') : 'Pay to unlock'}</div></div><i class="fas fa-chevron-right arrow"></i></div></div>` : ''}`;
 }
 
-function toggleNxModule(moduleId) {
-    const el = document.querySelector(`.nx-module[data-module-id="${moduleId}"]`);
-    if (el) el.classList.toggle('active');
-}
+function toggleNxModule(moduleId) { const el = document.querySelector(`.nx-module[data-module-id="${moduleId}"]`); if (el) el.classList.toggle('active'); }
 async function selectNxLesson(lessonId) {
     if (!isLessonUnlocked(nxCourse.access, lessonId)) { showLockedMessage(); return; }
     nxLessonId = lessonId;
@@ -2079,12 +1622,11 @@ function switchNxTab(tab) {
 async function toggleNxComplete(lessonId) {
     try {
         const courseId = nxCourse.id;
-        let result;
         if (nxCourse.completed.has(lessonId)) {
-            result = await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'DELETE' });
+            await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'DELETE' });
             nxCourse.completed.delete(lessonId);
         } else {
-            result = await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'POST' });
+            const result = await api(`/progress/${courseId}/lessons/${lessonId}`, { method: 'POST' });
             nxCourse.completed.add(lessonId);
             if (result.certificateIssued) {
                 alert(`🎓 Congratulations!\n\nYou've completed "${nxCourse.course.title}"!\n\nYour certificate has been issued.\n\nGo to "My Certificates" to view it.`);
@@ -2095,9 +1637,6 @@ async function toggleNxComplete(lessonId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   LEGACY COURSE VIEWER
-   ═══════════════════════════════════════════════════════════ */
 async function renderStudentCourseViewer() {
     if (!currentCourseView) return;
     const c = document.getElementById('studentCourseViewerContent');
@@ -2114,7 +1653,7 @@ async function renderStudentCourseViewer() {
         if (!modules.length) { html += '<div class="empty-state" style="margin-top:1rem">No modules yet.</div>'; }
         else modules.forEach((mod, mi) => {
             const modLessons = lessons.filter(l => l.module_id === mod.id);
-            html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem"><strong><i class="fas fa-folder"></i> Module ${mi + 1}: ${esc(mod.title)}</strong></div><div style="padding:1rem">${modLessons.length === 0 ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons.</p>' : modLessons.map(les => { const d = completedSet.has(les.id); return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem;border-bottom:1px solid #f0f0f0;gap:0.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px"><div style="font-weight:600;color:var(--navy);font-size:0.95rem">${d ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> ' : ''}${esc(les.title)}</div><div style="font-size:0.75rem;color:var(--text-secondary)">${esc(les.description || '')} ${les.video_url ? '🎬' : ''}</div></div><button class="btn btn-primary btn-sm" onclick="openLesson('${les.id}')"><i class="fas fa-play"></i> ${d ? 'Review' : 'Open'}</button></div>`; }).join('')}</div></div>`;
+            html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;overflow:hidden"><div style="background:linear-gradient(135deg,var(--navy),var(--navy-light));color:#fff;padding:0.9rem 1.2rem"><strong><i class="fas fa-folder"></i> Module ${mi + 1}: ${esc(mod.title)}</strong></div><div style="padding:1rem">${modLessons.length === 0 ? '<p style="color:var(--text-secondary);font-size:0.9rem">No lessons.</p>' : modLessons.map(les => { const d = completedSet.has(les.id); return `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.6rem;border-bottom:1px solid #f0f0f0;gap:0.5rem;flex-wrap:wrap"><div style="flex:1;min-width:200px"><div style="font-weight:600;color:var(--navy);font-size:0.95rem">${d ? '<i class="fas fa-check-circle" style="color:var(--success)"></i> ' : ''}${esc(les.title)}</div></div><button class="btn btn-primary btn-sm" onclick="openLesson('${les.id}')"><i class="fas fa-play"></i> ${d ? 'Review' : 'Open'}</button></div>`; }).join('')}</div></div>`;
         });
         c.innerHTML = html;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load course.</div>'; }
@@ -2124,20 +1663,16 @@ async function renderLessonView(lessonId) {
     const c = document.getElementById('studentCourseViewerContent');
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
-        const { course, modules, lessons } = await api(`/courses/${currentCourseView.courseId}`);
+        const { course, lessons } = await api(`/courses/${currentCourseView.courseId}`);
         const les = lessons.find(l => l.id === lessonId);
         if (!les) { c.innerHTML = '<div class="empty-state">Not found.</div>'; return; }
-        const modLessons = lessons.filter(l => l.module_id === les.module_id);
-        const idx = modLessons.findIndex(l => l.id === les.id);
         const { completed } = await api(`/progress/${currentCourseView.courseId}`);
         const done = completed.includes(les.id);
-        let html = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backToCourseModules()"><i class="fas fa-arrow-left"></i> Modules</button><div style="font-size:0.9rem;color:var(--text-secondary)">${esc(course.title)} • ${idx + 1}/${modLessons.length}</div></div><h2>${esc(les.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(les.description || '')}</p>`;
-        if (les.video_url) html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-video" style="color:var(--gold)"></i> Video</h3><div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9"><video controls preload="metadata" style="width:100%;height:100%"><source src="${esc(les.video_url)}" type="video/mp4"></video></div></div>`;
+        let html = `<div style="margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backToCourseModules()"><i class="fas fa-arrow-left"></i> Modules</button></div><h2>${esc(les.title)}</h2><p style="color:var(--text-secondary);margin-bottom:1rem">${esc(les.description || '')}</p>`;
+        if (les.video_url) html += `<div style="background:#000;border-radius:12px;overflow:hidden;aspect-ratio:16/9;margin-bottom:1.25rem"><video controls style="width:100%;height:100%"><source src="${esc(les.video_url)}" type="video/mp4"></video></div>`;
         if (les.notes && les.notes.trim()) html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-book-open" style="color:var(--gold)"></i> Learning Materials</h3><div style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.95rem">${esc(les.notes)}</div></div>`;
         if (les.assignment && les.assignment.trim()) html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-tasks" style="color:var(--gold)"></i> Assignment</h3><div style="background:#fef3c7;border-left:4px solid var(--warning);padding:1rem;border-radius:8px;color:#78350f">${esc(les.assignment)}</div></div>`;
-        if (les.pdfs && les.pdfs.length) html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-file-pdf" style="color:var(--danger)"></i> PDFs</h3>${les.pdfs.map(p => `<a href="${esc(p.path)}" target="_blank" class="lesson-material"><i class="fas fa-file-pdf" style="color:var(--danger)"></i><span style="flex:1;color:var(--navy);font-weight:600">${esc(p.name)}</span><i class="fas fa-download" style="color:var(--blue)"></i></a>`).join('')}</div>`;
-        if (les.images && les.images.length) html += `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1.25rem"><h3 style="color:var(--navy);margin-bottom:0.75rem"><i class="fas fa-images" style="color:var(--gold)"></i> Images</h3><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:0.75rem">${les.images.map(im => `<a href="${esc(im.path)}" target="_blank"><img src="${esc(im.path)}" style="width:100%;border-radius:10px;border:2px solid #e2e8f0"></a>`).join('')}</div></div>`;
-        html += `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:space-between;margin-top:1.5rem"><button class="btn ${done ? 'btn-outline' : 'btn-success'}" onclick="toggleLessonComplete('${les.id}')"><i class="fas fa-${done ? 'check-circle' : 'circle'}"></i> ${done ? 'Completed' : 'Mark Complete'}</button><div style="display:flex;gap:0.5rem">${idx > 0 ? `<button class="btn btn-outline btn-sm" onclick="openLesson('${modLessons[idx - 1].id}')"><i class="fas fa-arrow-left"></i> Prev</button>` : ''}${idx < modLessons.length - 1 ? `<button class="btn btn-primary btn-sm" onclick="openLesson('${modLessons[idx + 1].id}')">Next <i class="fas fa-arrow-right"></i></button>` : ''}</div></div>`;
+        html += `<div style="display:flex;gap:0.5rem;flex-wrap:wrap;justify-content:space-between;margin-top:1.5rem"><button class="btn ${done ? 'btn-outline' : 'btn-success'}" onclick="toggleLessonComplete('${les.id}')"><i class="fas fa-${done ? 'check-circle' : 'circle'}"></i> ${done ? 'Completed' : 'Mark Complete'}</button></div>`;
         c.innerHTML = html;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load lesson.</div>'; }
 }
@@ -2151,9 +1686,6 @@ async function toggleLessonComplete(lessonId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   PAYMENT MODAL
-   ═══════════════════════════════════════════════════════════ */
 let payCourseTarget = null;
 async function openPayCourseModal(courseId) {
     try {
@@ -2188,44 +1720,25 @@ async function processCoursePayment(e) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   STUDENT — RESULTS / EXAMS / CERTIFICATES / PROFILE
-   ═══════════════════════════════════════════════════════════ */
 async function renderStudentResults() { const c = document.getElementById('studentResultsTable'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { results } = await api('/progress/results/all'); if (!results.length) { c.innerHTML = '<div class="empty-state">No results yet.</div>'; return; } c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Course</th><th>Type</th><th>Score</th><th>%</th><th>Status</th><th>Date</th></tr></thead><tbody>${results.map(r => `<tr><td>${esc(r.course_title)}</td><td>${r.assessment_type === 'exam' ? 'Final Exam' : 'CAT'}</td><td>${r.score}/${r.total_marks}</td><td>${parseFloat(r.percentage).toFixed(1)}%</td><td><span class="badge ${r.passed ? 'badge-success' : 'badge-danger'}">${r.passed ? 'PASSED' : 'FAILED'}</span></td><td>${fmtDate(r.submitted_at)}</td></tr>`).join('')}</tbody></table></div>`; } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function renderStudentExams() { const c = document.getElementById('studentExamsContent'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { enrollments } = await api('/enrollments'); if (!enrollments.length) { c.innerHTML = '<div class="empty-state">Enroll in a course first.</div>'; return; } c.innerHTML = enrollments.map(e => { const allDone = e.completed_lessons >= e.total_lessons && e.total_lessons > 0; return `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(e.title)}</h4><div style="font-size:0.85rem;color:var(--text-secondary);margin-top:0.3rem">Lessons: ${e.completed_lessons}/${e.total_lessons}</div><div style="margin-top:1rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>📝 CAT</strong></div>${allDone ? `<button class="btn btn-warning btn-sm" onclick="alert('Coming soon')">Start CAT</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div><div style="margin-top:0.5rem;padding:1rem;background:var(--bg);border-radius:10px;display:flex;justify-content:space-between;flex-wrap:wrap;gap:0.5rem"><div><strong>🎓 Exam</strong></div>${allDone ? `<button class="btn btn-success btn-sm" onclick="alert('Coming soon')">Start Exam</button>` : '<button class="btn btn-outline btn-sm" disabled>Locked</button>'}</div></div>`; }).join(''); } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 
 async function renderStudentCertificates() {
-    const c = document.getElementById('studentCertificatesList');
-    if (!c) return;
+    const c = document.getElementById('studentCertificatesList'); if (!c) return;
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { certificates } = await api('/certificates/me');
         if (!certificates.length) { c.innerHTML = '<div class="empty-state">No certificates yet. Complete a course to earn one.</div>'; return; }
-        c.innerHTML = certificates.map(cert => `
-            <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)">
-                <h4>${esc(cert.certificate_id)}</h4>
-                <p>${esc(cert.course_name)}</p>
-                <p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p>
-                <div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap">
-                    <button class="btn btn-primary btn-sm" onclick="openCertificateModal('${esc(cert.certificate_id)}')"><i class="fas fa-eye"></i> View Certificate</button>
-                    <button class="btn btn-outline btn-sm" onclick="window.open('/certificate.html?id=${encodeURIComponent(cert.certificate_id)}','_blank')"><i class="fas fa-external-link-alt"></i> Open in New Tab</button>
-                </div>
-            </div>
-        `).join('');
+        c.innerHTML = certificates.map(cert => `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(cert.certificate_id)}</h4><p>${esc(cert.course_name)}</p><p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p><div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="openCertificateModal('${esc(cert.certificate_id)}')"><i class="fas fa-eye"></i> View Certificate</button><button class="btn btn-outline btn-sm" onclick="window.open('/certificate.html?id=${encodeURIComponent(cert.certificate_id)}','_blank')"><i class="fas fa-external-link-alt"></i> Open in New Tab</button></div></div>`).join('');
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>'; }
 }
 
 function renderStudentProfile() {
     const initials = (currentUser.full_name || 'U').charAt(0).toUpperCase();
-    const avatar = currentUser.avatar_url
-        ? `<img src="${esc(currentUser.avatar_url)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)">`
-        : `<div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc(initials)}</div>`;
+    const avatar = currentUser.avatar_url ? `<img src="${esc(currentUser.avatar_url)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)">` : `<div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc(initials)}</div>`;
     document.getElementById('studentProfileContent').innerHTML = `<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)"><div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem">${avatar}<div><h2>${esc(currentUser.full_name)}</h2><p>${esc(currentUser.email)}</p></div></div><div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${esc(currentUser.username)}" disabled></div><div class="form-group"><label>Role</label><input type="text" value="${esc(currentUser.role)}" disabled></div></div></div>`;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ADMIN — DASHBOARD / APPS / STUDENTS
-   ═══════════════════════════════════════════════════════════ */
 async function updateAdminDashboard() {
     try {
         const stats = await api('/admin/stats');
@@ -2233,17 +1746,14 @@ async function updateAdminDashboard() {
         const { applications } = await api('/applications');
         const { transactions } = await api('/payments');
         document.getElementById('adminStats').innerHTML = `<div class="summary-cards"><div class="summary-card"><div class="num">${applications.length}</div><div class="lbl">Total Apps</div></div><div class="summary-card gold"><div class="num">${(stats.counts.applications.payment_due || 0) + (stats.counts.applications.paid || 0)}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${stats.counts.applications.approved || 0}</div><div class="lbl">Approved</div></div><div class="summary-card red"><div class="num">${stats.counts.applications.rejected || 0}</div><div class="lbl">Rejected</div></div></div><div class="stats-grid"><div class="stat-card"><div class="stat-number">${stats.counts.courses}</div><div class="stat-label">Courses</div></div><div class="stat-card green"><div class="stat-number">${stats.counts.students}</div><div class="stat-label">Students</div></div><div class="stat-card purple"><div class="stat-number">${stats.counts.enrollments}</div><div class="stat-label">Enrollments</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.course)}</div><div class="stat-label">Course Revenue</div></div><div class="stat-card green"><div class="stat-number">${fmtMoney(stats.revenue.activation)}</div><div class="stat-label">Admission Fees</div></div><div class="stat-card gold"><div class="stat-number">${fmtMoney(stats.revenue.total)}</div><div class="stat-label">Total</div></div></div>`;
-        const recentApps = applications.slice(0, 5);
-        document.getElementById('recentApplications').innerHTML = recentApps.length === 0 ? '<p style="color:var(--text-secondary)">No applications.</p>' : recentApps.map(a => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(a.full_name)}</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div>`).join('');
-        const recentTxs = transactions.slice(0, 5);
-        document.getElementById('recentPayments').innerHTML = recentTxs.length === 0 ? '<p style="color:var(--text-secondary)">No payments.</p>' : recentTxs.map(t => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${fmtMoney(t.amount)}</strong> — ${esc(t.student_name || '?')}</div>`).join('');
+        document.getElementById('recentApplications').innerHTML = applications.slice(0, 5).length === 0 ? '<p style="color:var(--text-secondary)">No applications.</p>' : applications.slice(0, 5).map(a => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${esc(a.full_name)}</strong> <span class="badge status-${a.status}">${a.status.replace('_', ' ').toUpperCase()}</span></div>`).join('');
+        document.getElementById('recentPayments').innerHTML = transactions.slice(0, 5).length === 0 ? '<p style="color:var(--text-secondary)">No payments.</p>' : transactions.slice(0, 5).map(t => `<div style="padding:0.5rem 0;border-bottom:1px solid #f0f0f0;font-size:0.9rem"><strong>${fmtMoney(t.amount)}</strong> — ${esc(t.student_name || '?')}</div>`).join('');
         document.getElementById('adminActivityFeed').innerHTML = activities.length === 0 ? '<p style="color:var(--text-secondary)">No activity.</p>' : activities.slice(0, 10).map(a => `<div class="activity-item"><div class="a-icon"><i class="fas fa-circle"></i></div><div class="a-content"><div class="a-title">${esc(a.title)}</div><div style="font-size:0.85rem;color:var(--text-secondary)">${esc(a.description || '')}</div></div></div>`).join('');
     } catch (err) { console.error(err); }
 }
 
 async function renderAdminApplications() {
-    const c = document.getElementById('adminApplicationsList');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    const c = document.getElementById('adminApplicationsList'); c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const params = new URLSearchParams();
         if (appFilterState.status !== 'all') params.set('status', appFilterState.status);
@@ -2315,19 +1825,17 @@ async function confirmReject() {
 }
 
 async function renderAdminStudents() {
-    const c = document.getElementById('adminStudentsList');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    const c = document.getElementById('adminStudentsList'); c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { students } = await api('/admin/students');
         if (!students.length) { c.innerHTML = '<div class="empty-state">No students yet.</div>'; return; }
-        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const canApprove = ap !== 'approved'; const canReject = ap !== 'rejected'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${s.id}', '${esc(s.full_name)}', 'student')" title="Approve"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${s.id}', 'student')" title="Reject"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')" title="View"><i class="fas fa-eye"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')" title="Payments"><i class="fas fa-credit-card"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')" title="Sponsorship"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div style="margin-bottom:1rem;font-size:0.85rem;color:var(--text-secondary)"><i class="fas fa-info-circle"></i> Scroll horizontally.</div><div class="students-table-wrap"><table class="students-table"><thead><tr><th>Student ID</th><th>Name</th><th>Email</th><th>Service Fee</th><th>Approval</th><th>Courses</th><th>Paid</th><th>Actions</th></tr></thead><tbody>${students.map(s => { const serviceFee = s.activation_fee_paid ? 'paid' : 'unpaid'; const ap = s.approval_status || 'pending'; const canApprove = ap !== 'approved'; const canReject = ap !== 'rejected'; return `<tr><td><strong>${esc(s.admission_number || 'N/A')}</strong></td><td><strong>${esc(s.full_name)}</strong></td><td>${esc(s.email)}</td><td><span class="status-pill ${serviceFee}">${serviceFee === 'paid' ? '✅ Paid' : '❌ Unpaid'}</span></td><td><span class="status-pill ${ap}">${ap.toUpperCase()}</span></td><td>${s.enrollment_count}</td><td><strong style="color:var(--success)">${fmtMoney(s.total_paid)}</strong></td><td><div class="student-actions">${canApprove ? `<button class="action-btn approve" onclick="openApproveModal('${s.id}', '${esc(s.full_name)}', 'student')"><i class="fas fa-check"></i></button>` : ''}${canReject ? `<button class="action-btn reject" onclick="openRejectModal('${s.id}', 'student')"><i class="fas fa-times"></i></button>` : ''}<button class="action-btn view" onclick="viewStudentProfile('${s.id}')"><i class="fas fa-eye"></i></button><button class="action-btn payments" onclick="viewStudentPayments('${s.id}')"><i class="fas fa-credit-card"></i></button><button class="action-btn sponsorship" onclick="viewStudentSponsorship('${s.id}')"><i class="fas fa-handshake"></i></button></div></td></tr>`; }).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; }
 }
 async function viewStudentProfile(studentId) {
     try {
         const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
-        if (!s) return;
+        const s = students.find(x => x.id === studentId); if (!s) return;
         document.getElementById('appDetailsContent').innerHTML = `<h2>Profile — ${esc(s.full_name)}</h2><div style="background:var(--bg);padding:1rem;border-radius:12px"><div><strong>Email:</strong> ${esc(s.email)}</div><div><strong>Phone:</strong> ${esc(s.phone || '—')}</div><div><strong>Country:</strong> ${esc(s.country || '—')}</div><div><strong>Admission #:</strong> ${esc(s.admission_number || 'N/A')}</div><div><strong>Approval:</strong> ${esc((s.approval_status || 'pending').toUpperCase())}</div><div><strong>Courses:</strong> ${s.enrollment_count}</div><div><strong>Paid:</strong> ${fmtMoney(s.total_paid)}</div></div>`;
         document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
@@ -2336,8 +1844,7 @@ async function viewStudentProfile(studentId) {
 async function viewStudentPayments(studentId) {
     try {
         const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
-        if (!s) return;
+        const s = students.find(x => x.id === studentId); if (!s) return;
         const { transactions } = await api('/payments');
         const txs = transactions.filter(t => t.student_id === studentId);
         document.getElementById('appDetailsContent').innerHTML = `<h2>Payments — ${esc(s.full_name)}</h2>${!txs.length ? '<div class="empty-state">No transactions</div>' : `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${txs.map(t => `<tr><td>${esc(t.transaction_id)}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Activation' : esc(t.course_title || 'Course')}</td><td>${fmtMoney(t.amount)}</td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`}`;
@@ -2348,11 +1855,10 @@ async function viewStudentPayments(studentId) {
 async function viewStudentSponsorship(studentId) {
     try {
         const { students } = await api('/admin/students');
-        const s = students.find(x => x.id === studentId);
-        if (!s) return;
+        const s = students.find(x => x.id === studentId); if (!s) return;
         const sp = s.sponsorship || { type: 'none', amount: 0, percentage: 0 };
         const cardClass = sp.type === 'full' ? 'full' : sp.type === 'partial' ? 'partial' : '';
-        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div>${sp.type !== 'none' ? `<div style="margin-top:0.5rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}${sp.percentage ? `<div style="margin-top:0.3rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}</div><div class="form-group"><label>Sponsorship Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount Sponsored ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage Percentage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div><div class="form-group"><label>Sponsor Name (optional)</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}" placeholder="e.g., XYZ Foundation"></div>`;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Sponsorship — ${esc(s.full_name)}</h2><div class="sponsorship-card ${cardClass}" style="margin-bottom:1.5rem"><div style="font-size:1.3rem;font-weight:800;color:var(--navy)">${sp.type === 'none' ? 'Not Sponsored' : sp.type === 'partial' ? 'Partially Sponsored' : 'Fully Sponsored'}</div>${sp.type !== 'none' ? `<div style="margin-top:0.5rem">Amount: <strong>${fmtMoney(sp.amount)}</strong></div>` : ''}${sp.percentage ? `<div style="margin-top:0.3rem">Coverage: <strong>${sp.percentage}%</strong></div>` : ''}</div><div class="form-group"><label>Type</label><select id="spType_${studentId}"><option value="none" ${sp.type === 'none' ? 'selected' : ''}>None</option><option value="partial" ${sp.type === 'partial' ? 'selected' : ''}>Partial</option><option value="full" ${sp.type === 'full' ? 'selected' : ''}>Full</option></select></div><div class="form-row"><div class="form-group"><label>Amount ($)</label><input type="number" step="0.01" min="0" id="spAmount_${studentId}" value="${sp.amount || 0}"></div><div class="form-group"><label>Coverage (%)</label><input type="number" min="0" max="100" id="spPercentage_${studentId}" value="${sp.percentage || 0}"></div></div><div class="form-group"><label>Sponsor Name</label><input type="text" id="spSponsor_${studentId}" value="${esc(sp.sponsor_name || '')}"></div>`;
         document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button><button class="btn btn-success" onclick="saveStudentSponsorship('${studentId}')">Save</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
@@ -2370,12 +1876,8 @@ async function saveStudentSponsorship(studentId) {
     } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ADMIN — COURSES
-   ═══════════════════════════════════════════════════════════ */
 async function renderAdminCourses() {
-    const c = document.getElementById('adminCoursesList');
-    c.innerHTML = '<div class="empty-state">Loading...</div>';
+    const c = document.getElementById('adminCoursesList'); c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { courses } = await api('/courses?include_drafts=true');
         if (!courses.length) { c.innerHTML = '<div class="empty-state" style="grid-column:1/-1">No courses yet.</div>'; return; }
@@ -2394,7 +1896,7 @@ async function deleteCourse(courseId) {
 async function editCourse(courseId) {
     try {
         const { course, modules, lessons } = await api(`/courses/${courseId}`);
-        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, instructor_name: course.instructor_name, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' }, _existingSaved: true };
+        currentCourseData = { id: course.id, title: course.title, code: course.code, category: course.category, level: course.level, description: course.description, duration: course.duration, price: parseFloat(course.price), initial_payment_percent: course.initial_payment_percent, status: course.status, cat_pass_mark: course.cat_pass_mark, exam_pass_mark: course.exam_pass_mark, cat_unlock_hours: course.cat_unlock_hours, exam_unlock_hours: course.exam_unlock_hours, modules: modules.map(m => ({ ...m, lessons: lessons.filter(l => l.module_id === m.id) })), discount: { enabled: course.discount_enabled || false, originalPrice: parseFloat(course.original_price || course.price), discountPrice: parseFloat(course.discount_price || 0), endsAt: course.discount_ends_at, label: course.discount_label || 'Limited Time Offer' }, _existingSaved: true };
         examQuestions = []; catQuestions = [];
         document.getElementById('courseTitle').value = course.title || '';
         document.getElementById('courseCode').value = course.code || '';
@@ -2428,7 +1930,7 @@ function initBuilder() {
         currentCourseData = { title: '', code: '', category: 'IT & Technology', level: 'Beginner', description: '', duration: '', price: 0, initial_payment_percent: 25, status: 'draft', cat_pass_mark: 50, exam_pass_mark: 50, cat_unlock_hours: 24, exam_unlock_hours: 72, modules: [], discount: { enabled: false, originalPrice: 0, discountPrice: 0, endsAt: null, label: '' } };
         examQuestions = []; catQuestions = [];
         document.getElementById('builderTitle').textContent = 'Create New Course';
-        ['courseTitle','courseCode','courseDescription','courseDuration','courseInstructor'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
+        ['courseTitle','courseCode','courseDescription','courseDuration'].forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
         document.getElementById('coursePrice').value = 0;
         document.getElementById('examUnlockHours').value = 72;
         document.getElementById('catUnlockHours').value = 24;
@@ -2628,7 +2130,7 @@ async function saveCourseToServer(status) {
     try {
         let coverImageUrl = currentCourseData.cover_image_url || null;
         if (uploadedImageFile) { const fd = new FormData(); fd.append('file', uploadedImageFile); const r = await apiForm('/uploads/course-cover?scope=courses', fd); coverImageUrl = r.path; uploadedImageFile = null; }
-        const payload = { title: currentCourseData.title, code: currentCourseData.code || null, category: currentCourseData.category || null, level: currentCourseData.level || null, description: currentCourseData.description || null, instructor_name: currentCourseData.instructor_name || null, duration: currentCourseData.duration || null, cover_image_url: coverImageUrl, price: currentCourseData.price || 0, initial_payment_percent: 25, cat_pass_mark: currentCourseData.cat_pass_mark || 50, exam_pass_mark: currentCourseData.exam_pass_mark || 50, cat_unlock_hours: currentCourseData.cat_unlock_hours || 24, exam_unlock_hours: currentCourseData.exam_unlock_hours || 72, status };
+        const payload = { title: currentCourseData.title, code: currentCourseData.code || null, category: currentCourseData.category || null, level: currentCourseData.level || null, description: currentCourseData.description || null, duration: currentCourseData.duration || null, cover_image_url: coverImageUrl, price: currentCourseData.price || 0, initial_payment_percent: 25, cat_pass_mark: currentCourseData.cat_pass_mark || 50, exam_pass_mark: currentCourseData.exam_pass_mark || 50, cat_unlock_hours: currentCourseData.cat_unlock_hours || 24, exam_unlock_hours: currentCourseData.exam_unlock_hours || 72, status };
         let courseId = currentCourseData.id;
         if (courseId) await api(`/courses/${courseId}`, { method: 'PUT', body: payload });
         else { const r = await api('/courses', { method: 'POST', body: payload }); courseId = r.course.id; currentCourseData.id = courseId; }
@@ -2659,22 +2161,12 @@ function publishCourse() { saveCourseToServer('published'); }
 async function renderAdminExams() { const c = document.getElementById('adminExamsList'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { courses } = await api('/courses?include_drafts=true'); if (!courses.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No courses yet.</p>'; return; } c.innerHTML = courses.map(co => `<div style="background:var(--white);padding:1.5rem;border-radius:var(--radius);box-shadow:var(--shadow);margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(co.title)}</h4><div style="font-size:0.9rem;color:var(--text-secondary);margin-top:0.3rem">Exam & CAT questions managed in course builder.</div></div>`).join(''); } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 
 async function renderAdminCertificates() {
-    const c = document.getElementById('adminCertificatesList');
-    if (!c) return;
+    const c = document.getElementById('adminCertificatesList'); if (!c) return;
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { certificates } = await api('/certificates');
         if (!certificates.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No certificates issued yet.</p>'; return; }
-        c.innerHTML = `<div class="table-wrapper"><table>
-            <thead><tr><th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th><th>Actions</th></tr></thead>
-            <tbody>${certificates.map(x => `<tr>
-                <td><strong>${esc(x.certificate_id)}</strong></td>
-                <td>${esc(x.student_name)}</td>
-                <td>${esc(x.course_name)}</td>
-                <td>${fmtDate(x.issued_date)}</td>
-                <td><button class="action-btn view" onclick="openCertificateModal('${esc(x.certificate_id)}')" title="View"><i class="fas fa-eye"></i></button></td>
-            </tr>`).join('')}</tbody>
-        </table></div>`;
+        c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Certificate ID</th><th>Student</th><th>Course</th><th>Issued</th><th>Actions</th></tr></thead><tbody>${certificates.map(x => `<tr><td><strong>${esc(x.certificate_id)}</strong></td><td>${esc(x.student_name)}</td><td>${esc(x.course_name)}</td><td>${fmtDate(x.issued_date)}</td><td><button class="action-btn view" onclick="openCertificateModal('${esc(x.certificate_id)}')"><i class="fas fa-eye"></i></button></td></tr>`).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>'; }
 }
 
@@ -2682,13 +2174,9 @@ async function renderRevenue() { try { const stats = await api('/admin/stats'); 
 async function renderAdminPayments() { const c = document.getElementById('adminPaymentsList'); c.innerHTML = '<div class="empty-state">Loading...</div>'; try { const { transactions } = await api('/payments'); if (!transactions.length) { c.innerHTML = '<p style="color:var(--text-secondary)">No payments.</p>'; return; } c.innerHTML = `<div class="table-wrapper"><table><thead><tr><th>Tx ID</th><th>Student</th><th>Type</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead><tbody>${transactions.map(t => `<tr><td><strong>${esc(t.transaction_id)}</strong></td><td>${esc(t.student_name || '?')}</td><td>${t.payment_type === 'ACTIVATION_FEE' ? 'Admission' : esc(t.course_title || 'Course')}</td><td><strong>${fmtMoney(t.amount)}</strong></td><td><span class="badge badge-${t.status === 'completed' ? 'success' : 'warning'}">${t.status}</span></td><td>${fmtDate(t.created_at)}</td></tr>`).join('')}</tbody></table></div>`; } catch (err) { c.innerHTML = '<div class="empty-state">Failed.</div>'; } }
 async function verifyCertificate() { const token = document.getElementById('verifyToken').value.trim(); const r = document.getElementById('verifyResult'); if (!token) { r.innerHTML = ''; return; } try { const data = await api(`/certificates/verify/${encodeURIComponent(token)}`); if (data.valid) r.innerHTML = `<div class="flash flash-success" style="max-width:600px;margin:1rem auto"><h3>✅ Verified</h3><p>Certificate: ${esc(data.certificate.certificate_id)}</p><p>Student: ${esc(data.certificate.student_name)}</p><p>Course: ${esc(data.certificate.course_name)}</p><button class="btn btn-primary" style="margin-top:1rem" onclick="openCertificateModal('${esc(data.certificate.certificate_id)}')"><i class="fas fa-eye"></i> View Full Certificate</button></div>`; else r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Revoked</h3></div>`; } catch (err) { r.innerHTML = `<div class="flash flash-danger" style="max-width:600px;margin:1rem auto"><h3>❌ Invalid</h3></div>`; } }
 
-/* ═══════════════════════════════════════════════════════════
-   GROUPS / DISCUSSION
-   ═══════════════════════════════════════════════════════════ */
 async function renderAdminGroups() {
     const c = document.getElementById('adminGroupsList');
-    const statsEl = document.getElementById('adminGroupsStats');
-    if (!c) return;
+    const statsEl = document.getElementById('adminGroupsStats'); if (!c) return;
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { groups } = await api('/groups');
@@ -2700,20 +2188,7 @@ async function renderAdminGroups() {
         const badge = document.getElementById('adminGroupCount');
         if (badge) badge.textContent = total;
         if (!groups.length) { c.innerHTML = '<div class="empty-state">No groups yet. Create one to get started.</div>'; return; }
-        c.innerHTML = `<div class="table-wrapper"><table style="min-width:900px"><thead><tr><th>Group Name</th><th>Category</th><th>Visibility</th><th>Members</th><th>Messages</th><th>Created</th><th>Actions</th></tr></thead><tbody>${groups.map(g => `
-          <tr>
-            <td><strong>${esc(g.name)}</strong><div style="font-size:0.75rem;color:var(--text-secondary)">${esc((g.description || '').slice(0, 50))}${(g.description || '').length > 50 ? '…' : ''}</div></td>
-            <td><span class="badge badge-active">${esc(g.category || 'General')}</span></td>
-            <td><span class="status-pill ${g.visibility === 'private' ? 'pending' : 'approved'}">${esc(g.visibility || 'public')}</span></td>
-            <td><span class="clickable-count" onclick="viewGroupMembers('${g.id}')">${g.member_count || 0} 👥</span></td>
-            <td><strong>${g.message_count || 0}</strong></td>
-            <td>${fmtDate(g.created_at)}</td>
-            <td><div class="student-actions">
-              <button class="action-btn view" onclick="openGroupChat('${g.id}')" title="Open"><i class="fas fa-comments"></i></button>
-              <button class="action-btn documents" onclick="editGroup('${g.id}')" title="Edit"><i class="fas fa-edit"></i></button>
-              <button class="action-btn reject" onclick="openDeleteGroupModal('${g.id}')" title="Delete"><i class="fas fa-trash"></i></button>
-            </div></td>
-          </tr>`).join('')}</tbody></table></div>`;
+        c.innerHTML = `<div class="table-wrapper"><table style="min-width:900px"><thead><tr><th>Group Name</th><th>Category</th><th>Visibility</th><th>Members</th><th>Messages</th><th>Created</th><th>Actions</th></tr></thead><tbody>${groups.map(g => `<tr><td><strong>${esc(g.name)}</strong></td><td><span class="badge badge-active">${esc(g.category || 'General')}</span></td><td><span class="status-pill ${g.visibility === 'private' ? 'pending' : 'approved'}">${esc(g.visibility || 'public')}</span></td><td><span class="clickable-count" onclick="viewGroupMembers('${g.id}')">${g.member_count || 0} 👥</span></td><td><strong>${g.message_count || 0}</strong></td><td>${fmtDate(g.created_at)}</td><td><div class="student-actions"><button class="action-btn view" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i></button><button class="action-btn documents" onclick="editGroup('${g.id}')"><i class="fas fa-edit"></i></button><button class="action-btn reject" onclick="openDeleteGroupModal('${g.id}')"><i class="fas fa-trash"></i></button></div></td></tr>`).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`; }
 }
 function openCreateGroupModal() {
@@ -2771,8 +2246,7 @@ async function viewGroupMembers(groupId) {
 function switchStudentGroupTab(tab) {
     studentGroupTab = tab;
     document.querySelectorAll('#studentGroupsTabs .btn').forEach(b => {
-        const isMine = b.textContent.includes('My');
-        const isAll = b.textContent.includes('All');
+        const isMine = b.textContent.includes('My'), isAll = b.textContent.includes('All');
         const match = (tab === 'mine' && isMine) || (tab === 'all' && isAll);
         b.classList.toggle('btn-primary', match);
         b.classList.toggle('btn-outline', !match);
@@ -2780,8 +2254,7 @@ function switchStudentGroupTab(tab) {
     renderStudentGroups();
 }
 async function renderStudentGroups() {
-    const c = document.getElementById('studentGroupsList');
-    if (!c) return;
+    const c = document.getElementById('studentGroupsList'); if (!c) return;
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const { groups } = await api('/groups');
@@ -2789,28 +2262,9 @@ async function renderStudentGroups() {
         const list = studentGroupTab === 'mine' ? mine : groups;
         const badge = document.getElementById('studentGroupCount');
         if (badge) badge.textContent = mine.length;
-        if (!list.length) { c.innerHTML = `<div class="empty-state">${studentGroupTab === 'mine' ? "You haven't joined any groups yet. Browse All Groups to join." : 'No groups available.'}</div>`; return; }
-        c.innerHTML = `<div class="courses-grid">${list.map(g => `
-          <div class="course-card">
-            <div class="course-image" style="background:linear-gradient(135deg,var(--navy),var(--blue-dark));display:flex;align-items:center;justify-content:center">
-              <i class="fas fa-users" style="font-size:3rem;color:var(--gold)"></i>
-            </div>
-            <div class="course-body">
-              <h3 class="course-title">${esc(g.name)}</h3>
-              <div class="course-meta">
-                <span><i class="fas fa-tag"></i> ${esc(g.category || 'General')}</span>
-                <span><i class="fas fa-users"></i> ${g.member_count || 0}</span>
-                <span><i class="fas fa-comment"></i> ${g.message_count || 0}</span>
-              </div>
-              <p style="font-size:0.85rem;color:var(--text-secondary);margin:0.5rem 0;min-height:2.5rem">${esc((g.description || '').slice(0, 90))}${(g.description || '').length > 90 ? '…' : ''}</p>
-              <div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">
-                ${g.is_member
-                  ? `<button class="btn btn-primary btn-sm" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i> Open Chat</button><button class="btn btn-outline btn-sm" onclick="leaveGroup('${g.id}')"><i class="fas fa-sign-out-alt"></i> Leave</button>`
-                  : `<button class="btn btn-success btn-sm" onclick="joinGroup('${g.id}')" ${g.visibility === 'private' ? 'disabled title="Private group"' : ''}><i class="fas fa-plus"></i> Join</button>`}
-              </div>
-            </div>
-          </div>`).join('')}</div>`;
-    } catch (err) { c.innerHTML = `<div class="empty-state">Failed to load groups: ${esc(err.message)}</div>`; }
+        if (!list.length) { c.innerHTML = `<div class="empty-state">${studentGroupTab === 'mine' ? "You haven't joined any groups yet." : 'No groups available.'}</div>`; return; }
+        c.innerHTML = `<div class="courses-grid">${list.map(g => `<div class="course-card"><div class="course-image" style="background:linear-gradient(135deg,var(--navy),var(--blue-dark));display:flex;align-items:center;justify-content:center"><i class="fas fa-users" style="font-size:3rem;color:var(--gold)"></i></div><div class="course-body"><h3 class="course-title">${esc(g.name)}</h3><div class="course-meta"><span><i class="fas fa-tag"></i> ${esc(g.category || 'General')}</span><span><i class="fas fa-users"></i> ${g.member_count || 0}</span></div><div style="display:flex;gap:0.5rem;flex-wrap:wrap;margin-top:0.5rem">${g.is_member ? `<button class="btn btn-primary btn-sm" onclick="openGroupChat('${g.id}')"><i class="fas fa-comments"></i> Open Chat</button><button class="btn btn-outline btn-sm" onclick="leaveGroup('${g.id}')">Leave</button>` : `<button class="btn btn-success btn-sm" onclick="joinGroup('${g.id}')" ${g.visibility === 'private' ? 'disabled' : ''}><i class="fas fa-plus"></i> Join</button>`}</div></div></div>`).join('')}</div>`;
+    } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
 }
 async function joinGroup(groupId) { try { await api(`/groups/${groupId}/join`, { method: 'POST' }); alert('✅ Joined group!'); await renderStudentGroups(); } catch (err) { alert('❌ ' + (err.data?.error || err.message)); } }
 async function leaveGroup(groupId) { if (!confirm('Leave this group?')) return; try { await api(`/groups/${groupId}/leave`, { method: 'POST' }); alert('👋 Left group'); await renderStudentGroups(); } catch (err) { alert('❌ ' + (err.data?.error || err.message)); } }
@@ -2831,25 +2285,7 @@ async function renderGroupChat() {
     try {
         const { group, members } = await api(`/groups/${currentGroup.id}`);
         currentGroup.data = group;
-        c.innerHTML = `
-          <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
-            <button class="btn btn-outline btn-sm" onclick="backFromGroupChat()"><i class="fas fa-arrow-left"></i> Back</button>
-            <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-              <button class="btn btn-outline btn-sm" onclick="viewGroupMembers('${group.id}')"><i class="fas fa-users"></i> ${members.length} members</button>
-              ${currentUser.role === 'admin' ? `<button class="btn btn-outline btn-sm" onclick="editGroup('${group.id}')"><i class="fas fa-edit"></i> Edit</button>` : ''}
-            </div>
-          </div>
-          <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem">
-            <h2 style="color:var(--navy);margin-bottom:0.3rem">${esc(group.name)}</h2>
-            <p style="color:var(--text-secondary);font-size:0.9rem">${esc(group.description || 'No description')}</p>
-          </div>
-          <div id="groupMessages" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem">
-            <div class="empty-state">Loading messages...</div>
-          </div>
-          <div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;display:flex;gap:0.5rem;align-items:flex-end">
-            <textarea id="groupMsgInput" placeholder="Type your message..." rows="1" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:0.95rem;resize:none;max-height:120px"></textarea>
-            <button class="btn btn-primary" onclick="sendGroupMessage()"><i class="fas fa-paper-plane"></i></button>
-          </div>`;
+        c.innerHTML = `<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><button class="btn btn-outline btn-sm" onclick="backFromGroupChat()"><i class="fas fa-arrow-left"></i> Back</button><div><button class="btn btn-outline btn-sm" onclick="viewGroupMembers('${group.id}')"><i class="fas fa-users"></i> ${members.length} members</button></div></div><div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem"><h2 style="color:var(--navy);margin-bottom:0.3rem">${esc(group.name)}</h2><p style="color:var(--text-secondary);font-size:0.9rem">${esc(group.description || 'No description')}</p></div><div id="groupMessages" style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;max-height:55vh;overflow-y:auto;display:flex;flex-direction:column;gap:0.75rem"><div class="empty-state">Loading messages...</div></div><div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1rem;display:flex;gap:0.5rem;align-items:flex-end"><textarea id="groupMsgInput" placeholder="Type your message..." rows="1" style="flex:1;padding:12px;border:2px solid #e2e8f0;border-radius:12px;font-family:inherit;font-size:0.95rem;resize:none;max-height:120px"></textarea><button class="btn btn-primary" onclick="sendGroupMessage()"><i class="fas fa-paper-plane"></i></button></div>`;
         document.getElementById('groupMsgInput').addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendGroupMessage(); } });
         await loadGroupMessages();
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
@@ -2857,96 +2293,44 @@ async function renderGroupChat() {
 async function loadGroupMessages(silent = false) {
     try {
         const { messages } = await api(`/groups/${currentGroup.id}/messages`);
-        const box = document.getElementById('groupMessages');
-        if (!box) return;
+        const box = document.getElementById('groupMessages'); if (!box) return;
         if (!messages.length) { box.innerHTML = '<div class="empty-state" style="margin:auto">No messages yet. Be the first to say hi! 👋</div>'; return; }
         const wasAtBottom = box.scrollHeight - box.scrollTop - box.clientHeight < 80;
         box.innerHTML = messages.map(m => {
             const isMe = m.user_id === currentUser.id;
             const isAdmin = m.role === 'admin';
-            return `<div style="display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'}">
-              <div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.2rem;flex-direction:${isMe ? 'row-reverse' : 'row'}">
-                <div style="width:28px;height:28px;border-radius:50%;background:${isAdmin ? 'var(--gold)' : 'var(--blue)'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem">${esc((m.full_name || m.username || 'U').charAt(0).toUpperCase())}</div>
-                <strong style="font-size:0.85rem;color:var(--navy)">${esc(m.full_name || m.username)}${isAdmin ? ' <span class="badge badge-warning" style="font-size:0.6rem">ADMIN</span>' : ''}</strong>
-                <span style="font-size:0.7rem;color:var(--text-secondary)">${fmtDateTime(m.created_at)}</span>
-              </div>
-              <div style="background:${isMe ? 'var(--blue)' : 'var(--bg)'};color:${isMe ? '#fff' : 'var(--text-primary)'};padding:0.6rem 0.9rem;border-radius:12px;max-width:75%;font-size:0.9rem;white-space:pre-wrap;word-break:break-word">${esc(m.content)}</div>
-            </div>`;
+            return `<div style="display:flex;flex-direction:column;align-items:${isMe ? 'flex-end' : 'flex-start'}"><div style="display:flex;gap:0.5rem;align-items:center;margin-bottom:0.2rem;flex-direction:${isMe ? 'row-reverse' : 'row'}"><div style="width:28px;height:28px;border-radius:50%;background:${isAdmin ? 'var(--gold)' : 'var(--blue)'};color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem">${esc((m.full_name || m.username || 'U').charAt(0).toUpperCase())}</div><strong style="font-size:0.85rem;color:var(--navy)">${esc(m.full_name || m.username)}</strong><span style="font-size:0.7rem;color:var(--text-secondary)">${fmtDateTime(m.created_at)}</span></div><div style="background:${isMe ? 'var(--blue)' : 'var(--bg)'};color:${isMe ? '#fff' : 'var(--text-primary)'};padding:0.6rem 0.9rem;border-radius:12px;max-width:75%;font-size:0.9rem;white-space:pre-wrap;word-break:break-word">${esc(m.content)}</div></div>`;
         }).join('');
         if (wasAtBottom || !silent) box.scrollTop = box.scrollHeight;
     } catch (err) { if (!silent) console.warn('Load messages failed:', err.message); }
 }
 async function sendGroupMessage() {
     const input = document.getElementById('groupMsgInput');
-    const content = input.value.trim();
-    if (!content) return;
+    const content = input.value.trim(); if (!content) return;
     try { await api(`/groups/${currentGroup.id}/messages`, { method: 'POST', body: { content } }); input.value = ''; await loadGroupMessages(); }
     catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 function backFromGroupChat() {
     if (groupsPollInterval) { clearInterval(groupsPollInterval); groupsPollInterval = null; }
     currentGroup = null;
-    if (currentUser.role === 'admin') navigateTo('admin-groups');
-    else navigateTo('student-groups');
+    if (currentUser.role === 'admin') navigateTo('admin-groups'); else navigateTo('student-groups');
 }
 
-/* ═══════════════════════════════════════════════════════════
-   ASSIGNMENT SUBMISSION PANEL (STUDENT)
-   ═══════════════════════════════════════════════════════════ */
 async function loadAssignmentPanel(lessonId) {
-    const el = document.getElementById('assignmentPanel');
-    if (!el) return;
+    const el = document.getElementById('assignmentPanel'); if (!el) return;
     try {
         const data = await api(`/assignments/lesson/${lessonId}`);
-        if (!data.assignment) {
-            el.innerHTML = '<div class="empty-state" style="padding:1rem">No assignment configured for this lesson yet.</div>';
-            return;
-        }
-        const a = data.assignment;
-        const s = data.submission;
+        if (!data.assignment) { el.innerHTML = '<div class="empty-state" style="padding:1rem">No assignment configured for this lesson yet.</div>'; return; }
+        const a = data.assignment, s = data.submission;
         if (!s) { el.innerHTML = renderAssignmentForm(a); return; }
         el.innerHTML = renderSubmissionStatus(a, s);
-    } catch (err) {
-        el.innerHTML = `<div class="empty-state" style="padding:1rem;color:#dc2626">Failed to load assignment: ${esc(err.message)}</div>`;
-    }
+    } catch (err) { el.innerHTML = `<div class="empty-state" style="padding:1rem;color:#dc2626">Failed to load assignment: ${esc(err.message)}</div>`; }
 }
-
 function renderAssignmentForm(a) {
     const types = (a.allowed_file_types || 'pdf,docx').split(',').map(t => '.' + t.trim()).join(', ');
-    return `
-    <div style="background:#fff;border:2px solid #D9E5F2;border-radius:12px;padding:1.25rem">
-        <div style="font-weight:800;color:#0B1F3A;font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px">
-            <i class="fas fa-cloud-upload-alt" style="color:#087FF5"></i> Assignment Submission
-        </div>
-        <p style="font-size:0.85rem;color:#64748B;margin-bottom:1rem">Upload your completed assignment${a.allow_text ? ' or write your answer below' : ''}.</p>
-        <div style="font-size:0.75rem;color:#64748B;margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap">
-            <span><i class="fas fa-file"></i> Accepted: ${esc(a.allowed_file_types || 'pdf, docx')}</span>
-            <span><i class="fas fa-weight-hanging"></i> Max: ${a.max_file_mb || 10} MB</span>
-            <span><i class="fas fa-redo"></i> Attempts: ${a.max_attempts || 2}</span>
-            ${a.due_date ? `<span><i class="fas fa-clock"></i> Due: ${fmtDate(a.due_date)}</span>` : ''}
-        </div>
-        ${a.allow_file ? `
-        <div style="background:#F5F8FC;border:2px dashed #D9E5F2;border-radius:10px;padding:1.25rem;text-align:center;margin-bottom:1rem;cursor:pointer" onclick="document.getElementById('assignFileInput').click()">
-            <div style="font-size:1.8rem;color:#087FF5;margin-bottom:0.3rem"><i class="fas fa-paperclip"></i></div>
-            <div style="font-weight:600;color:#0B1F3A;font-size:0.9rem">Choose File</div>
-            <div style="font-size:0.75rem;color:#64748B;margin-top:0.2rem">${esc(types)}</div>
-            <input type="file" id="assignFileInput" accept="${esc(types)}" style="display:none" onchange="onAssignFilePick(this)">
-            <div id="assignFileChosen" style="margin-top:0.75rem;font-size:0.85rem;color:#0B1F3A;font-weight:600"></div>
-        </div>` : ''}
-        ${a.allow_text ? `<textarea id="assignTextAnswer" placeholder="Or write your answer here..." rows="4" style="width:100%;padding:10px;border:2px solid #D9E5F2;border-radius:8px;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;resize:vertical"></textarea>` : ''}
-        <button onclick="submitAssignment('${a.id}')" id="assignSubmitBtn" style="width:100%;padding:12px;background:#087FF5;color:#fff;border:none;border-radius:50px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit">
-            <i class="fas fa-paper-plane"></i> Submit Assignment
-        </button>
-        <div id="assignFlash" style="margin-top:0.75rem"></div>
-    </div>`;
+    return `<div style="background:#fff;border:2px solid #D9E5F2;border-radius:12px;padding:1.25rem"><div style="font-weight:800;color:#0B1F3A;font-size:1rem;margin-bottom:0.75rem;display:flex;align-items:center;gap:8px"><i class="fas fa-cloud-upload-alt" style="color:#087FF5"></i> Assignment Submission</div><p style="font-size:0.85rem;color:#64748B;margin-bottom:1rem">Upload your completed assignment${a.allow_text ? ' or write your answer below' : ''}.</p><div style="font-size:0.75rem;color:#64748B;margin-bottom:1rem;display:flex;gap:1rem;flex-wrap:wrap"><span><i class="fas fa-file"></i> Accepted: ${esc(a.allowed_file_types || 'pdf, docx')}</span><span><i class="fas fa-weight-hanging"></i> Max: ${a.max_file_mb || 10} MB</span><span><i class="fas fa-redo"></i> Attempts: ${a.max_attempts || 2}</span></div>${a.allow_file ? `<div style="background:#F5F8FC;border:2px dashed #D9E5F2;border-radius:10px;padding:1.25rem;text-align:center;margin-bottom:1rem;cursor:pointer" onclick="document.getElementById('assignFileInput').click()"><div style="font-size:1.8rem;color:#087FF5;margin-bottom:0.3rem"><i class="fas fa-paperclip"></i></div><div style="font-weight:600;color:#0B1F3A;font-size:0.9rem">Choose File</div><div style="font-size:0.75rem;color:#64748B;margin-top:0.2rem">${esc(types)}</div><input type="file" id="assignFileInput" accept="${esc(types)}" style="display:none" onchange="onAssignFilePick(this)"><div id="assignFileChosen" style="margin-top:0.75rem;font-size:0.85rem;color:#0B1F3A;font-weight:600"></div></div>` : ''}${a.allow_text ? `<textarea id="assignTextAnswer" placeholder="Or write your answer here..." rows="4" style="width:100%;padding:10px;border:2px solid #D9E5F2;border-radius:8px;font-family:inherit;font-size:0.9rem;margin-bottom:1rem;resize:vertical"></textarea>` : ''}<button onclick="submitAssignment('${a.id}')" id="assignSubmitBtn" style="width:100%;padding:12px;background:#087FF5;color:#fff;border:none;border-radius:50px;font-weight:700;font-size:0.9rem;cursor:pointer;font-family:inherit"><i class="fas fa-paper-plane"></i> Submit Assignment</button><div id="assignFlash" style="margin-top:0.75rem"></div></div>`;
 }
-
-function onAssignFilePick(input) {
-    const f = input.files && input.files[0];
-    const el = document.getElementById('assignFileChosen');
-    if (f && el) el.textContent = `📎 ${f.name} (${(f.size / 1024).toFixed(0)} KB)`;
-}
-
+function onAssignFilePick(input) { const f = input.files && input.files[0]; const el = document.getElementById('assignFileChosen'); if (f && el) el.textContent = `📎 ${f.name} (${(f.size / 1024).toFixed(0)} KB)`; }
 async function submitAssignment(assignmentId) {
     const btn = document.getElementById('assignSubmitBtn');
     const flash = document.getElementById('assignFlash');
@@ -2955,9 +2339,7 @@ async function submitAssignment(assignmentId) {
     const file = fileInput && fileInput.files ? fileInput.files[0] : null;
     const text = textAnswer ? textAnswer.value.trim() : '';
     if (!file && !text) { flash.innerHTML = '<div class="flash flash-danger">⚠️ Provide a file or text answer</div>'; return; }
-    btn.disabled = true;
-    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
-    flash.innerHTML = '';
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...'; flash.innerHTML = '';
     try {
         const fd = new FormData();
         if (file) fd.append('file', file);
@@ -2967,19 +2349,10 @@ async function submitAssignment(assignmentId) {
         if (!res.ok) throw new Error(data.error || 'Submission failed');
         flash.innerHTML = '<div class="flash flash-success">✅ Assignment submitted. Awaiting review.</div>';
         setTimeout(() => loadAssignmentPanel(nxLessonId), 800);
-    } catch (err) {
-        flash.innerHTML = `<div class="flash flash-danger">❌ ${esc(err.message)}</div>`;
-        btn.disabled = false;
-        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Assignment';
-    }
+    } catch (err) { flash.innerHTML = `<div class="flash flash-danger">❌ ${esc(err.message)}</div>`; btn.disabled = false; btn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Assignment'; }
 }
-
 function renderSubmissionStatus(a, s) {
-    const statusColors = {
-        submitted: { bg: '#FEF3C7', fg: '#92400E', icon: '🟡', label: 'Pending Review' },
-        reviewed:  { bg: '#DCFCE7', fg: '#166534', icon: '✅', label: 'Reviewed' },
-        returned:  { bg: '#FEE2E2', fg: '#991B1B', icon: '↩️', label: 'Returned for Correction' },
-    };
+    const statusColors = { submitted: { bg: '#FEF3C7', fg: '#92400E', icon: '🟡', label: 'Pending Review' }, reviewed: { bg: '#DCFCE7', fg: '#166534', icon: '✅', label: 'Reviewed' }, returned: { bg: '#FEE2E2', fg: '#991B1B', icon: '↩️', label: 'Returned for Correction' } };
     const st = statusColors[s.status] || statusColors.submitted;
     const canResubmit = (s.attempt_number < (a.max_attempts || 2)) && (s.status === 'returned' || (s.status === 'submitted' && a.allow_resubmission));
     let marksHTML = '';
@@ -2987,123 +2360,50 @@ function renderSubmissionStatus(a, s) {
     let feedbackHTML = '';
     if (s.feedback) feedbackHTML = `<div style="margin-top:1rem;padding:1rem;background:#EEF7FF;border-radius:10px;border-left:4px solid #087FF5"><div style="font-size:0.7rem;color:#087FF5;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Feedback</div><div style="color:#334155;font-size:0.9rem;white-space:pre-wrap">${esc(s.feedback)}</div></div>`;
     let returnHTML = '';
-    if (s.status === 'returned' && s.return_reason) returnHTML = `<div style="margin-top:1rem;padding:1rem;background:#FEE2E2;border-radius:10px;border-left:4px solid #DC2626"><div style="font-size:0.7rem;color:#991B1B;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Returned for Correction</div><div style="color:#7F1D1D;font-size:0.9rem">${esc(s.return_reason)}</div></div>`;
-    return `
-    <div style="background:#fff;border:2px solid #D9E5F2;border-radius:12px;padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem">
-            <div style="font-weight:800;color:#0B1F3A;font-size:1rem"><i class="fas fa-file-alt" style="color:#087FF5"></i> Your Submission</div>
-            <span style="background:${st.bg};color:${st.fg};padding:5px 12px;border-radius:50px;font-size:0.75rem;font-weight:700">${st.icon} ${st.label}</span>
-        </div>
-        <div style="font-size:0.85rem;color:#334155;line-height:1.7">
-            <div><strong>Attempt:</strong> ${s.attempt_number} of ${a.max_attempts}</div>
-            ${s.file_name ? `<div><strong>File:</strong> ${esc(s.file_name)} <a href="${esc(s.file_path)}" target="_blank" style="color:#087FF5;margin-left:6px"><i class="fas fa-download"></i> Download</a></div>` : ''}
-            ${s.text_answer ? `<div style="margin-top:0.5rem"><strong>Your answer:</strong><div style="margin-top:4px;white-space:pre-wrap;background:#F5F8FC;padding:0.75rem;border-radius:8px">${esc(s.text_answer)}</div></div>` : ''}
-        </div>
-        ${marksHTML}
-        ${feedbackHTML}
-        ${returnHTML}
-        ${canResubmit ? `<button onclick="showResubmitForm('${a.id}')" style="margin-top:1rem;padding:10px 22px;background:#EEF7FF;color:#087FF5;border:2px solid #087FF5;border-radius:50px;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit"><i class="fas fa-redo"></i> Resubmit</button>` : ''}
-    </div>`;
+    if (s.status === 'returned' && s.return_reason) returnHTML = `<div style="margin-top:1rem;padding:1rem;background:#FEE2E2;border-radius:10px;border-left:4px solid #DC2626"><div style="font-size:0.7rem;color:#991B1B;text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:4px">Returned</div><div style="color:#7F1D1D;font-size:0.9rem">${esc(s.return_reason)}</div></div>`;
+    return `<div style="background:#fff;border:2px solid #D9E5F2;border-radius:12px;padding:1.25rem"><div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1rem"><div style="font-weight:800;color:#0B1F3A;font-size:1rem"><i class="fas fa-file-alt" style="color:#087FF5"></i> Your Submission</div><span style="background:${st.bg};color:${st.fg};padding:5px 12px;border-radius:50px;font-size:0.75rem;font-weight:700">${st.icon} ${st.label}</span></div><div style="font-size:0.85rem;color:#334155;line-height:1.7"><div><strong>Attempt:</strong> ${s.attempt_number} of ${a.max_attempts}</div>${s.file_name ? `<div><strong>File:</strong> ${esc(s.file_name)} <a href="${esc(s.file_path)}" target="_blank" style="color:#087FF5;margin-left:6px"><i class="fas fa-download"></i> Download</a></div>` : ''}${s.text_answer ? `<div style="margin-top:0.5rem"><strong>Answer:</strong><div style="margin-top:4px;white-space:pre-wrap;background:#F5F8FC;padding:0.75rem;border-radius:8px">${esc(s.text_answer)}</div></div>` : ''}</div>${marksHTML}${feedbackHTML}${returnHTML}${canResubmit ? `<button onclick="showResubmitForm('${a.id}')" style="margin-top:1rem;padding:10px 22px;background:#EEF7FF;color:#087FF5;border:2px solid #087FF5;border-radius:50px;font-weight:700;font-size:0.85rem;cursor:pointer;font-family:inherit"><i class="fas fa-redo"></i> Resubmit</button>` : ''}</div>`;
 }
+function showResubmitForm(assignmentId) { const el = document.getElementById('assignmentPanel'); api(`/assignments/lesson/${nxLessonId}`).then(data => { el.innerHTML = renderAssignmentForm(data.assignment); }); }
 
-function showResubmitForm(assignmentId) {
-    const el = document.getElementById('assignmentPanel');
-    api(`/assignments/lesson/${nxLessonId}`).then(data => { el.innerHTML = renderAssignmentForm(data.assignment); });
-}
-
-/* ═══════════════════════════════════════════════════════════
-   ADMIN — ASSIGNMENTS REVIEW
-   ═══════════════════════════════════════════════════════════ */
 async function renderAdminAssignments() {
-    const c = document.getElementById('adminAssignmentsList');
-    if (!c) return;
+    const c = document.getElementById('adminAssignmentsList'); if (!c) return;
     c.innerHTML = '<div class="empty-state">Loading...</div>';
     try {
         const stats = await api('/assignments/admin/stats');
         const { submissions } = await api('/assignments/admin/list');
-        document.getElementById('adminAssignmentsStats').innerHTML = `
-            <div class="summary-card"><div class="num">${stats.total}</div><div class="lbl">Total</div></div>
-            <div class="summary-card gold"><div class="num">${stats.pending}</div><div class="lbl">Pending</div></div>
-            <div class="summary-card green"><div class="num">${stats.reviewed}</div><div class="lbl">Reviewed</div></div>
-            <div class="summary-card red"><div class="num">${stats.returned}</div><div class="lbl">Returned</div></div>`;
+        document.getElementById('adminAssignmentsStats').innerHTML = `<div class="summary-card"><div class="num">${stats.total}</div><div class="lbl">Total</div></div><div class="summary-card gold"><div class="num">${stats.pending}</div><div class="lbl">Pending</div></div><div class="summary-card green"><div class="num">${stats.reviewed}</div><div class="lbl">Reviewed</div></div><div class="summary-card red"><div class="num">${stats.returned}</div><div class="lbl">Returned</div></div>`;
         const badge = document.getElementById('adminAssignmentsCount');
         if (badge) badge.textContent = stats.pending || 0;
         if (!submissions.length) { c.innerHTML = '<div class="empty-state">No submissions yet.</div>'; return; }
-        c.innerHTML = `<div class="table-wrapper"><table style="min-width:900px"><thead>
-            <tr><th>Student</th><th>Course</th><th>Assignment</th><th>Attempt</th><th>Submitted</th><th>Marks</th><th>Status</th><th>Actions</th></tr>
-        </thead><tbody>${submissions.map(s => {
+        c.innerHTML = `<div class="table-wrapper"><table style="min-width:900px"><thead><tr><th>Student</th><th>Course</th><th>Assignment</th><th>Attempt</th><th>Submitted</th><th>Marks</th><th>Status</th><th>Actions</th></tr></thead><tbody>${submissions.map(s => {
             const statusMap = { submitted: { cls: 'pending', label: '🟡 Pending' }, reviewed: { cls: 'approved', label: '✅ Reviewed' }, returned: { cls: 'rejected', label: '↩️ Returned' } };
             const st = statusMap[s.status] || statusMap.submitted;
             const marks = s.marks != null ? `${s.marks}/${s.max_marks}` : '—';
-            return `<tr>
-                <td><strong>${esc(s.student_name)}</strong><div style="font-size:0.75rem;color:#64748B">${esc(s.student_email)}</div></td>
-                <td>${esc(s.course_title || '—')}</td>
-                <td><strong>${esc(s.assignment_title)}</strong><div style="font-size:0.75rem;color:#64748B">${esc(s.lesson_title || '')}</div></td>
-                <td>${s.attempt_number}</td>
-                <td>${fmtDate(s.marked_at || s.returned_at || '')}</td>
-                <td><strong>${marks}</strong></td>
-                <td><span class="status-pill ${st.cls}">${st.label}</span></td>
-                <td><div class="student-actions">
-                    <button class="action-btn view" onclick="reviewSubmission('${s.id}')" title="Review"><i class="fas fa-eye"></i></button>
-                    ${s.file_path ? `<a href="${esc(s.file_path)}" target="_blank" class="action-btn documents" title="Download"><i class="fas fa-download"></i></a>` : ''}
-                </div></td>
-            </tr>`;
+            return `<tr><td><strong>${esc(s.student_name)}</strong></td><td>${esc(s.course_title || '—')}</td><td><strong>${esc(s.assignment_title)}</strong></td><td>${s.attempt_number}</td><td>${fmtDate(s.marked_at || s.returned_at || '')}</td><td><strong>${marks}</strong></td><td><span class="status-pill ${st.cls}">${st.label}</span></td><td><div class="student-actions"><button class="action-btn view" onclick="reviewSubmission('${s.id}')"><i class="fas fa-eye"></i></button>${s.file_path ? `<a href="${esc(s.file_path)}" target="_blank" class="action-btn documents"><i class="fas fa-download"></i></a>` : ''}</div></td></tr>`;
         }).join('')}</tbody></table></div>`;
     } catch (err) { c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`; }
 }
-
 async function reviewSubmission(submissionId) {
     try {
         const { submission: s } = await api(`/assignments/admin/submissions/${submissionId}`);
-        document.getElementById('appDetailsContent').innerHTML = `
-            <h2>Review Submission</h2>
-            <div style="background:#F5F8FC;padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem">
-                <div><strong>Student:</strong> ${esc(s.student_name)} (${esc(s.student_email)})</div>
-                <div><strong>Course:</strong> ${esc(s.course_title)}</div>
-                <div><strong>Assignment:</strong> ${esc(s.assignment_title)}</div>
-                <div><strong>Attempt:</strong> ${s.attempt_number}</div>
-                <div><strong>Status:</strong> ${esc(s.status)}</div>
-            </div>
-            ${s.file_path ? `<div style="margin-bottom:1rem"><a href="${esc(s.file_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Download Submission</a></div>` : ''}
-            ${s.text_answer ? `<div style="background:#FEF3C7;padding:1rem;border-radius:8px;margin-bottom:1rem;white-space:pre-wrap">${esc(s.text_answer)}</div>` : ''}
-            <div class="form-row"><div class="form-group"><label>Marks (0 – ${s.max_marks})</label><input type="number" id="rvMarks" min="0" max="${s.max_marks}" value="${s.marks || ''}" step="0.5"></div></div>
-            <div class="form-group"><label>Feedback</label><textarea id="rvFeedback" rows="4" placeholder="Comments for the student...">${esc(s.feedback || '')}</textarea></div>
-            <div class="form-group"><label>Return reason (only for returning)</label><textarea id="rvReturnReason" rows="2" placeholder="If returning for correction...">${esc(s.return_reason || '')}</textarea></div>
-        `;
-        document.getElementById('appDetailsFooter').innerHTML = `
-            <button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button>
-            <button class="btn btn-warning" onclick="returnSubmission('${submissionId}')"><i class="fas fa-undo"></i> Return</button>
-            <button class="btn btn-success" onclick="saveReview('${submissionId}')"><i class="fas fa-check"></i> Save Review</button>
-        `;
+        document.getElementById('appDetailsContent').innerHTML = `<h2>Review Submission</h2><div style="background:#F5F8FC;padding:1rem;border-radius:12px;margin-bottom:1rem;font-size:0.9rem"><div><strong>Student:</strong> ${esc(s.student_name)} (${esc(s.student_email)})</div><div><strong>Course:</strong> ${esc(s.course_title)}</div><div><strong>Assignment:</strong> ${esc(s.assignment_title)}</div><div><strong>Attempt:</strong> ${s.attempt_number}</div></div>${s.file_path ? `<div style="margin-bottom:1rem"><a href="${esc(s.file_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> Download</a></div>` : ''}${s.text_answer ? `<div style="background:#FEF3C7;padding:1rem;border-radius:8px;margin-bottom:1rem;white-space:pre-wrap">${esc(s.text_answer)}</div>` : ''}<div class="form-group"><label>Marks (0 – ${s.max_marks})</label><input type="number" id="rvMarks" min="0" max="${s.max_marks}" value="${s.marks || ''}" step="0.5"></div><div class="form-group"><label>Feedback</label><textarea id="rvFeedback" rows="4">${esc(s.feedback || '')}</textarea></div><div class="form-group"><label>Return reason (only for returning)</label><textarea id="rvReturnReason" rows="2">${esc(s.return_reason || '')}</textarea></div>`;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button><button class="btn btn-warning" onclick="returnSubmission('${submissionId}')"><i class="fas fa-undo"></i> Return</button><button class="btn btn-success" onclick="saveReview('${submissionId}')"><i class="fas fa-check"></i> Save Review</button>`;
         document.getElementById('appDetailsModal').classList.add('active');
     } catch (err) { alert('❌ ' + err.message); }
 }
-
 async function saveReview(submissionId) {
     const marks = document.getElementById('rvMarks').value;
     const feedback = document.getElementById('rvFeedback').value;
-    try {
-        await api(`/assignments/admin/submissions/${submissionId}/review`, { method: 'POST', body: { marks: parseFloat(marks), feedback } });
-        alert('✅ Review saved');
-        closeAppDetailsModal();
-        await renderAdminAssignments();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    try { await api(`/assignments/admin/submissions/${submissionId}/review`, { method: 'POST', body: { marks: parseFloat(marks), feedback } }); alert('✅ Review saved'); closeAppDetailsModal(); await renderAdminAssignments(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
-
 async function returnSubmission(submissionId) {
     const reason = document.getElementById('rvReturnReason').value.trim();
     if (!reason) { alert('⚠️ Please provide a reason'); return; }
-    try {
-        await api(`/assignments/admin/submissions/${submissionId}/return`, { method: 'POST', body: { reason } });
-        alert('↩️ Returned to student');
-        closeAppDetailsModal();
-        await renderAdminAssignments();
-    } catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
+    try { await api(`/assignments/admin/submissions/${submissionId}/return`, { method: 'POST', body: { reason } }); alert('↩️ Returned'); closeAppDetailsModal(); await renderAdminAssignments(); }
+    catch (err) { alert('❌ ' + (err.data?.error || err.message)); }
 }
 
-/* ═══════════════════════════════════════════════════════════
-   UTILITIES / BOOT
-   ═══════════════════════════════════════════════════════════ */
 async function updateCounts() {
     if (!currentUser) return;
     try {
@@ -3127,32 +2427,12 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
 
 (async function boot() {
     await bootSession();
+    loadHomeStats();
     if (currentUser) showApp();
     else goHome();
 })();
-  /* ═══════════════════════════════════════════════════════════
-   LOAD REAL HOMEPAGE STATS
-   ═══════════════════════════════════════════════════════════ */
-async function loadHomeStats() {
-    try {
-        const res = await fetch(`${API_BASE}/public/stats`);
-        const data = await res.json();
-        const s1 = document.getElementById('statStudents');
-        const s2 = document.getElementById('statCourses');
-        const s3 = document.getElementById('statCertificates');
-        const s4 = document.getElementById('statGroups');
-        if (s1) s1.textContent = data.students ?? '—';
-        if (s2) s2.textContent = data.courses ?? '—';
-        if (s3) s3.textContent = data.certificates ?? '—';
-        if (s4) s4.textContent = data.groups ?? '—';
-    } catch (e) {
-        // Fail silently — keep the em dash
-    }
-}
-// Load when landing is shown
-document.addEventListener('DOMContentLoaded', loadHomeStats);
 
-console.log('🎓 Nexora Academy v10.1 — Payment Access + Assignments + Pro Layout');
+console.log('🎓 Nexora Academy v10.2 — Clean rebuild with real stats');
 </script>
 <script src="certificate.js"></script>
 </body>
