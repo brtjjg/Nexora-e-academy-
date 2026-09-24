@@ -60,31 +60,36 @@ router.get('/:id', asyncHandler(async (req, res) => {
 // POST /api/courses — create
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const {
-    title, code, category, level, description,
-    duration, cover_image_url, price, initial_payment_percent,
-    cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
-    status,
-} = req.body;
+        title, code, category, level, description,
+        duration, cover_image_url, price, initial_payment_percent,
+        cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
+        status
+    } = req.body;
+    if (!title) return res.status(400).json({ error: 'Title required' });
 
-    `INSERT INTO courses (title, code, category, level, description,
-    duration, cover_image_url, price,
-    initial_payment_percent, cat_pass_mark, exam_pass_mark,
-    cat_unlock_hours, exam_unlock_hours, status, created_by)
- VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
- RETURNING *`,
-[title, code || null, category || null, level || null,
- description || null, duration || null,
- cover_image_url || null, price || 0, initial_payment_percent || 25,
- cat_pass_mark || 50, exam_pass_mark || 50,
- cat_unlock_hours || 24, exam_unlock_hours || 72,
- status || 'draft', req.user.user_id]
+    const r = await db.query(
+        `INSERT INTO courses (title, code, category, level, description,
+            duration, cover_image_url, price,
+            initial_payment_percent, cat_pass_mark, exam_pass_mark,
+            cat_unlock_hours, exam_unlock_hours, status, created_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15)
+         RETURNING *`,
+        [title, code || null, category || null, level || null,
+         description || null, duration || null,
+         cover_image_url || null, price || 0, initial_payment_percent || 25,
+         cat_pass_mark || 50, exam_pass_mark || 50,
+         cat_unlock_hours || 24, exam_unlock_hours || 72,
+         status || 'draft', req.user.user_id]
+    );
+    res.status(201).json({ course: r.rows[0] });
+}));
 
 // PUT /api/courses/:id — update
 router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const fields = ['title','code','category','level','description',
-    'duration','cover_image_url','price',
-    'initial_payment_percent','cat_pass_mark','exam_pass_mark',
-    'cat_unlock_hours','exam_unlock_hours','status'];
+        'duration','cover_image_url','price',
+        'initial_payment_percent','cat_pass_mark','exam_pass_mark',
+        'cat_unlock_hours','exam_unlock_hours','status'];
     const updates = [];
     const values = [];
     fields.forEach(f => {
@@ -124,11 +129,7 @@ router.post('/:id/modules', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ module: r.rows[0] });
 }));
 
-/* ═══════════════════════════════════════════════════════════
-   LESSONS — with automatic assignment creation
-   ═══════════════════════════════════════════════════════════ */
-
-// POST /api/courses/:id/lessons — add lesson (+ assignment if provided)
+// POST /api/courses/:id/lessons — add lesson (+ auto assignment)
 router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
     const { module_id, title, description, position, notes, assignment,
             video_url, published } = req.body;
@@ -138,7 +139,6 @@ router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
 
     const adminId = req.user.user_id || req.user.id;
 
-    // Insert lesson
     const r = await db.query(
         `INSERT INTO lessons (module_id, title, description, position, notes,
             assignment, video_url, published)
@@ -152,18 +152,17 @@ router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
 
     const lesson = r.rows[0];
 
-    // If a lesson has assignment text, auto-create the assignment record
+    // Auto-create assignment if text is provided
     if (assignment && assignment.trim().length > 0) {
         try {
-            // Get course_id from module
             const mod = await db.query(
                 `SELECT course_id FROM modules WHERE id = $1`,
                 [module_id]
             );
-            const courseId = mod.rows[0]?.course_id;
+            const courseId = mod.rows[0] && mod.rows[0].course_id;
             if (courseId) {
-                await db.query(`
-                    INSERT INTO assignments (
+                await db.query(
+                    `INSERT INTO assignments (
                         course_id, module_id, lesson_id,
                         title, instructions, max_marks,
                         allow_text, allow_file, allowed_file_types, max_file_mb,
@@ -171,13 +170,13 @@ router.post('/:id/lessons', requireAdmin, asyncHandler(async (req, res) => {
                         status, created_by
                     )
                     VALUES ($1, $2, $3, $4, $5, 20, TRUE, TRUE, 'pdf,docx,jpg,png', 10, TRUE, 2, 'published', $6)
-                    ON CONFLICT DO NOTHING
-                `, [courseId, module_id, lesson.id, title, assignment, adminId]);
+                    ON CONFLICT DO NOTHING`,
+                    [courseId, module_id, lesson.id, title, assignment, adminId]
+                );
                 console.log('[lesson:create] Auto-created assignment for lesson', lesson.id);
             }
         } catch (err) {
-            console.error('[lesson:create] Failed to create assignment:', err.message);
-            // Don't fail the whole lesson creation if assignment fails
+            console.error('[lesson:create] Assignment creation failed:', err.message);
         }
     }
 
@@ -207,10 +206,8 @@ router.put('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res)
     if (!r.rows.length) return res.status(404).json({ error: 'Lesson not found' });
     const lesson = r.rows[0];
 
-    // Sync assignment record
     if ('assignment' in req.body) {
         try {
-            // Check if assignment already exists
             const existing = await db.query(
                 `SELECT id FROM assignments WHERE lesson_id = $1`,
                 [lessonId]
@@ -218,32 +215,31 @@ router.put('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res)
 
             if (existing.rows.length) {
                 if (req.body.assignment && req.body.assignment.trim().length > 0) {
-                    // Update the assignment instructions + title
-                    await db.query(`
-                        UPDATE assignments
-                        SET instructions = $1, title = $2, updated_at = NOW()
-                        WHERE lesson_id = $3
-                    `, [req.body.assignment, lesson.title, lessonId]);
+                    await db.query(
+                        `UPDATE assignments
+                         SET instructions = $1, title = $2, updated_at = NOW()
+                         WHERE lesson_id = $3`,
+                        [req.body.assignment, lesson.title, lessonId]
+                    );
                 }
-                // If assignment text is empty, leave the assignment row (admin can delete separately)
             } else if (req.body.assignment && req.body.assignment.trim().length > 0) {
-                // Create new assignment
                 const mod = await db.query(
                     `SELECT course_id FROM modules WHERE id = $1`,
                     [lesson.module_id]
                 );
-                const courseId = mod.rows[0]?.course_id;
+                const courseId = mod.rows[0] && mod.rows[0].course_id;
                 if (courseId) {
-                    await db.query(`
-                        INSERT INTO assignments (
+                    await db.query(
+                        `INSERT INTO assignments (
                             course_id, module_id, lesson_id,
                             title, instructions, max_marks,
                             allow_text, allow_file, allowed_file_types, max_file_mb,
                             allow_resubmission, max_attempts,
                             status, created_by
                         )
-                        VALUES ($1, $2, $3, $4, $5, 20, TRUE, TRUE, 'pdf,docx,jpg,png', 10, TRUE, 2, 'published', $6)
-                    `, [courseId, lesson.module_id, lesson.id, lesson.title, req.body.assignment, adminId]);
+                        VALUES ($1, $2, $3, $4, $5, 20, TRUE, TRUE, 'pdf,docx,jpg,png', 10, TRUE, 2, 'published', $6)`,
+                        [courseId, lesson.module_id, lesson.id, lesson.title, req.body.assignment, adminId]
+                    );
                     console.log('[lesson:update] Auto-created assignment for lesson', lesson.id);
                 }
             }
@@ -255,19 +251,14 @@ router.put('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res)
     res.json({ lesson });
 }));
 
-// DELETE /api/courses/:id/lessons/:lessonId — delete lesson (+ cascade assignment)
+// DELETE /api/courses/:id/lessons/:lessonId — delete lesson (+ assignment)
 router.delete('/:id/lessons/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
     const { lessonId } = req.params;
-    // Delete assignment first (FK has ON DELETE SET NULL, but we want clean removal)
     await db.query(`DELETE FROM assignments WHERE lesson_id = $1`, [lessonId]).catch(() => {});
     const r = await db.query(`DELETE FROM lessons WHERE id = $1 RETURNING id`, [lessonId]);
     if (!r.rows.length) return res.status(404).json({ error: 'Lesson not found' });
     res.json({ ok: true });
 }));
-
-/* ═══════════════════════════════════════════════════════════
-   ASSIGNMENT SETTINGS — admin can fine-tune after creation
-   ═══════════════════════════════════════════════════════════ */
 
 // PUT /api/courses/:id/assignments/:lessonId — update assignment settings
 router.put('/:id/assignments/:lessonId', requireAdmin, asyncHandler(async (req, res) => {
@@ -275,17 +266,19 @@ router.put('/:id/assignments/:lessonId', requireAdmin, asyncHandler(async (req, 
     const {
         title, instructions, max_marks,
         allow_text, allow_file, allowed_file_types, max_file_mb,
-        due_date, allow_resubmission, max_attempts, status,
+        due_date, allow_resubmission, max_attempts, status
     } = req.body;
 
     const updates = [];
     const values = [];
-    const map = { title, instructions, max_marks, allow_text, allow_file,
-                  allowed_file_types, max_file_mb, due_date,
-                  allow_resubmission, max_attempts, status };
-    Object.entries(map).forEach(([key, val]) => {
-        if (val !== undefined) {
-            values.push(val);
+    const map = {
+        title, instructions, max_marks, allow_text, allow_file,
+        allowed_file_types, max_file_mb, due_date,
+        allow_resubmission, max_attempts, status
+    };
+    Object.keys(map).forEach(key => {
+        if (map[key] !== undefined) {
+            values.push(map[key]);
             updates.push(`${key} = $${values.length}`);
         }
     });
@@ -313,9 +306,7 @@ router.get('/:id/assignments/:lessonId', requireAdmin, asyncHandler(async (req, 
     res.json({ assignment: r.rows[0] });
 }));
 
-/* ═══════════════════════════════════════════════════════════
-   QUESTIONS (exam / CAT)
-   ═══════════════════════════════════════════════════════════ */
+// POST /api/courses/:id/questions — add exam or CAT question
 router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     const { question_type, question_text, options, correct_index, marks, position } = req.body;
     if (!['exam','cat'].includes(question_type)) {
@@ -337,9 +328,7 @@ router.post('/:id/questions', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ question: r.rows[0] });
 }));
 
-/* ═══════════════════════════════════════════════════════════
-   DISCOUNT
-   ═══════════════════════════════════════════════════════════ */
+// PUT /api/courses/:id/discount — create or update discount
 router.put('/:id/discount', requireAdmin, asyncHandler(async (req, res) => {
     const { enabled, original_price, discount_price, label, ends_at } = req.body;
     if (enabled && (!discount_price || discount_price >= original_price)) {
