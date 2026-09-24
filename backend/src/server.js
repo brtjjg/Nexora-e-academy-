@@ -94,7 +94,8 @@ app.use('/api/admin',        loadRoute('admin'));
 app.use('/api/groups',       loadRoute('groups')); 
 app.use('/api/notifications', loadRoute('notifications'));
 app.use('/api/uploads',      loadRoute('uploads')); 
-app.use('/api/assignments',  loadRoute('assignments')); 
+app.use('/api/assignments',  loadRoute('assignments'));
+app.use('/api/public',       loadRoute('public'));
 
 // Simple root handler — if this works, Express is alive
 app.get('/', (req, res) => {
@@ -108,7 +109,7 @@ app.get('/', (req, res) => {
 
 app.get('/api/health', (req, res) => {
     const routeStatus = {};
-    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','groups','notifications','assignments']
+    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','groups','notifications','assignments','public']
         .forEach(name => {
             try {
                 const mod = require(`./routes/${name}`);
