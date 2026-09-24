@@ -1513,8 +1513,7 @@ function renderCourseCardHTML(course, mode, extra = {}) {
     let actionBtn;
     if (mode === 'public') actionBtn = `<button class="btn btn-primary btn-sm" onclick="showRegister()">Enroll</button>`;
     else if (mode === 'admin') actionBtn = `<div class="course-card-actions"><button class="btn btn-primary btn-sm" onclick="editCourse('${course.id}')"><i class="fas fa-edit"></i></button><button class="btn btn-warning btn-sm" onclick="toggleCourseStatus('${course.id}', '${course.status}')"><i class="fas fa-${course.status === 'published' ? 'eye-slash' : 'eye'}"></i></button><button class="btn btn-danger btn-sm" onclick="deleteCourse('${course.id}')"><i class="fas fa-trash"></i></button></div>`;
-    else if (mode === 'student') actionBtn = extra.enrolled ? `<button class="btn btn-primary btn-sm" onclick="openCourseViewer('${course.id}')"><i class="fas fa-play-circle"></i> Open</button>` : `<button class="btn btn-primary btn-sm" onclick="enrollInCourse('${course.id}')">Enroll</button>`;
-    return `<div class="course-card"><div class="course-image">${course.cover_image_url ? `<img src="${esc(course.cover_image_url)}" style="width:100%;height:100%;object-fit:cover">` : ''}</div><div class="course-body"><h3 class="course-title">${esc(course.title)}</h3><div class="course-meta"><span><i class="fas fa-user-tie"></i> ${esc(course.instructor_name || 'N/A')}</span><span><i class="fas fa-clock"></i> ${esc(course.duration || 'N/A')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
+    <div class="course-meta"><span><i class="fas fa-clock"></i> ${esc(course.duration || 'Self-paced')}</span><span><i class="fas fa-signal"></i> ${esc(course.level || 'Beginner')}</span></div><div style="font-size:0.85rem;color:var(--text-secondary);margin:0.3rem 0"><i class="fas fa-layer-group"></i> ${totalModules} modules • ${totalLessons} lessons</div><div style="display:flex;justify-content:space-between;align-items:center;margin-top:0.6rem;gap:0.5rem;flex-wrap:wrap">${priceHTML}${actionBtn}</div></div></div>`;
 }
 async function renderPublicCourses() {
     const c = document.getElementById('allCoursesList');
@@ -3131,6 +3130,27 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
     if (currentUser) showApp();
     else goHome();
 })();
+  /* ═══════════════════════════════════════════════════════════
+   LOAD REAL HOMEPAGE STATS
+   ═══════════════════════════════════════════════════════════ */
+async function loadHomeStats() {
+    try {
+        const res = await fetch(`${API_BASE}/public/stats`);
+        const data = await res.json();
+        const s1 = document.getElementById('statStudents');
+        const s2 = document.getElementById('statCourses');
+        const s3 = document.getElementById('statCertificates');
+        const s4 = document.getElementById('statGroups');
+        if (s1) s1.textContent = data.students ?? '—';
+        if (s2) s2.textContent = data.courses ?? '—';
+        if (s3) s3.textContent = data.certificates ?? '—';
+        if (s4) s4.textContent = data.groups ?? '—';
+    } catch (e) {
+        // Fail silently — keep the em dash
+    }
+}
+// Load when landing is shown
+document.addEventListener('DOMContentLoaded', loadHomeStats);
 
 console.log('🎓 Nexora Academy v10.1 — Payment Access + Assignments + Pro Layout');
 </script>
