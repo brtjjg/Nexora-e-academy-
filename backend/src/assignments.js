@@ -84,7 +84,7 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT a.*, c.title AS course_title, m.title AS module_title,
                 (SELECT COUNT(*)::int FROM assignment_submissions s WHERE s.assignment_id = a.id) AS submission_count,
-                (SELECT COUNT(*)::int FROM assignment_submissions s WHERE s.assignment_id = a.id AND s.status = 'marked') AS marked_count
+                (SELECT COUNT(*)::int FROM assignment_submissions s WHERE s.assignment_id = a.id AND s.status = 'graded') AS graded_count
          FROM assignments a
          LEFT JOIN courses c ON c.id = a.course_id
          LEFT JOIN modules m ON m.id = a.module_id
@@ -139,11 +139,11 @@ router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
     const a = r.rows;
     const total = a.length;
     const submitted = a.filter(x => x.submission_status).length;
-    const marked = a.filter(x => x.submission_status === 'marked').length;
-    const markedList = a.filter(x => x.submission_status === 'marked' && x.percentage != null);
-    const average = markedList.length ? markedList.reduce((s, x) => s + parseFloat(x.percentage), 0) / markedList.length : 0;
+    const graded = a.filter(x => x.submission_status === 'graded').length;
+    const gradedList = a.filter(x => x.submission_status === 'graded' && x.percentage != null);
+    const average = gradedList.length ? gradedList.reduce((s, x) => s + parseFloat(x.percentage), 0) / gradedList.length : 0;
     res.json({
-        summary: { total, submitted, marked, pending: submitted - marked, average_percentage: parseFloat(average.toFixed(2)) },
+        summary: { total, submitted, graded, pending: submitted - graded, average_percentage: parseFloat(average.toFixed(2)) },
         assignments: a,
     });
 }));
@@ -155,7 +155,7 @@ router.get('/submissions/list', requireAdmin, asyncHandler(async (req, res) => {
     const { status, assignment_id } = req.query;
     const conditions = []; const values = [];
     if (status === 'pending') conditions.push(`s.status IN ('submitted','resubmitted')`);
-    else if (status === 'marked') conditions.push(`s.status = 'marked'`);
+    else if (status === 'graded') conditions.push(`s.status = 'graded'`);
     else if (status === 'returned') conditions.push(`s.status = 'returned'`);
     if (assignment_id) { values.push(assignment_id); conditions.push(`s.assignment_id = $${values.length}`); }
     const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
@@ -214,7 +214,7 @@ router.get('/admin/stats', requireAdmin, asyncHandler(async (req, res) => {
             `SELECT 
                 COUNT(*)::int AS total,
                 COUNT(*) FILTER (WHERE status IN ('submitted','resubmitted'))::int AS pending,
-                COUNT(*) FILTER (WHERE status = 'marked')::int AS reviewed,
+                COUNT(*) FILTER (WHERE status = 'graded')::int AS reviewed,
                 COUNT(*) FILTER (WHERE status = 'returned')::int AS returned
              FROM assignment_submissions`
         );
@@ -238,7 +238,7 @@ router.get('/admin/list', requireAdmin, asyncHandler(async (req, res) => {
         const { status } = req.query;
         const conditions = []; const values = [];
         if (status === 'pending') conditions.push(`s.status IN ('submitted','resubmitted')`);
-        else if (status === 'marked') conditions.push(`s.status = 'marked'`);
+        else if (status === 'graded') conditions.push(`s.status = 'graded'`);
         else if (status === 'returned') conditions.push(`s.status = 'returned'`);
         const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
         const r = await db.query(
@@ -319,13 +319,15 @@ router.post('/submissions/:id/mark', requireAdmin, asyncHandler(async (req, res)
         const m = parseFloat(marks);
         if (isNaN(m) || m < 0 || m > sub.max_marks) { await client.query('ROLLBACK'); return res.status(400).json({ error: `0 to ${sub.max_marks}` }); }
         const percentage = money((m / sub.max_marks) * 100);
-        const newStatus = release ? 'marked' : 'submitted';
+        
+        // ✅ FIXED: 'graded' instead of 'marked'
+        const newStatus = release ? 'graded' : 'submitted';
 
         await client.query(
             `UPDATE assignment_submissions SET marks=$1, percentage=$2, feedback=$3, status=$4, marked_at=NOW(), marked_by=$5 WHERE id=$6`,
             [m, percentage, feedback || null, newStatus, req.user.user_id, req.params.id]
         );
-        await logAssignmentHistory(client, req.params.id, newStatus === 'marked' ? 'marked' : 'graded', `Marks: ${m}/${sub.max_marks}${release ? ' (released)' : ''}`, req.user.user_id);
+        await logAssignmentHistory(client, req.params.id, newStatus, `Marks: ${m}/${sub.max_marks}${release ? ' (released)' : ''}`, req.user.user_id);
 
         if (release) {
             await notify(client, sub.student_id, 'assignment_marked', 'Assignment marked', `${sub.assignment_title}: ${m}/${sub.max_marks} (${percentage.toFixed(1)}%)`, `/student/assignments/${sub.assignment_id}`);
@@ -361,11 +363,12 @@ router.post('/admin/submissions/:id/review', requireAdmin, asyncHandler(async (r
             await client.query('ROLLBACK'); 
             return res.status(400).json({ error: `Marks must be between 0 and ${sub.max_marks}` }); 
         }
-        const percentage = money((m / sub.max_marks) * 100);
+        const percentage = (m / sub.max_marks) * 100;
         
+        // ✅ FIXED: 'graded' instead of 'marked' to satisfy check constraint
         await client.query(
             `UPDATE assignment_submissions 
-             SET marks = $1, percentage = $2, feedback = $3, status = 'marked', 
+             SET marks = $1, percentage = $2, feedback = $3, status = 'graded', 
                  marked_at = NOW(), marked_by = $4 
              WHERE id = $5`,
             [m, percentage, feedback || null, req.user.user_id, req.params.id]
@@ -374,7 +377,7 @@ router.post('/admin/submissions/:id/review', requireAdmin, asyncHandler(async (r
         await logAssignmentHistory(
             client, 
             req.params.id, 
-            'reviewed', 
+            'graded', 
             `Marks: ${m}/${sub.max_marks} - ${feedback || 'No feedback'}`, 
             req.user.user_id
         );
@@ -392,7 +395,8 @@ router.post('/admin/submissions/:id/review', requireAdmin, asyncHandler(async (r
         res.json({ ok: true, marks: m, percentage, message: 'Review saved' });
     } catch (err) { 
         await client.query('ROLLBACK'); 
-        throw err; 
+        console.error('[REVIEW ERROR]', err.message, err.detail, err.hint);
+        res.status(500).json({ error: err.message, detail: err.detail, hint: err.hint });
     } finally { 
         client.release(); 
     }
@@ -441,7 +445,7 @@ router.get('/course/:courseId/grade', requireAuth, asyncHandler(async (req, res)
     const details = r.rows.map(a => {
         const w = parseFloat(a.weight_percent || 0);
         totalWeight += w;
-        const pct = a.status === 'marked' && a.percentage != null ? parseFloat(a.percentage) : null;
+        const pct = a.status === 'graded' && a.percentage != null ? parseFloat(a.percentage) : null;
         const contrib = pct != null ? (pct * w) / 100 : 0;
         weighted += contrib;
         return { ...a, pct, weight: w, contribution: contrib };
