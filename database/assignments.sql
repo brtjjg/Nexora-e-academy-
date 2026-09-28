@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS assignments (
     due_date        TIMESTAMPTZ,
     allow_resubmission BOOLEAN NOT NULL DEFAULT TRUE,
     max_attempts    INTEGER NOT NULL DEFAULT 2 CHECK (max_attempts > 0),
-    status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','archived')),
+    status          TEXT NOT NULL DEFAULT 'draft' CHECK (status IN ('draft','published','archived','unpublished')),
     weight_percent  NUMERIC(5,2) NOT NULL DEFAULT 0,
     position        INTEGER NOT NULL DEFAULT 1,
     late_policy     TEXT DEFAULT 'allow',
@@ -80,15 +80,24 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
--- ============================================
--- Ensure constraints are up-to-date on existing databases
--- ============================================
+
+-- ============================================================
+-- ENSURE CONSTRAINTS ARE UPDATED ON EXISTING DATABASES
+-- This block runs every deploy and drops/re-adds the constraint
+-- so that adding new statuses in the future is always possible.
+-- ============================================================
 DO $$
 BEGIN
-    -- Drop old constraint if it exists
     ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check;
-    -- Re-add with all needed statuses
     ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check 
         CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'));
+EXCEPTION WHEN others THEN NULL;
+END $$;
+
+DO $$
+BEGIN
+    ALTER TABLE assignments DROP CONSTRAINT IF EXISTS assignments_status_check;
+    ALTER TABLE assignments ADD CONSTRAINT assignments_status_check 
+        CHECK (status IN ('draft','published','archived','unpublished'));
 EXCEPTION WHEN others THEN NULL;
 END $$;
