@@ -202,4 +202,47 @@ router.get('/activities', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ activities: r.rows });
 }));
 
+// ============================================================
+// DEBUG: Show current constraint + force fix + test update
+// Remove after debugging is complete
+// ============================================================
+router.get('/debug-fix-review', requireAdmin, asyncHandler(async (req, res) => {
+    const testId = '8fbc0222-03a0-4db6-b7c4-928e66db0151';
+    const client = await db.getClient();
+    try {
+        const c = await db.query(`SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'assignment_submissions_status_check'`);
+        
+        await db.query(`ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check`);
+        await db.query(`ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'))`);
+        
+        const verify = await db.query(`SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'assignment_submissions_status_check'`);
+        
+        await client.query('BEGIN');
+        await client.query(
+            `UPDATE assignment_submissions SET status='graded', marks=15, percentage=75, feedback='debug test', marked_at=NOW(), marked_by=$1 WHERE id=$2`,
+            [req.user.user_id, testId]
+        );
+        await client.query('COMMIT');
+        
+        res.json({ 
+            ok: true, 
+            constraintBefore: c.rows[0]?.def || 'NOT FOUND',
+            constraintAfter: verify.rows[0]?.def || 'NOT FOUND',
+            message: 'Update succeeded after constraint drop+readd'
+        });
+    } catch (err) {
+        await client.query('ROLLBACK').catch(()=>{});
+        res.status(500).json({ 
+            error: err.message, 
+            detail: err.detail, 
+            code: err.code,
+            constraint: err.constraint,
+            column: err.column,
+            table: err.table
+        });
+    } finally {
+        client.release();
+    }
+}));
+
 module.exports = router;
