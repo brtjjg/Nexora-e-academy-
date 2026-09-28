@@ -202,4 +202,45 @@ router.get('/activities', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ activities: r.rows });
 }));
 
+// ================================================================
+// TEMPORARY: Fix assignment_submissions status constraint
+// Call ONCE from Termux:
+//   curl -b cookies.txt "https://nexora-api-sskg.onrender.com/api/admin/fix-assignment-constraint"
+// Then DELETE this route and push again.
+// ================================================================
+router.get('/fix-assignment-constraint', requireAdmin, asyncHandler(async (req, res) => {
+    try {
+        // Fix assignment_submissions status constraint
+        await db.query(`ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check`);
+        await db.query(
+            `ALTER TABLE assignment_submissions 
+             ADD CONSTRAINT assignment_submissions_status_check 
+             CHECK (status IN ('submitted', 'resubmitted', 'graded', 'marked', 'returned', 'pending', 'draft'))`
+        );
+
+        // Fix assignments status constraint (in case it also has a strict one)
+        await db.query(`ALTER TABLE assignments DROP CONSTRAINT IF EXISTS assignments_status_check`);
+        await db.query(
+            `ALTER TABLE assignments 
+             ADD CONSTRAINT assignments_status_check 
+             CHECK (status IN ('draft', 'published', 'archived', 'unpublished'))`
+        );
+
+        // Return current constraints so we can verify
+        const verify = await db.query(
+            `SELECT conname, pg_get_constraintdef(oid) AS def
+             FROM pg_constraint 
+             WHERE conname IN ('assignment_submissions_status_check', 'assignments_status_check')`
+        );
+
+        res.json({ 
+            ok: true, 
+            message: 'Constraints updated successfully. NOW DELETE this route from admin.js and push again.',
+            constraints: verify.rows
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message, detail: err.detail, hint: err.hint });
+    }
+}));
+
 module.exports = router;
