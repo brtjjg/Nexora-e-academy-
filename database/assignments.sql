@@ -38,7 +38,7 @@ CREATE TABLE IF NOT EXISTS assignment_submissions (
     file_type       TEXT,
     file_size       BIGINT,
     status          TEXT NOT NULL DEFAULT 'submitted'
-                    CHECK (status IN ('submitted','marked','returned','resubmitted','rejected')),
+                    CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft')),
     marks           NUMERIC(6,2),
     percentage      NUMERIC(6,2),
     feedback        TEXT,
