@@ -31,6 +31,9 @@ async function runMigrations() {
             console.log('[migrate] Base schema already loaded, skipping');
         }
 
+        // ============================================================
+        // Load assignments schema
+        // ============================================================
         try {
             const assignmentsPath = path.join(__dirname, '..', '..', 'database', 'assignments.sql');
             if (fs.existsSync(assignmentsPath)) {
@@ -43,8 +46,32 @@ async function runMigrations() {
             }
         } catch (e) {
             console.error('[migrate] Assignments schema failed:', e.message);
+            console.error('[migrate] DETAIL:', e.detail);
         }
 
+        // ============================================================
+        // FORCE-FIX: Always ensure assignment status constraints are correct
+        // Runs on every deploy, guarantees 'graded' is allowed
+        // ============================================================
+        try {
+            await db.query(`ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check`);
+            await db.query(`ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'))`);
+            console.log('[migrate] assignment_submissions_status_check refreshed');
+        } catch (e) {
+            console.error('[migrate] Constraint fix (submissions) failed:', e.message, e.detail);
+        }
+
+        try {
+            await db.query(`ALTER TABLE assignments DROP CONSTRAINT IF EXISTS assignments_status_check`);
+            await db.query(`ALTER TABLE assignments ADD CONSTRAINT assignments_status_check CHECK (status IN ('draft','published','archived','unpublished'))`);
+            console.log('[migrate] assignments_status_check refreshed');
+        } catch (e) {
+            console.error('[migrate] Constraint fix (assignments) failed:', e.message, e.detail);
+        }
+
+        // ============================================================
+        // Load discussions schema
+        // ============================================================
         try {
             const discussionsPath = path.join(__dirname, '..', '..', 'database', 'discussions.sql');
             if (fs.existsSync(discussionsPath)) {
@@ -57,6 +84,9 @@ async function runMigrations() {
             console.error('[migrate] Discussions schema failed:', e.message);
         }
 
+        // ============================================================
+        // Notifications table
+        // ============================================================
         try {
             await db.query(`
                 CREATE TABLE IF NOT EXISTS notifications (
@@ -77,6 +107,9 @@ async function runMigrations() {
             console.error('[migrate] Notifications table failed:', e.message);
         }
 
+        // ============================================================
+        // Late-policy columns
+        // ============================================================
         try {
             await db.query(`
                 ALTER TABLE assignments ADD COLUMN IF NOT EXISTS late_policy TEXT DEFAULT 'allow';
