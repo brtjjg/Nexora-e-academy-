@@ -24,7 +24,9 @@ async function logAssignmentHistory(client, submissionId, action, note, userId) 
     } catch (e) { console.warn('[logAssignmentHistory]', e.message); }
 }
 
-// CREATE
+// ============================================
+// CREATE ASSIGNMENT
+// ============================================
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     const { course_id, module_id, lesson_id, title, instructions, max_marks, allow_text, allow_file, allowed_file_types, max_file_mb, due_date, allow_resubmission, max_attempts, status, weight_percent, position } = req.body;
     if (!course_id || !title) return res.status(400).json({ error: 'course_id and title required' });
@@ -47,7 +49,9 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
     res.status(201).json({ assignment: r.rows[0] });
 }));
 
-// UPDATE
+// ============================================
+// UPDATE ASSIGNMENT
+// ============================================
 router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     const fields = ['title','instructions','max_marks','allow_text','allow_file','allowed_file_types','max_file_mb','due_date','allow_resubmission','max_attempts','status','weight_percent','position','module_id','lesson_id'];
     const updates = []; const values = [];
@@ -59,13 +63,17 @@ router.put('/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ assignment: r.rows[0] });
 }));
 
-// DELETE
+// ============================================
+// DELETE ASSIGNMENT
+// ============================================
 router.delete('/:id', requireAdmin, asyncHandler(async (req, res) => {
     await db.query('DELETE FROM assignments WHERE id = $1', [req.params.id]);
     res.json({ ok: true });
 }));
 
-// LIST
+// ============================================
+// LIST ASSIGNMENTS (all)
+// ============================================
 router.get('/', requireAuth, asyncHandler(async (req, res) => {
     const { course_id, module_id, status } = req.query;
     const conditions = []; const values = [];
@@ -87,7 +95,9 @@ router.get('/', requireAuth, asyncHandler(async (req, res) => {
     res.json({ assignments: r.rows });
 }));
 
-// COURSE-SPECIFIC
+// ============================================
+// COURSE-SPECIFIC ASSIGNMENTS
+// ============================================
 router.get('/course/:courseId', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT a.*, m.title AS module_title,
@@ -108,7 +118,9 @@ router.get('/course/:courseId', requireAuth, asyncHandler(async (req, res) => {
     res.json({ assignments: r.rows });
 }));
 
-// SUMMARY
+// ============================================
+// STUDENT SUMMARY
+// ============================================
 router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT a.id, a.title, a.max_marks, a.due_date, c.title AS course_title,
@@ -136,7 +148,9 @@ router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
     });
 }));
 
-// ADMIN SUBMISSIONS
+// ============================================
+// ADMIN: LIST ALL SUBMISSIONS
+// ============================================
 router.get('/submissions/list', requireAdmin, asyncHandler(async (req, res) => {
     const { status, assignment_id } = req.query;
     const conditions = []; const values = [];
@@ -162,6 +176,9 @@ router.get('/submissions/list', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ submissions: r.rows });
 }));
 
+// ============================================
+// ADMIN: GET SINGLE SUBMISSION
+// ============================================
 router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT s.*, a.title AS assignment_title, a.max_marks, a.instructions,
@@ -188,7 +205,64 @@ router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ submission: r.rows[0], history: history.rows });
 }));
 
-// SUBMIT
+// ============================================
+// ADMIN: STATS (used by frontend admin dashboard)
+// ============================================
+router.get('/admin/stats', requireAdmin, asyncHandler(async (req, res) => {
+    try {
+        const r = await db.query(
+            `SELECT 
+                COUNT(*)::int AS total,
+                COUNT(*) FILTER (WHERE status IN ('submitted','resubmitted'))::int AS pending,
+                COUNT(*) FILTER (WHERE status = 'marked')::int AS reviewed,
+                COUNT(*) FILTER (WHERE status = 'returned')::int AS returned
+             FROM assignment_submissions`
+        );
+        const stats = r.rows[0];
+        res.json({
+            total: stats.total || 0,
+            pending: stats.pending || 0,
+            reviewed: stats.reviewed || 0,
+            returned: stats.returned || 0
+        });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}));
+
+// ============================================
+// ADMIN: LIST (alternative endpoint for admin dashboard)
+// ============================================
+router.get('/admin/list', requireAdmin, asyncHandler(async (req, res) => {
+    try {
+        const { status } = req.query;
+        const conditions = []; const values = [];
+        if (status === 'pending') conditions.push(`s.status IN ('submitted','resubmitted')`);
+        else if (status === 'marked') conditions.push(`s.status = 'marked'`);
+        else if (status === 'returned') conditions.push(`s.status = 'returned'`);
+        const where = conditions.length ? 'WHERE ' + conditions.join(' AND ') : '';
+        const r = await db.query(
+            `SELECT s.*, a.title AS assignment_title, a.max_marks,
+                    u.full_name AS student_name, u.email AS student_email,
+                    c.title AS course_title, m.title AS module_title
+             FROM assignment_submissions s
+             JOIN assignments a ON a.id = s.assignment_id
+             JOIN users u ON u.id = s.student_id
+             LEFT JOIN courses c ON c.id = a.course_id
+             LEFT JOIN modules m ON m.id = a.module_id
+             ${where}
+             ORDER BY s.submitted_at DESC`,
+            values
+        );
+        res.json({ submissions: r.rows });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+}));
+
+// ============================================
+// STUDENT: SUBMIT ASSIGNMENT
+// ============================================
 router.post('/:id/submit', requireAuth, asyncHandler(async (req, res) => {
     const { text_answer, file_path, file_name, file_type, file_size } = req.body;
     const client = await db.getClient();
@@ -227,7 +301,9 @@ router.post('/:id/submit', requireAuth, asyncHandler(async (req, res) => {
     finally { client.release(); }
 }));
 
-// MARK
+// ============================================
+// ADMIN: MARK SUBMISSION
+// ============================================
 router.post('/submissions/:id/mark', requireAdmin, asyncHandler(async (req, res) => {
     const { marks, feedback, release } = req.body;
     const client = await db.getClient();
@@ -260,7 +336,71 @@ router.post('/submissions/:id/mark', requireAdmin, asyncHandler(async (req, res)
     finally { client.release(); }
 }));
 
-// RETURN
+// ============================================
+// ADMIN: REVIEW SUBMISSION (Save Review from frontend)
+// ============================================
+router.post('/admin/submissions/:id/review', requireAdmin, asyncHandler(async (req, res) => {
+    const { marks, feedback } = req.body;
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+        const s = await client.query(
+            `SELECT s.*, a.max_marks, a.title AS assignment_title 
+             FROM assignment_submissions s
+             JOIN assignments a ON a.id = s.assignment_id 
+             WHERE s.id = $1 FOR UPDATE`,
+            [req.params.id]
+        );
+        if (!s.rows.length) { 
+            await client.query('ROLLBACK'); 
+            return res.status(404).json({ error: 'Submission not found' }); 
+        }
+        const sub = s.rows[0];
+        const m = parseFloat(marks);
+        if (isNaN(m) || m < 0 || m > sub.max_marks) { 
+            await client.query('ROLLBACK'); 
+            return res.status(400).json({ error: `Marks must be between 0 and ${sub.max_marks}` }); 
+        }
+        const percentage = money((m / sub.max_marks) * 100);
+        
+        await client.query(
+            `UPDATE assignment_submissions 
+             SET marks = $1, percentage = $2, feedback = $3, status = 'marked', 
+                 marked_at = NOW(), marked_by = $4 
+             WHERE id = $5`,
+            [m, percentage, feedback || null, req.user.user_id, req.params.id]
+        );
+        
+        await logAssignmentHistory(
+            client, 
+            req.params.id, 
+            'reviewed', 
+            `Marks: ${m}/${sub.max_marks} - ${feedback || 'No feedback'}`, 
+            req.user.user_id
+        );
+        
+        await notify(
+            client, 
+            sub.student_id, 
+            'assignment_marked', 
+            'Assignment reviewed', 
+            `${sub.assignment_title}: ${m}/${sub.max_marks} (${percentage.toFixed(1)}%)`, 
+            `/student/assignments/${sub.assignment_id}`
+        );
+        
+        await client.query('COMMIT');
+        res.json({ ok: true, marks: m, percentage, message: 'Review saved' });
+    } catch (err) { 
+        await client.query('ROLLBACK'); 
+        throw err; 
+    } finally { 
+        client.release(); 
+    }
+}));
+
+// ============================================
+// ADMIN: RETURN SUBMISSION
+// ============================================
 router.post('/submissions/:id/return', requireAdmin, asyncHandler(async (req, res) => {
     const { reason } = req.body;
     if (!reason) return res.status(400).json({ error: 'Reason required' });
@@ -285,7 +425,9 @@ router.post('/submissions/:id/return', requireAdmin, asyncHandler(async (req, re
     finally { client.release(); }
 }));
 
-// GRADE
+// ============================================
+// GRADE SUMMARY FOR A COURSE
+// ============================================
 router.get('/course/:courseId/grade', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT a.id, a.title, a.max_marks, a.weight_percent, s.marks, s.percentage, s.status
