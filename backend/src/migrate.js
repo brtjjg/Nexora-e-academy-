@@ -32,7 +32,7 @@ async function runMigrations() {
         }
 
         // ============================================================
-        // Load assignments schema
+        // Load assignments schema FIRST
         // ============================================================
         try {
             const assignmentsPath = path.join(__dirname, '..', '..', 'database', 'assignments.sql');
@@ -50,15 +50,14 @@ async function runMigrations() {
         }
 
         // ============================================================
-        // FORCE-FIX: Always ensure assignment status constraints are correct
-        // Runs on every deploy, guarantees 'graded' is allowed
+        // THEN force-refresh the constraints (AFTER assignments.sql)
         // ============================================================
         try {
             await db.query(`ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check`);
             await db.query(`ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'))`);
             console.log('[migrate] assignment_submissions_status_check refreshed');
         } catch (e) {
-            console.error('[migrate] Constraint fix (submissions) failed:', e.message, e.detail);
+            console.error('[migrate] Constraint fix (submissions) FAILED:', e.message, '|', e.detail);
         }
 
         try {
@@ -66,11 +65,21 @@ async function runMigrations() {
             await db.query(`ALTER TABLE assignments ADD CONSTRAINT assignments_status_check CHECK (status IN ('draft','published','archived','unpublished'))`);
             console.log('[migrate] assignments_status_check refreshed');
         } catch (e) {
-            console.error('[migrate] Constraint fix (assignments) failed:', e.message, e.detail);
+            console.error('[migrate] Constraint fix (assignments) FAILED:', e.message, '|', e.detail);
         }
 
         // ============================================================
-        // Load discussions schema
+        // Verify the constraint actually updated
+        // ============================================================
+        try {
+            const verify = await db.query(`SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'assignment_submissions_status_check'`);
+            console.log('[migrate] VERIFY constraint:', verify.rows[0]?.def || 'NOT FOUND');
+        } catch (e) {
+            console.error('[migrate] Verify failed:', e.message);
+        }
+
+        // ============================================================
+        // Discussions
         // ============================================================
         try {
             const discussionsPath = path.join(__dirname, '..', '..', 'database', 'discussions.sql');
@@ -85,7 +94,7 @@ async function runMigrations() {
         }
 
         // ============================================================
-        // Notifications table
+        // Notifications
         // ============================================================
         try {
             await db.query(`
