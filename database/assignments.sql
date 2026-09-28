@@ -80,3 +80,15 @@ CREATE TABLE IF NOT EXISTS notifications (
 
 CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
 CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
+-- ============================================
+-- Ensure constraints are up-to-date on existing databases
+-- ============================================
+DO $$
+BEGIN
+    -- Drop old constraint if it exists
+    ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check;
+    -- Re-add with all needed statuses
+    ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check 
+        CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'));
+EXCEPTION WHEN others THEN NULL;
+END $$;
