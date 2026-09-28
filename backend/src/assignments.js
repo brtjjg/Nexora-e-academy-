@@ -426,26 +426,5 @@ router.get('/course/:courseId/grade', requireAuth, asyncHandler(async (req, res)
         overall_percentage: totalWeight > 0 ? parseFloat(((weighted / totalWeight) * 100).toFixed(2)) : 0,
     });
 }));
-// TEMPORARY DEBUG ROUTE - remove after fixing the constraint issue
-router.get('/debug/status-constraint', asyncHandler(async (req, res) => {
-    try {
-        const r = await db.query(
-            `SELECT pg_get_constraintdef(oid) AS def
-             FROM pg_constraint 
-             WHERE conname = 'assignment_submissions_status_check'`
-        );
-        res.json({ 
-            constraint_name: 'assignment_submissions_status_check',
-            definition: r.rows[0]?.def || 'CONSTRAINT NOT FOUND',
-            columns: (await db.query(
-                `SELECT column_name, data_type FROM information_schema.columns 
-                 WHERE table_name = 'assignment_submissions' 
-                 ORDER BY ordinal_position`
-            )).rows
-        });
-    } catch (err) {
-        res.status(500).json({ error: err.message });
-    }
-}));
 
 module.exports = router;
