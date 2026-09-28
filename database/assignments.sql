@@ -66,38 +66,3 @@ CREATE TABLE IF NOT EXISTS assignment_history (
 );
 
 CREATE INDEX IF NOT EXISTS idx_assignment_history_submission ON assignment_history(submission_id);
-
-CREATE TABLE IF NOT EXISTS notifications (
-    id              UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-    user_id         UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
-    type            TEXT NOT NULL,
-    title           TEXT NOT NULL,
-    body            TEXT,
-    link            TEXT,
-    read            BOOLEAN NOT NULL DEFAULT FALSE,
-    created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-CREATE INDEX IF NOT EXISTS idx_notifications_user ON notifications(user_id);
-CREATE INDEX IF NOT EXISTS idx_notifications_read ON notifications(read);
-
--- ============================================================
--- ENSURE CONSTRAINTS ARE UPDATED ON EXISTING DATABASES
--- This block runs every deploy and drops/re-adds the constraint
--- so that adding new statuses in the future is always possible.
--- ============================================================
-DO $$
-BEGIN
-    ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check;
-    ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check 
-        CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'));
-EXCEPTION WHEN others THEN NULL;
-END $$;
-
-DO $$
-BEGIN
-    ALTER TABLE assignments DROP CONSTRAINT IF EXISTS assignments_status_check;
-    ALTER TABLE assignments ADD CONSTRAINT assignments_status_check 
-        CHECK (status IN ('draft','published','archived','unpublished'));
-EXCEPTION WHEN others THEN NULL;
-END $$;
