@@ -96,6 +96,7 @@ app.use('/api/notifications', loadRoute('notifications'));
 app.use('/api/uploads',      loadRoute('uploads')); 
 app.use('/api/assignments',  loadRoute('assignments'));
 app.use('/api/public',       loadRoute('public'));
+app.use('/api/paypal',       loadRoute('paypal'));
 
 // Simple root handler — if this works, Express is alive
 app.get('/', (req, res) => {
