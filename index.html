@@ -2520,42 +2520,6 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
     if (currentUser) showApp();
     else goHome();
 })();
-  <!-- Container for the buttons -->
-<div id="paypal-button-container"></div>
-
-<script src="https://www.paypal.com/sdk/js?client-id=YOUR_CLIENT_ID&currency=USD"></script>
-<script>
-    paypal.Buttons({
-        // 1. Set up the transaction
-        createOrder: function(data, actions) {
-            return fetch('/api/paypal/create-order', {
-                method: 'post',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    course_id: 'COURSE_ID_HERE', // Inject your dynamic ID
-                    amount: '20.00' // Inject your dynamic amount
-                })
-            }).then(function(res) {
-                return res.json();
-            }).then(function(orderData) {
-                return orderData.id; // Return the order ID to PayPal
-            });
-        },
-
-        // 2. Finalize the transaction
-        onApprove: function(data, actions) {
-            return fetch('/api/paypal/capture-order/' + data.orderID, {
-                method: 'post'
-            }).then(function(res) {
-                return res.json();
-            }).then(function(orderData) {
-                // Show a success message to the buyer
-                alert('Transaction completed successfully!');
-                // Reload the page or update the UI
-                location.reload();
-            });
-        }
-    }).render('#paypal-button-container');
 
 console.log('🎓 Nexora Academy v10.2 — Clean rebuild with real stats');
 </script>
