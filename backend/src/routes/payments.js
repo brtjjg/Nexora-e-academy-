@@ -18,9 +18,15 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 1. Get user info
+        // 1. Get user info (course_interest comes from applications if it exists)
         const userRes = await client.query(
-            `SELECT id, full_name, email, phone, course_interest FROM users WHERE id = $1`,
+            `SELECT u.id, u.full_name, u.email, u.phone,
+                    a.course_interest
+             FROM users u
+             LEFT JOIN applications a ON a.user_id = u.id
+             WHERE u.id = $1
+             ORDER BY a.created_at DESC
+             LIMIT 1`,
             [userId]
         );
         if (!userRes.rows.length) {
@@ -42,7 +48,6 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
         // 3. ✅ AUTO-CREATE application if it doesn't exist
         let applicationId;
         if (!existing.rows.length) {
-            // Generate app ID like NXA-APP-2026-000123
             const countRes = await client.query(
                 `SELECT COUNT(*)::int + 1 AS next FROM applications WHERE application_id LIKE $1`,
                 [`NXA-APP-${new Date().getFullYear()}-%`]
@@ -103,7 +108,6 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
             [userId]
         );
 
-        // If no profile row exists, create one
         if (!profileUpdate.rows.length) {
             await client.query(`
                 INSERT INTO student_profiles (user_id, activation_fee_paid, admission_status)
@@ -125,7 +129,7 @@ router.post('/activation', requireAuth, asyncHandler(async (req, res) => {
 
         await client.query('COMMIT');
 
-        // 8. Send confirmation email (fire-and-forget)
+        // 8. Send confirmation email
         (async () => {
             try {
                 await sendPaymentConfirmation({
@@ -215,7 +219,6 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
         );
         await client.query('COMMIT');
 
-        // Send email confirmation
         (async () => {
             try {
                 const u = await db.query(`SELECT email, full_name FROM users WHERE id = $1`, [req.user.user_id]);
@@ -241,7 +244,7 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 /* ============================================================
-   GET /api/payments/me — transaction history (unchanged)
+   GET /api/payments/me — transaction history
    ============================================================ */
 router.get('/me', requireAuth, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -254,7 +257,7 @@ router.get('/me', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 /* ============================================================
-   GET /api/payments — admin list (unchanged)
+   GET /api/payments — admin list
    ============================================================ */
 router.get('/', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -268,12 +271,11 @@ router.get('/', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 /* ============================================================
-   GET /api/payments/me/summary — wallet summary (NEW)
+   GET /api/payments/me/summary — wallet summary
    ============================================================ */
 router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
     const userId = req.user.user_id;
 
-    // Activation fee
     const actRes = await db.query(
         `SELECT COALESCE(SUM(amount),0)::numeric AS paid FROM transactions
          WHERE user_id=$1 AND payment_type='ACTIVATION_FEE' AND status='completed'`,
@@ -281,7 +283,6 @@ router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
     );
     const activationFeePaid = parseFloat(actRes.rows[0]?.paid || 0);
 
-    // Course balances
     const courseRes = await db.query(`
         SELECT
             e.course_id,
