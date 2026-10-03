@@ -1796,12 +1796,12 @@ async function openPayCourseModal(courseId) {
         const price = parseFloat(e.course_price || e.price || 0);
         const rem = parseFloat(e.remaining_balance || Math.max(price - paid, 0));
         const initial = parseFloat(e.initial_payment || (price * 0.25));
-        document.getElementById('payCourseInfo').innerHTML = `...`;
+        document.getElementById('payCourseInfo').innerHTML = `<div><strong>${esc(e.title)}</strong></div><div>Course Price: ${fmtMoney(price)}</div><div>Paid: <span style="color:var(--success)">${fmtMoney(paid)}</span></div><div>Remaining: <span style="color:var(--danger)">${fmtMoney(rem)}</span></div>`;
         const amt = document.getElementById('payAmount');
         amt.value = rem.toFixed(2);
         amt.max = rem;
         document.getElementById('payCourseModal').classList.add('active');
-        renderPayPalButtons(courseId, rem);   // ← ADD THIS LINE
+        renderPayPalButtons(courseId, rem);
     } catch (err) { alert('❌ ' + err.message); }
 }
 function closePayCourseModal() { document.getElementById('payCourseModal').classList.remove('active'); payCourseTarget = null; }
