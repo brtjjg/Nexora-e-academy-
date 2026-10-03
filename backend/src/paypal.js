@@ -143,15 +143,13 @@ router.post('/capture-order/:orderId', requireAuth, asyncHandler(async (req, res
     const paypalTxId = capture.id;
     const txId = 'PP-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
 
-    await db.query(
-        `INSERT INTO transactions
-            (transaction_id, user_id, course_id, payment_type,
-             amount, currency, payment_method, status,
-             provider, provider_reference, verified_at)
-         VALUES ($1, $2, $3, 'COURSE_PAYMENT', $4, 'USD', 'paypal', 'completed',
-                 'paypal', $5, NOW())`,
-        [txId, userId, courseId, amount, paypalTxId]
-    );
+await db.query(
+    `INSERT INTO transactions
+        (transaction_id, user_id, course_id, payment_type,
+         amount, currency, payment_method, status, verified_at)
+     VALUES ($1, $2, $3, 'COURSE_PAYMENT', $4, 'USD', 'paypal', 'completed', NOW())`,
+    [txId, userId, courseId, amount]
+);
 
     console.log(`[paypal] ✓ Captured: ${txId} $${amount} for user ${userId}`);
 
