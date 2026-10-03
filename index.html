@@ -1785,11 +1785,12 @@ async function openPayCourseModal(courseId) {
         const price = parseFloat(e.course_price || e.price || 0);
         const rem = parseFloat(e.remaining_balance || Math.max(price - paid, 0));
         const initial = parseFloat(e.initial_payment || (price * 0.25));
-        document.getElementById('payCourseInfo').innerHTML = `<div style="font-weight:700;color:var(--navy);margin-bottom:0.5rem">${esc(e.title)}</div><div>Course Price: <strong>${fmtMoney(price)}</strong></div><div>Initial (25%): <strong>${fmtMoney(initial)}</strong></div><div>Paid: <strong style="color:var(--success)">${fmtMoney(paid)}</strong></div><div>Remaining: <strong style="color:var(--danger)">${fmtMoney(rem)}</strong></div>`;
+        document.getElementById('payCourseInfo').innerHTML = `...`;
         const amt = document.getElementById('payAmount');
         amt.value = rem.toFixed(2);
         amt.max = rem;
         document.getElementById('payCourseModal').classList.add('active');
+        renderPayPalButtons(courseId, rem);   // ← ADD THIS LINE
     } catch (err) { alert('❌ ' + err.message); }
 }
 function closePayCourseModal() { document.getElementById('payCourseModal').classList.remove('active'); payCourseTarget = null; }
