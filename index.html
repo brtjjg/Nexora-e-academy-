@@ -1716,6 +1716,65 @@ async function toggleLessonComplete(lessonId) {
 }
 
 let payCourseTarget = null;
+  /* ═══════════════════════════════════════════════════════════
+   PAYPAL BUTTON RENDERER
+   ═══════════════════════════════════════════════════════════ */
+function renderPayPalButtons(courseId, amount) {
+    const container = document.getElementById('paypal-button-container');
+    const errEl = document.getElementById('paypalError');
+    if (!container) return;
+
+    container.innerHTML = '';
+    if (errEl) errEl.textContent = '';
+
+    if (!window.paypal) {
+        if (errEl) errEl.textContent = 'PayPal failed to load. Use manual payment below.';
+        return;
+    }
+
+    window.paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
+
+        createOrder: function () {
+            return fetch(`${API_BASE}/paypal/create-order`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ course_id: courseId, amount: amount }),
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                return data.id;
+            });
+        },
+
+        onApprove: function (data) {
+            return fetch(`${API_BASE}/paypal/capture-order/${data.orderID}`, {
+                method: 'POST',
+                credentials: 'include',
+            })
+            .then(res => res.json())
+            .then(details => {
+                if (details.error) throw new Error(details.error);
+                const b = details.balances || {};
+                alert(`✅ PayPal payment successful!\n\nAmount: ${fmtMoney(details.amount)}\nRemaining: ${fmtMoney(b.remaining_balance || 0)}\nUnlocked: ${(b.payment_percentage || 0).toFixed(0)}%`);
+                closePayCourseModal();
+                if (nxCourse) openCourseLearning(nxCourse.id, nxLessonId);
+                else { updateStudentDashboard(); renderStudentWallet(); }
+            });
+        },
+
+        onError: function (err) {
+            console.error('[paypal]', err);
+            if (errEl) errEl.textContent = '❌ ' + (err.message || 'Payment failed');
+        },
+
+        onCancel: function () {
+            if (errEl) errEl.textContent = 'Payment cancelled.';
+        },
+    }).render('#paypal-button-container');
+}
 async function openPayCourseModal(courseId) {
     try {
         const { enrollments } = await api('/enrollments');
