@@ -1,9 +1,10 @@
 const express = require('express');
 const router = express.Router();
-const { OAuth2Client } = require('google-auth-library');
 const db = require('../db');
-const { asyncHandler, logActivity } = require('../utils');
-const { createSession } = require('../auth');
+const { asyncHandler, isValidEmail, isStrongPassword, logActivity } = require('../utils');
+const { hashPassword, verifyPassword, createSession, deleteSession } = require('../auth');
+const { requireAuth } = require('../middleware');
+const authGoogleRouter = require('./auth-google');
 
 const COOKIE_OPTS = {
     httpOnly: true,
