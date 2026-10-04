@@ -63,6 +63,9 @@ router.post('/register', asyncHandler(async (req, res) => {
     }
 }));
 
+const authGoogleRouter = require('./routes/auth-google');
+app.use('/api/auth', authGoogleRouter);
+
 // POST /api/auth/login
 router.post('/login', asyncHandler(async (req, res) => {
     const { email, password } = req.body;
