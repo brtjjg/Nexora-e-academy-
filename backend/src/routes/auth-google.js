@@ -1,3 +1,4 @@
+// routes/auth-google.js
 const express = require('express');
 const router = express.Router();
 const { OAuth2Client } = require('google-auth-library');
@@ -22,7 +23,7 @@ router.post('/google', asyncHandler(async (req, res) => {
         return res.status(400).json({ error: 'Missing Google credential' });
     }
 
-    // 1) Verify the ID token with Google
+    // 1) Verify Google ID token
     let payload;
     try {
         const ticket = await googleClient.verifyIdToken({
@@ -47,7 +48,7 @@ router.post('/google', asyncHandler(async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 2) Try to find user by google_id first
+        // 2) Find user by google_id
         let userRes = await client.query(
             `SELECT id, username, email, full_name, role, status
              FROM users WHERE google_id = $1`,
@@ -58,7 +59,7 @@ router.post('/google', asyncHandler(async (req, res) => {
         let isNewUser = false;
 
         if (!user) {
-            // 3) Not linked yet — check by email
+            // 3) Check by email
             const byEmail = await client.query(
                 `SELECT id, username, email, full_name, role, status, google_id
                  FROM users WHERE LOWER(email) = $1`,
@@ -66,7 +67,7 @@ router.post('/google', asyncHandler(async (req, res) => {
             );
 
             if (byEmail.rows.length) {
-                // Existing account — link google_id to it
+                // Existing account — link google_id
                 user = byEmail.rows[0];
 
                 if (user.status !== 'active') {
@@ -88,15 +89,12 @@ router.post('/google', asyncHandler(async (req, res) => {
 
                 await logActivity(client, user.id, 'auth', 'Google account linked', email);
             } else {
-                // 4) Brand new user — create a student record
+                // 4) Brand new user
                 isNewUser = true;
 
-                // Generate a unique username from email local-part
                 let base = email.split('@')[0].replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
                 let username = base;
                 let suffix = 0;
-                // Keep trying until unique
-                // (small loop is fine — collisions are rare)
                 // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const u = await client.query(
@@ -119,7 +117,6 @@ router.post('/google', asyncHandler(async (req, res) => {
 
                 user = created.rows[0];
 
-                // Create the student_profiles row (same as register route)
                 await client.query(
                     `INSERT INTO student_profiles (user_id, course_interest)
                      VALUES ($1, $2)`,
@@ -130,7 +127,6 @@ router.post('/google', asyncHandler(async (req, res) => {
                     'Account created via Google', email);
             }
         } else {
-            // Existing Google-linked user — check status
             if (user.status !== 'active') {
                 await client.query('ROLLBACK');
                 return res.status(403).json({ error: 'Account not active' });
@@ -139,7 +135,28 @@ router.post('/google', asyncHandler(async (req, res) => {
 
         await client.query('COMMIT');
 
-        // 5) Create a session — EXACTLY like the password login route
+        // 5) Create placeholder application for new Google users
+        // so they land on the $0.75 admission fee screen
+        if (isNewUser) {
+            try {
+                await db.query(
+                    `INSERT INTO applications
+                       (user_id, application_id, full_name, email, course_interest, status, payment_status)
+                     VALUES ($1, $2, $3, $4, $5, 'payment_due', 'unpaid')`,
+                    [
+                        user.id,
+                        'NXA-APP-' + Date.now().toString(36).toUpperCase(),
+                        fullName,
+                        email,
+                        null,
+                    ]
+                );
+            } catch (e) {
+                console.warn('Could not auto-create application for Google user:', e.message);
+            }
+        }
+
+        // 6) Create session — identical to password login
         const { token, expiresAt } = await createSession(
             user.id,
             req.ip,
@@ -154,7 +171,6 @@ router.post('/google', asyncHandler(async (req, res) => {
         });
     } catch (err) {
         await client.query('ROLLBACK');
-        // Unique violation — extremely unlikely here, but guard anyway
         if (err.code === '23505') {
             return res.status(409).json({ error: 'Account already exists' });
         }
