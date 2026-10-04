@@ -101,85 +101,103 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
     res.json({ id: order.id, amount: amt, remaining });
 }));
 
-/* ═══════════════════════════════════════════════════════════
-   POST /api/paypal/capture-order/:orderId
-   ═══════════════════════════════════════════════════════════ */
-router.post('/capture-order/:orderId', requireAuth, asyncHandler(async (req, res) => {
-    const userId = req.user.user_id || req.user.id;
-    const { orderId } = req.params;
+// ─────────────────────────────────────────────
+// POST /api/paypal/webhook
+// PayPal sends payment events here.
+// ─────────────────────────────────────────────
+router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(async (req, res) => {
+    // Respond 200 immediately so PayPal doesn't retry
+    res.status(200).send('OK');
 
-    const accessToken = await getPayPalAccessToken();
-    const captureRes = await fetch(`${PAYPAL_API}/v2/checkout/orders/${orderId}/capture`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-        },
-    });
+    try {
+        // Parse the body — comes as a Buffer because we used express.raw
+        let event;
+        try {
+            event = JSON.parse(req.body.toString('utf8'));
+        } catch (e) {
+            console.warn('[paypal-webhook] Invalid JSON body');
+            return;
+        }
 
-    if (!captureRes.ok) {
-        const err = await captureRes.text();
-        console.error('[paypal:capture]', err);
-        return res.status(500).json({ error: 'Failed to capture payment' });
+        const eventType = event.event_type;
+        console.log('[paypal-webhook] Received event:', eventType);
+
+        // Handle the events you care about
+        if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
+            const resource = event.resource || {};
+            const captureId = resource.id;
+            const amount = parseFloat(resource.amount?.value || '0');
+            const customId = resource.custom_id || '';
+            const orderId = resource.supplementary_data?.related_ids?.order_id || null;
+
+            console.log(`[paypal-webhook] Payment captured: ${captureId} · $${amount} · custom=${customId}`);
+
+            // Parse custom_id: "activation:USER_ID" or "course:COURSE_ID:USER_ID"
+            const parts = String(customId).split(':');
+
+            if (parts[0] === 'activation' && parts[1]) {
+                const userId = parts[1];
+                // Record activation fee payment if not already
+                const existing = await db.query(
+                    `SELECT id FROM payments WHERE transaction_id = $1 AND payment_type = 'ACTIVATION_FEE'`,
+                    [captureId]
+                );
+                if (!existing.rows.length) {
+                    await db.query(
+                        `INSERT INTO payments
+                           (user_id, amount, payment_type, payment_method, status, transaction_id, created_at)
+                         VALUES ($1, $2, 'ACTIVATION_FEE', 'paypal', 'completed', $3, NOW())`,
+                        [userId, amount, captureId]
+                    );
+                    await db.query(
+                        `UPDATE users SET activation_fee_paid = TRUE WHERE id = $1`,
+                        [userId]
+                    );
+                    await db.query(
+                        `UPDATE applications
+                         SET payment_status = 'paid', status = 'paid'
+                         WHERE user_id = $1 AND payment_status = 'unpaid'`,
+                        [userId]
+                    );
+                    console.log('[paypal-webhook] ✅ Activation fee recorded for user', userId);
+                }
+            } else if (parts[0] === 'course' && parts[1] && parts[2]) {
+                const courseId = parts[1];
+                const userId = parts[2];
+                const existing = await db.query(
+                    `SELECT id FROM payments WHERE transaction_id = $1 AND payment_type = 'COURSE_PAYMENT'`,
+                    [captureId]
+                );
+                if (!existing.rows.length) {
+                    await db.query(
+                        `INSERT INTO payments
+                           (user_id, course_id, amount, payment_type, payment_method, status, transaction_id, created_at)
+                         VALUES ($1, $2, $3, 'COURSE_PAYMENT', 'paypal', 'completed', $4, NOW())`,
+                        [userId, courseId, amount, captureId]
+                    );
+                    await db.query(
+                        `UPDATE enrollments
+                         SET total_course_paid = COALESCE(total_course_paid, 0) + $1
+                         WHERE user_id = $2 AND course_id = $3`,
+                        [amount, userId, courseId]
+                    );
+                    console.log('[paypal-webhook] ✅ Course payment recorded for user', userId, 'course', courseId);
+                }
+            }
+        } else if (eventType === 'PAYMENT.CAPTURE.DENIED' || eventType === 'PAYMENT.CAPTURE.REFUNDED') {
+            const resource = event.resource || {};
+            const captureId = resource.id;
+            console.log(`[paypal-webhook] Payment ${eventType}: ${captureId}`);
+            await db.query(
+                `UPDATE payments SET status = $1 WHERE transaction_id = $2`,
+                [eventType === 'PAYMENT.CAPTURE.REFUNDED' ? 'refunded' : 'failed', captureId]
+            );
+        } else {
+            console.log('[paypal-webhook] Unhandled event type:', eventType);
+        }
+    } catch (err) {
+        console.error('[paypal-webhook] Handler error:', err.message);
     }
-
-    const captureData = await captureRes.json();
-    if (captureData.status !== 'COMPLETED') {
-        return res.status(400).json({ error: 'Payment not completed', status: captureData.status });
-    }
-
-    const purchaseUnit = captureData.purchase_units[0];
-    const capture = purchaseUnit.payments.captures[0];
-    const customId = purchaseUnit.custom_id || capture.custom_id || '';
-    const [storedUserId, courseId] = customId.split('|');
-
-    if (storedUserId !== userId) {
-        return res.status(403).json({ error: 'Order does not belong to this user' });
-    }
-
-    const amount = parseFloat(capture.amount.value);
-    const paypalTxId = capture.id;
-    const txId = 'PP-' + Date.now() + '-' + Math.random().toString(36).slice(2, 8);
-
-    await db.query(
-        `INSERT INTO transactions
-            (transaction_id, user_id, course_id, payment_type,
-             amount, currency, payment_method, status,
-             provider, provider_reference, verified_at)
-         VALUES ($1, $2, $3, 'COURSE_PAYMENT', $4, 'USD', 'paypal', 'completed',
-                 'paypal', $5, NOW())`,
-        [txId, userId, courseId, amount, paypalTxId]
-    );
-
-    console.log(`[paypal] ✓ Captured: ${txId} $${amount} for user ${userId}`);
-
-    const balRes = await db.query(`
-        SELECT
-            c.price::numeric AS course_price,
-            COALESCE(SUM(t.amount), 0)::numeric AS total_paid
-        FROM enrollments e
-        JOIN courses c ON c.id = e.course_id
-        LEFT JOIN transactions t
-            ON t.user_id = e.user_id
-            AND t.course_id = e.course_id
-            AND t.payment_type = 'COURSE_PAYMENT'
-            AND t.status = 'completed'
-        WHERE e.user_id = $1 AND e.course_id = $2
-        GROUP BY c.price
-    `, [userId, courseId]);
-
-    const price = parseFloat(balRes.rows[0]?.course_price || 0);
-    const paid = parseFloat(balRes.rows[0]?.total_course_paid || balRes.rows[0]?.total_paid || 0);
-    const remaining = Math.max(price - paid, 0);
-    const pct = price > 0 ? Math.min((paid / price) * 100, 100) : 100;
-
-    res.json({
-        ok: true,
-        transaction_id: txId,
-        paypal_tx_id: paypalTxId,
-        amount,
-        balances: { course_price: price, total_course_paid: paid, remaining_balance: remaining, payment_percentage: pct },
-    });
 }));
 
 module.exports = router;
