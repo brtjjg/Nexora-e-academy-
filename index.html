@@ -12,14 +12,14 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="google-site-verification" content="58sMphHA9Nlow3of2Gnrro4Y45tfGAk4gGvmPvJ-cpI" />
 <title>Nexora Academy — Expert Online Courses & Certificates</title>
-<meta name="description" content="Nexora Academy offers expert-led online courses with flexible installment payments (Lipa Mdogo Mdogo). Earn recognized certificates in IT, Business, Finance, and more. Enroll today." />
+<meta name="description" content="Expert-led online courses with flexible installment payments. Earn recognized certificates in IT, Business, and Finance. Enroll at Nexora Academy today." />
 <meta name="keywords" content="online courses, e-learning, certificates, Kenya, Africa, IT courses, business courses, Lipa Mdogo Mdogo, Nexora Academy" />
 <meta name="author" content="Nexora Academy" />
 <meta name="robots" content="index, follow" />
 <link rel="canonical" href="https://nexora-e-academy.vercel.app/" />
 
 <!-- Open Graph (WhatsApp, Facebook, LinkedIn) -->
-<meta name="apple-mobile-web-app-title" content="Nexora Academy" /> 
+<meta name="apple-mobile-web-app-title" content="Nexora Academy" />
 <meta property="og:url" content="https://nexora-e-academy.vercel.app/" />
 <meta property="og:title" content="Nexora Academy — Learn. Grow. Achieve." />
 <meta property="og:description" content="Build practical, career-focused skills. Pay in installments. Earn recognized certificates." />
@@ -52,9 +52,10 @@ j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700;900&family=Great+Vibes&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="certificate.css">
-  
+
 <script src="https://www.paypal.com/sdk/js?client-id=BAAG9Bim8cDuAklgS2TvxT7NW3bCFgPiJpFPUJ_JGrk78Ak81vDvPPLA5W156jnmxKGSbY63iY-JMGQaQs&currency=USD&intent=capture"></script>
-  
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+
 <script async src="https://www.googletagmanager.com/gtag/js?id=G-VF0CF8P62S"></script>
 <script>
   window.dataLayer = window.dataLayer || [];
@@ -633,11 +634,8 @@ table tbody tr:hover{background:#f8fafc}
 <div class="auth-card">
 <h2><i class="fas fa-sign-in-alt" style="color:var(--gold)"></i> Welcome Back</h2>
 <div id="loginFlash"></div>
-<form onsubmit="loginUser(event)">
-<div class="form-group"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
-<div class="form-group"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
-<button type="submit" class="btn btn-primary btn-block" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
-<div style="margin:1rem 0 1.25rem">
+
+<div style="margin:0 0 1.25rem">
     <div id="googleButton" style="display:flex;justify-content:center"></div>
     <div style="display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0">
         <div style="flex:1;height:1px;background:#e2e8f0"></div>
@@ -645,29 +643,17 @@ table tbody tr:hover{background:#f8fafc}
         <div style="flex:1;height:1px;background:#e2e8f0"></div>
     </div>
 </div>
+
+<form onsubmit="loginUser(event)">
+<div class="form-group"><label>Email</label><input type="email" id="loginEmail" required autocomplete="email"></div>
+<div class="form-group"><label>Password</label><input type="password" id="loginPassword" required autocomplete="current-password"></div>
+<button type="submit" class="btn btn-primary btn-block" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Login</button>
 </form>
 <p class="text-center" style="color:var(--text-secondary);font-size:0.9rem;margin-top:1.5rem">Don't have an account? <a onclick="showRegister()" style="color:var(--blue);font-weight:600;cursor:pointer">Register</a></p>
 </div>
 </div>
 </div>
 
-<div class="auth-card">
-<h2><i class="fas fa-sign-in-alt" style="color:var(--gold)"></i> Welcome Back</h2>
-<div id="loginFlash"></div>
-
-<div style="margin:1rem 0 1.25rem">
-    <div id="googleButton" style="display:flex;justify-content:center"></div>
-    <div style="display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0">
-        <div style="flex:1;height:1px;background:#e2e8f0"></div>
-        <span style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">or</span>
-        <div style="flex:1;height:1px;background:#e2e8f0"></div>
-    </div>
-</div>
-...
-</form>
-<p class="text-center" ...>Don't have an account? ...</p>
-</div>
-  
 <div id="page-notifications" class="page">
 <h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notification Settings</h2>
 <div id="notificationPrefsContent"></div>
@@ -892,12 +878,11 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="approveConfirmModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2><p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Confirm approval?</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()">Confirm Approve</button></div></div></div>
 
-  <div class="modal-backdrop" id="payCourseModal">
+<div class="modal-backdrop" id="payCourseModal">
     <div class="modal-box" style="max-width:520px">
         <h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2>
         <div id="payCourseInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem"></div>
 
-        <!-- PayPal Button -->
         <div style="margin-bottom:1rem">
             <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:0.5rem">
                 <i class="fab fa-paypal" style="color:#0070ba"></i> Pay with PayPal
@@ -906,13 +891,11 @@ table tbody tr:hover{background:#f8fafc}
             <div id="paypalError" style="margin-top:0.5rem;font-size:0.85rem;color:var(--danger)"></div>
         </div>
 
-        <!-- Divider -->
         <div style="text-align:center;color:var(--text-secondary);font-size:0.8rem;margin:1.25rem 0;position:relative">
             <hr style="border:none;border-top:1px solid #e2e8f0">
             <span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--white);padding:0 0.75rem">or pay manually</span>
         </div>
 
-        <!-- Manual fallback -->
         <form onsubmit="processCoursePayment(event)">
             <div class="form-group"><label>Amount ($) *</label><input type="number" id="payAmount" step="0.01" min="0.5" required></div>
             <div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option></select></div>
@@ -1745,9 +1728,6 @@ async function toggleLessonComplete(lessonId) {
 }
 
 let payCourseTarget = null;
-  /* ═══════════════════════════════════════════════════════════
-   PAYPAL BUTTON RENDERER
-   ═══════════════════════════════════════════════════════════ */
 function renderPayPalButtons(courseId, amount) {
     const container = document.getElementById('paypal-button-container');
     const errEl = document.getElementById('paypalError');
@@ -2543,42 +2523,42 @@ async function updateCounts() {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
 
-(async function boot() {
-    await bootSession();
-    loadHomeStats();
-    if (currentUser) showApp();
-    else goHome();
-})();
 /* ─────────── Google Sign-In ─────────── */
 const GOOGLE_CLIENT_ID = '243689444748-tm3cu1e9jg9j3tf8i2h2f0cgnpgsr239.apps.googleusercontent.com';
 
 function initGoogleButton() {
-    if (!window.google || !google.accounts) {
-        // GIS not loaded yet — retry shortly
-        return setTimeout(initGoogleButton, 200);
+    const el = document.getElementById('googleButton');
+    if (!el) {
+        console.warn('[Google] container #googleButton not found');
+        return;
     }
-    if (document.getElementById('googleButton').dataset.ready === '1') return;
+    if (!window.google || !window.google.accounts) {
+        return setTimeout(initGoogleButton, 300);
+    }
+    if (el.dataset.ready === '1') return;
 
-    google.accounts.id.initialize({
-        client_id: GOOGLE_CLIENT_ID,
-        callback: handleGoogleLogin,
-        auto_select: false,
-        cancel_on_tap_outside: true,
-    });
+    try {
+        google.accounts.id.initialize({
+            client_id: GOOGLE_CLIENT_ID,
+            callback: handleGoogleLogin,
+            auto_select: false,
+            cancel_on_tap_outside: true,
+        });
 
-    google.accounts.id.renderButton(
-        document.getElementById('googleButton'),
-        {
+        google.accounts.id.renderButton(el, {
             theme: 'outline',
             size: 'large',
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'left',
             width: 320,
-        }
-    );
+        });
 
-    document.getElementById('googleButton').dataset.ready = '1';
+        el.dataset.ready = '1';
+        console.log('[Google] Button rendered ✅');
+    } catch (err) {
+        console.error('[Google] init failed:', err);
+    }
 }
 
 async function handleGoogleLogin(response) {
@@ -2598,31 +2578,34 @@ async function handleGoogleLogin(response) {
             return;
         }
 
-        // Refresh the session state exactly like the password login does
         await bootSession();
         if (!currentUser) throw new Error('Session lost after Google login');
 
-        // Route them like normal — SPA style, no redirects
         await showApp();
     } catch (err) {
         showFlash('loginFlash', '❌ ' + (err.message || 'Unable to connect'), 'danger');
     }
 }
 
-// Kick off when the login page becomes visible
-const _origShowLogin = showLogin;
-showLogin = function () {
-    _origShowLogin.apply(this, arguments);
-    initGoogleButton();
-};
-// Also init on first page load in case the user lands on login directly
-document.addEventListener('DOMContentLoaded', () => {
-    if (document.getElementById('page-login').classList.contains('active')) {
+/* Auto-init Google button whenever login page becomes active */
+setInterval(() => {
+    const loginPage = document.getElementById('page-login');
+    const btn = document.getElementById('googleButton');
+    if (loginPage && loginPage.classList.contains('active') && btn && btn.dataset.ready !== '1') {
         initGoogleButton();
     }
-});
+}, 800);
 
-console.log('🎓 Nexora Academy v10.2 — Clean rebuild with real stats');
+document.addEventListener('DOMContentLoaded', initGoogleButton);
+
+(async function boot() {
+    await bootSession();
+    loadHomeStats();
+    if (currentUser) showApp();
+    else goHome();
+})();
+
+console.log('🎓 Nexora Academy v10.3 — Google Sign-In fixed');
 </script>
 <script src="certificate.js"></script>
 </body>
