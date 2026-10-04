@@ -1214,7 +1214,8 @@ const PAGE_NAMES = {
   'admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','admin-assignments':'Assignments',
   'student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course',
   'student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion',
-  'student-profile':'Profile','group-chat':'Group Chat','notifications':'Notifications','learning':'Learning'
+  'student-profile':'Profile','group-chat':'Group Chat','notifications':'Notifications','learning':'Learning','admin-contributors': 'Contributors',
+'admin-submissions': 'Submissions',
 };
 
 async function navigateTo(page) {
@@ -1284,6 +1285,8 @@ async function navigateTo(page) {
         else if (page === 'student-certificates') await renderStudentCertificates();
         else if (page === 'student-profile') renderStudentProfile();
         else if (page === 'notifications') await renderNotificationPrefs();
+        else if (page === 'admin-contributors') loadContributors('pending');
+else if (page === 'admin-submissions') loadSubmissions('pending_review');
     } catch (err) { console.error(err); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
