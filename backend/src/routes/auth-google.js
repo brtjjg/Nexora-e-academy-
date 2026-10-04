@@ -16,14 +16,12 @@ const COOKIE_OPTS = {
 const googleClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // POST /api/auth/google
-// Body: { credential: "<google id token>" }
 router.post('/google', asyncHandler(async (req, res) => {
     const { credential } = req.body || {};
     if (!credential) {
         return res.status(400).json({ error: 'Missing Google credential' });
     }
 
-    // 1) Verify Google ID token
     let payload;
     try {
         const ticket = await googleClient.verifyIdToken({
@@ -48,7 +46,6 @@ router.post('/google', asyncHandler(async (req, res) => {
     try {
         await client.query('BEGIN');
 
-        // 2) Find user by google_id
         let userRes = await client.query(
             `SELECT id, username, email, full_name, role, status
              FROM users WHERE google_id = $1`,
@@ -59,7 +56,6 @@ router.post('/google', asyncHandler(async (req, res) => {
         let isNewUser = false;
 
         if (!user) {
-            // 3) Check by email
             const byEmail = await client.query(
                 `SELECT id, username, email, full_name, role, status, google_id
                  FROM users WHERE LOWER(email) = $1`,
@@ -67,7 +63,6 @@ router.post('/google', asyncHandler(async (req, res) => {
             );
 
             if (byEmail.rows.length) {
-                // Existing account — link google_id
                 user = byEmail.rows[0];
 
                 if (user.status !== 'active') {
@@ -89,13 +84,11 @@ router.post('/google', asyncHandler(async (req, res) => {
 
                 await logActivity(client, user.id, 'auth', 'Google account linked', email);
             } else {
-                // 4) Brand new user
                 isNewUser = true;
 
                 let base = email.split('@')[0].replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
                 let username = base;
                 let suffix = 0;
-                // eslint-disable-next-line no-constant-condition
                 while (true) {
                     const u = await client.query(
                         'SELECT 1 FROM users WHERE username = $1',
@@ -135,8 +128,6 @@ router.post('/google', asyncHandler(async (req, res) => {
 
         await client.query('COMMIT');
 
-        // 5) Create placeholder application for new Google users
-        // so they land on the $0.75 admission fee screen
         if (isNewUser) {
             try {
                 await db.query(
@@ -156,7 +147,6 @@ router.post('/google', asyncHandler(async (req, res) => {
             }
         }
 
-        // 6) Create session — identical to password login
         const { token, expiresAt } = await createSession(
             user.id,
             req.ip,
@@ -164,11 +154,7 @@ router.post('/google', asyncHandler(async (req, res) => {
         );
         res.cookie('session', token, { ...COOKIE_OPTS, expires: expiresAt });
 
-        res.json({
-            ok: true,
-            role: user.role,
-            isNewUser,
-        });
+        res.json({ ok: true, role: user.role, isNewUser });
     } catch (err) {
         await client.query('ROLLBACK');
         if (err.code === '23505') {
