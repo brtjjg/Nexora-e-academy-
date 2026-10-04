@@ -554,6 +554,8 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Management</div>
 <div class="menu-item" onclick="navigateTo('admin-students')"><i class="fas fa-users"></i><span>Students</span><span class="badge-count" id="studentCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-applications')"><i class="fas fa-user-clock"></i><span>Applications</span><span class="badge-count" id="appCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('admin-contributors')"><i class="fas fa-user-tie"></i><span>Contributors</span><span class="badge-count" id="contributorCount">0</span></div>
+<div class="menu-item" onclick="navigateTo('admin-submissions')"><i class="fas fa-file-signature"></i><span>Submissions</span><span class="badge-count" id="submissionCount">0</span></div
 <div class="menu-item" onclick="navigateTo('notifications')"><i class="fas fa-bell"></i><span>Notifications</span></div>
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
@@ -786,6 +788,28 @@ table tbody tr:hover{background:#f8fafc}
 </div>
 
 <div id="page-admin-applications" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user-clock" style="color:var(--gold)"></i> Student Applications</h2><div id="adminApplicationsList"></div></div>
+<div id="page-admin-contributors" class="page">
+    <h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-user-tie" style="color:var(--gold)"></i> Course Contributors</h2>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="loadContributors('pending')" id="tabContribPending">Pending</button>
+        <button class="btn btn-outline btn-sm" onclick="loadContributors('active')" id="tabContribActive">Active</button>
+        <button class="btn btn-outline btn-sm" onclick="loadContributors('all')" id="tabContribAll">All</button>
+        <button class="btn btn-success btn-sm" style="margin-left:auto" onclick="openCreateContributorModal()"><i class="fas fa-plus"></i> Invite Contributor</button>
+    </div>
+    <div id="adminContributorsList"></div>
+</div>
+
+<div id="page-admin-submissions" class="page">
+    <h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-file-signature" style="color:var(--gold)"></i> Course Submissions</h2>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1.5rem;flex-wrap:wrap">
+        <button class="btn btn-primary btn-sm" onclick="loadSubmissions('pending_review')" id="tabSubPending">Pending Review</button>
+        <button class="btn btn-outline btn-sm" onclick="loadSubmissions('approved')" id="tabSubApproved">Approved</button>
+        <button class="btn btn-outline btn-sm" onclick="loadSubmissions('changes_requested')" id="tabSubChanges">Changes Req.</button>
+        <button class="btn btn-outline btn-sm" onclick="loadSubmissions('published')" id="tabSubPublished">Published</button>
+        <button class="btn btn-outline btn-sm" onclick="loadSubmissions('all')" id="tabSubAll">All</button>
+    </div>
+    <div id="adminSubmissionsList"></div>
+</div>
 <div id="page-admin-students" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-users" style="color:var(--gold)"></i> Students</h2><div id="adminStudentsList"></div></div>
 <div id="page-admin-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book" style="color:var(--gold)"></i> All Courses</h2><div id="adminCoursesList" class="courses-grid"></div></div>
 
@@ -1986,6 +2010,252 @@ async function renderAdminApplications() {
 let debounceTimer;
 function debouncedApps() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderAdminApplications, 300); }
 
+  /* ═══════════════════════════════════════════
+   CONTRIBUTORS ADMIN
+   ═══════════════════════════════════════════ */
+async function loadContributors(status) {
+    // Update tab active state
+    ['pending', 'active', 'all'].forEach(s => {
+        const btn = document.getElementById('tabContrib' + s.charAt(0).toUpperCase() + s.slice(1));
+        if (btn) {
+            btn.classList.toggle('btn-primary', s === status);
+            btn.classList.toggle('btn-outline', s !== status);
+        }
+    });
+
+    const c = document.getElementById('adminContributorsList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+
+    try {
+        const data = await api('/admin/contributors?status=' + status);
+        const contributors = data.contributors || [];
+
+        // Update badge
+        try {
+            const allData = await api('/admin/contributors?status=pending');
+            const badge = document.getElementById('contributorCount');
+            if (badge) badge.textContent = (allData.contributors || []).length;
+        } catch (e) {}
+
+        if (!contributors.length) {
+            c.innerHTML = `<div class="empty-state"><i class="fas fa-user-tie" style="font-size:2rem;margin-bottom:1rem;display:block;color:#94a3b8"></i><p>No ${status === 'all' ? '' : status} contributors yet.</p></div>`;
+            return;
+        }
+
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr>
+                <th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Country</th><th>Status</th><th>Submissions</th><th>Created</th><th>Actions</th>
+            </tr></thead>
+            <tbody>${contributors.map(u => `
+                <tr>
+                    <td><strong>${esc(u.full_name)}</strong></td>
+                    <td>${esc(u.username)}</td>
+                    <td>${esc(u.email)}</td>
+                    <td>${esc(u.phone || '—')}</td>
+                    <td>${esc(u.country || '—')}</td>
+                    <td><span class="status-pill ${u.status === 'active' ? 'approved' : u.status === 'pending' ? 'pending' : 'rejected'}">${u.status.toUpperCase()}</span></td>
+                    <td>${u.submission_count || 0}</td>
+                    <td>${fmtDate(u.created_at)}</td>
+                    <td><div class="student-actions">
+                        ${u.status === 'pending' ? `<button class="action-btn approve" title="Approve" onclick="approveContributor('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-check"></i></button>` : ''}
+                        ${u.status !== 'rejected' ? `<button class="action-btn reject" title="Reject" onclick="rejectContributor('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-times"></i></button>` : ''}
+                    </div></td>
+                </tr>
+            `).join('')}</tbody>
+        </table></div>`;
+    } catch (err) {
+        c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`;
+    }
+}
+
+async function approveContributor(id, name) {
+    if (!confirm(`Approve ${name} as a contributor?`)) return;
+    try {
+        await api('/admin/contributors/' + id + '/approve', { method: 'POST' });
+        alert('✅ Approved');
+        loadContributors('pending');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function rejectContributor(id, name) {
+    const reason = prompt(`Reject ${name}?\n\nReason (optional):`);
+    if (reason === null) return;
+    try {
+        await api('/admin/contributors/' + id + '/reject', { method: 'POST', body: { reason: reason || null } });
+        alert('❌ Rejected');
+        loadContributors('pending');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+function openCreateContributorModal() {
+    const email = prompt('Contributor email:');
+    if (!email) return;
+    const full_name = prompt('Full name:');
+    if (!full_name) return;
+    const username = prompt('Username (lowercase, no spaces):');
+    if (!username) return;
+    const password = prompt('Temporary password (min 8 chars):');
+    if (!password) return;
+
+    api('/admin/contributors', {
+        method: 'POST',
+        body: { email, full_name, username, password },
+    })
+    .then(() => { alert('✅ Contributor invited'); loadContributors('pending'); })
+    .catch(err => alert('❌ ' + (err.data?.error || err.message)));
+}
+
+/* ═══════════════════════════════════════════
+   SUBMISSIONS ADMIN
+   ═══════════════════════════════════════════ */
+async function loadSubmissions(status) {
+    ['pending_review', 'approved', 'changes_requested', 'published', 'all'].forEach(s => {
+        const label = s.split('_').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join('');
+        const btn = document.getElementById('tabSub' + (s === 'pending_review' ? 'Pending' : s === 'changes_requested' ? 'Changes' : s === 'published' ? 'Published' : s === 'approved' ? 'Approved' : 'All'));
+        if (btn) {
+            btn.classList.toggle('btn-primary', s === status);
+            btn.classList.toggle('btn-outline', s !== status);
+        }
+    });
+
+    const c = document.getElementById('adminSubmissionsList');
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+
+    try {
+        const data = await api('/admin/submissions?status=' + status);
+        const subs = data.submissions || [];
+
+        try {
+            const pend = await api('/admin/submissions?status=pending_review');
+            const badge = document.getElementById('submissionCount');
+            if (badge) badge.textContent = (pend.submissions || []).length;
+        } catch (e) {}
+
+        if (!subs.length) {
+            c.innerHTML = '<div class="empty-state"><i class="fas fa-file-signature" style="font-size:2rem;margin-bottom:1rem;display:block;color:#94a3b8"></i><p>No submissions in this category.</p></div>';
+            return;
+        }
+
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr>
+                <th>Title</th><th>Contributor</th><th>Category</th><th>Level</th><th>Status</th><th>Submitted</th><th>Actions</th>
+            </tr></thead>
+            <tbody>${subs.map(s => `
+                <tr>
+                    <td><strong>${esc(s.title)}</strong></td>
+                    <td>${esc(s.contributor_name || '—')}</td>
+                    <td>${esc(s.category || '—')}</td>
+                    <td>${esc(s.level || '—')}</td>
+                    <td><span class="status-pill ${s.status === 'published' ? 'approved' : s.status === 'pending_review' ? 'pending' : s.status === 'rejected' ? 'rejected' : 'paid'}">${s.status.replace('_', ' ').toUpperCase()}</span></td>
+                    <td>${fmtDate(s.submitted_at || s.created_at)}</td>
+                    <td><div class="student-actions">
+                        <button class="action-btn view" title="Review" onclick="reviewSubmissionAdmin('${s.id}')"><i class="fas fa-eye"></i></button>
+                    </div></td>
+                </tr>
+            `).join('')}</tbody>
+        </table></div>`;
+    } catch (err) {
+        c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`;
+    }
+}
+
+async function reviewSubmissionAdmin(id) {
+    try {
+        const { submission: s } = await api('/admin/submissions/' + id);
+        const modules = Array.isArray(s.modules) ? s.modules : [];
+        const lessonCount = modules.reduce((n, m) => n + (m.lessons || []).length, 0);
+
+        const modulesHTML = modules.map((m, mi) => `
+            <div style="background:var(--bg);padding:1rem;border-radius:10px;margin-bottom:0.75rem;border-left:4px solid var(--blue)">
+                <strong style="color:var(--navy)">Module ${mi + 1}: ${esc(m.title || '(untitled)')}</strong>
+                ${(m.lessons || []).map((l, li) => `
+                    <div style="background:#fff;padding:0.6rem;border-radius:8px;margin-top:0.4rem;font-size:0.85rem">
+                        <strong>${mi + 1}.${li + 1}</strong> ${esc(l.title || '(untitled)')}
+                        ${l.video_url ? ' <span style="color:var(--blue);font-size:0.75rem">🎬 video</span>' : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `).join('') || '<p style="color:var(--text-secondary)">No modules submitted.</p>';
+
+        document.getElementById('appDetailsContent').innerHTML = `
+            <h2 style="margin-bottom:0.5rem">${esc(s.title)}</h2>
+            <div style="margin-bottom:1rem">
+                <span class="status-pill ${s.status === 'pending_review' ? 'pending' : s.status === 'published' ? 'approved' : s.status === 'rejected' ? 'rejected' : 'paid'}">${s.status.replace('_', ' ').toUpperCase()}</span>
+            </div>
+            <div style="background:var(--bg);padding:1rem;border-radius:12px;margin-bottom:1.5rem;font-size:0.9rem;line-height:1.8">
+                <div><strong>Contributor:</strong> ${esc(s.contributor_name)} (${esc(s.contributor_email)})</div>
+                <div><strong>Code:</strong> ${esc(s.code || '—')}</div>
+                <div><strong>Category:</strong> ${esc(s.category || '—')}</div>
+                <div><strong>Level:</strong> ${esc(s.level || '—')}</div>
+                <div><strong>Duration:</strong> ${esc(s.duration || '—')}</div>
+                <div><strong>Price:</strong> $${parseFloat(s.price || 0).toFixed(2)}</div>
+                <div><strong>Modules:</strong> ${modules.length} &nbsp; <strong>Lessons:</strong> ${lessonCount}</div>
+                <div><strong>Submitted:</strong> ${s.submitted_at ? fmtDateTime(s.submitted_at) : '—'}</div>
+            </div>
+            ${s.description ? `<div style="margin-bottom:1.5rem"><strong style="color:var(--navy);display:block;margin-bottom:0.5rem">Description</strong><p style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.9rem">${esc(s.description)}</p></div>` : ''}
+            <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">Course Structure</h3>
+            ${modulesHTML}
+            ${s.status === 'pending_review' || s.status === 'changes_requested' ? `
+                <div style="margin-top:1.5rem;padding:1.25rem;background:#f0f9ff;border-radius:12px;border:2px solid #bae6fd">
+                    <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">📝 Review Decision</h3>
+                    <div class="form-group">
+                        <label>Feedback (optional for approval, required for rejection)</label>
+                        <textarea id="reviewFeedback" rows="3" placeholder="What needs to change? Or notes for the contributor."></textarea>
+                    </div>
+                    <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
+                        <button class="btn btn-success btn-sm" onclick="submitReview('${s.id}', 'approve')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="btn btn-warning btn-sm" onclick="submitReview('${s.id}', 'request_changes')"><i class="fas fa-undo"></i> Request Changes</button>
+                        <button class="btn btn-danger btn-sm" onclick="submitReview('${s.id}', 'reject')"><i class="fas fa-times"></i> Reject</button>
+                    </div>
+                </div>
+            ` : ''}
+            ${s.status === 'approved' ? `
+                <div style="margin-top:1.5rem;padding:1.25rem;background:#dcfce7;border-radius:12px;border:2px solid #86efac">
+                    <h3 style="color:var(--navy);margin-bottom:0.5rem;font-size:1rem">✅ Ready to Publish</h3>
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem">Publishing will create a new course in the student catalog with all submitted modules and lessons.</p>
+                    <button class="btn btn-success" onclick="publishSubmission('${s.id}')"><i class="fas fa-rocket"></i> Publish to Student Catalog</button>
+                </div>
+            ` : ''}
+        `;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function submitReview(id, action) {
+    const feedback = document.getElementById('reviewFeedback')?.value || '';
+    if ((action === 'reject' || action === 'request_changes') && !feedback.trim()) {
+        alert('⚠️ Please provide feedback for reject / request changes');
+        return;
+    }
+    try {
+        await api('/admin/submissions/' + id + '/review', { method: 'POST', body: { action, feedback } });
+        alert('✅ Review submitted');
+        closeAppDetailsModal();
+        loadSubmissions('pending_review');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function publishSubmission(id) {
+    if (!confirm('Publish this submission as a real course? Students will see it in the catalog immediately.')) return;
+    try {
+        const r = await api('/admin/submissions/' + id + '/publish', { method: 'POST' });
+        alert('✅ Published! Course ID: ' + (r.course_id || '—'));
+        closeAppDetailsModal();
+        loadSubmissions('published');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+  
 async function viewApplicationDetails(appId) {
     try {
         const data = await api(`/applications/${appId}`);
