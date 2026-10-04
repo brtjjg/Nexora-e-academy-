@@ -2540,6 +2540,78 @@ document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSideb
     if (currentUser) showApp();
     else goHome();
 })();
+/* ─────────── Google Sign-In ─────────── */
+const GOOGLE_CLIENT_ID = 'YOUR_GOOGLE_CLIENT_ID_HERE.apps.googleusercontent.com';
+
+function initGoogleButton() {
+    if (!window.google || !google.accounts) {
+        // GIS not loaded yet — retry shortly
+        return setTimeout(initGoogleButton, 200);
+    }
+    if (document.getElementById('googleButton').dataset.ready === '1') return;
+
+    google.accounts.id.initialize({
+        client_id: GOOGLE_CLIENT_ID,
+        callback: handleGoogleLogin,
+        auto_select: false,
+        cancel_on_tap_outside: true,
+    });
+
+    google.accounts.id.renderButton(
+        document.getElementById('googleButton'),
+        {
+            theme: 'outline',
+            size: 'large',
+            text: 'continue_with',
+            shape: 'rectangular',
+            logo_alignment: 'left',
+            width: 320,
+        }
+    );
+
+    document.getElementById('googleButton').dataset.ready = '1';
+}
+
+async function handleGoogleLogin(response) {
+    if (!response || !response.credential) return;
+    showFlash('loginFlash', '<i class="fas fa-spinner fa-spin"></i> Signing in with Google…', 'info');
+    try {
+        const res = await fetch(`${API_BASE}/auth/google`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ credential: response.credential }),
+        });
+        const data = await res.json();
+
+        if (!res.ok) {
+            showFlash('loginFlash', '❌ ' + (data.error || 'Google sign-in failed'), 'danger');
+            return;
+        }
+
+        // Refresh the session state exactly like the password login does
+        await bootSession();
+        if (!currentUser) throw new Error('Session lost after Google login');
+
+        // Route them like normal — SPA style, no redirects
+        await showApp();
+    } catch (err) {
+        showFlash('loginFlash', '❌ ' + (err.message || 'Unable to connect'), 'danger');
+    }
+}
+
+// Kick off when the login page becomes visible
+const _origShowLogin = showLogin;
+showLogin = function () {
+    _origShowLogin.apply(this, arguments);
+    initGoogleButton();
+};
+// Also init on first page load in case the user lands on login directly
+document.addEventListener('DOMContentLoaded', () => {
+    if (document.getElementById('page-login').classList.contains('active')) {
+        initGoogleButton();
+    }
+});
 
 console.log('🎓 Nexora Academy v10.2 — Clean rebuild with real stats');
 </script>
