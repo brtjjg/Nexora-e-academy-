@@ -668,6 +668,16 @@ table tbody tr:hover{background:#f8fafc}
 <div class="auth-card">
 <div id="registerFlash"></div>
 
+<!-- Google sign-up option -->
+<div style="margin:0 0 1.25rem">
+    <div id="googleButtonRegister" style="display:flex;justify-content:center"></div>
+    <div style="display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0">
+        <div style="flex:1;height:1px;background:#e2e8f0"></div>
+        <span style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">or sign up with email</span>
+        <div style="flex:1;height:1px;background:#e2e8f0"></div>
+    </div>
+</div>
+
 <div class="reg-step active" id="reg-step-1">
 <h2><i class="fas fa-user" style="color:var(--gold)"></i> Personal Details</h2>
 <form onsubmit="regStep1(event)">
@@ -1049,6 +1059,7 @@ async function showRegister() {
     if (dob) { dob.setAttribute('max', new Date().toISOString().split('T')[0]); dob.value = ''; }
     regGoToStep(1);
     updateTopNav();
+    initGoogleButton();
 }
 function updateTopNav() {
     if (currentUser) {
@@ -2523,47 +2534,62 @@ async function updateCounts() {
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
 
-/* ─────────── Google Sign-In ─────────── */
+/* ─────────── Google Sign-In (Login + Register) ─────────── */
 const GOOGLE_CLIENT_ID = '243689444748-tm3cu1e9jg9j3tf8i2h2f0cgnpgsr239.apps.googleusercontent.com';
 
-function initGoogleButton() {
-    const el = document.getElementById('googleButton');
-    if (!el) {
-        console.warn('[Google] container #googleButton not found');
-        return;
-    }
-    if (!window.google || !window.google.accounts) {
-        return setTimeout(initGoogleButton, 300);
-    }
-    if (el.dataset.ready === '1') return;
-
+function renderGoogleInto(elId, width) {
+    const el = document.getElementById(elId);
+    if (!el) return false;
+    if (el.dataset.ready === '1') return true;
+    if (!window.google || !window.google.accounts) return false;
     try {
-        google.accounts.id.initialize({
-            client_id: GOOGLE_CLIENT_ID,
-            callback: handleGoogleLogin,
-            auto_select: false,
-            cancel_on_tap_outside: true,
-        });
-
         google.accounts.id.renderButton(el, {
             theme: 'outline',
             size: 'large',
             text: 'continue_with',
             shape: 'rectangular',
             logo_alignment: 'left',
-            width: 320,
+            width: width || 320,
         });
-
         el.dataset.ready = '1';
-        console.log('[Google] Button rendered ✅');
+        console.log('[Google] Button rendered into #' + elId + ' ✅');
+        return true;
     } catch (err) {
-        console.error('[Google] init failed:', err);
+        console.error('[Google] render failed for #' + elId + ':', err);
+        return false;
     }
+}
+
+function initGoogleButton() {
+    if (!window.google || !window.google.accounts) {
+        return setTimeout(initGoogleButton, 300);
+    }
+    if (!window.__googleInitialized) {
+        try {
+            google.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleLogin,
+                auto_select: false,
+                cancel_on_tap_outside: true,
+            });
+            window.__googleInitialized = true;
+            console.log('[Google] initialized');
+        } catch (err) {
+            console.error('[Google] initialize failed:', err);
+            return;
+        }
+    }
+    renderGoogleInto('googleButton', 320);
+    renderGoogleInto('googleButtonRegister', 320);
 }
 
 async function handleGoogleLogin(response) {
     if (!response || !response.credential) return;
-    showFlash('loginFlash', '<i class="fas fa-spinner fa-spin"></i> Signing in with Google…', 'info');
+
+    const onRegister = document.getElementById('page-register')?.classList.contains('active');
+    const flashId = onRegister ? 'registerFlash' : 'loginFlash';
+    showFlash(flashId, '<i class="fas fa-spinner fa-spin"></i> Signing in with Google…', 'info');
+
     try {
         const res = await fetch(`${API_BASE}/auth/google`, {
             method: 'POST',
@@ -2572,28 +2598,23 @@ async function handleGoogleLogin(response) {
             body: JSON.stringify({ credential: response.credential }),
         });
         const data = await res.json();
-
         if (!res.ok) {
-            showFlash('loginFlash', '❌ ' + (data.error || 'Google sign-in failed'), 'danger');
+            showFlash(flashId, '❌ ' + (data.error || 'Google sign-in failed'), 'danger');
             return;
         }
-
         await bootSession();
         if (!currentUser) throw new Error('Session lost after Google login');
-
         await showApp();
     } catch (err) {
-        showFlash('loginFlash', '❌ ' + (err.message || 'Unable to connect'), 'danger');
+        showFlash(flashId, '❌ ' + (err.message || 'Unable to connect'), 'danger');
     }
 }
 
-/* Auto-init Google button whenever login page becomes active */
+/* Auto-init whenever login OR register page becomes active */
 setInterval(() => {
-    const loginPage = document.getElementById('page-login');
-    const btn = document.getElementById('googleButton');
-    if (loginPage && loginPage.classList.contains('active') && btn && btn.dataset.ready !== '1') {
-        initGoogleButton();
-    }
+    const loginActive = document.getElementById('page-login')?.classList.contains('active');
+    const registerActive = document.getElementById('page-register')?.classList.contains('active');
+    if (loginActive || registerActive) initGoogleButton();
 }, 800);
 
 document.addEventListener('DOMContentLoaded', initGoogleButton);
@@ -2605,7 +2626,7 @@ document.addEventListener('DOMContentLoaded', initGoogleButton);
     else goHome();
 })();
 
-console.log('🎓 Nexora Academy v10.3 — Google Sign-In fixed');
+console.log('🎓 Nexora Academy v10.4 — Google Sign-In on Login + Register');
 </script>
 <script src="certificate.js"></script>
 </body>
