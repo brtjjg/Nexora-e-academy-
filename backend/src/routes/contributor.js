@@ -4,6 +4,7 @@ const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
 const { requireAuth } = require('../middleware');
+const bcrypt = require('bcrypt');
 
 // ─────────────────────────────────────────────
 // Middleware: require contributor or admin role
@@ -17,6 +18,68 @@ function requireContributor(req, res, next) {
     }
     next();
 }
+
+// ─────────────────────────────────────────────
+// PUBLIC — Signup (no auth required)
+// ─────────────────────────────────────────────
+
+// POST /api/contributor/signup
+router.post('/signup', asyncHandler(async (req, res) => {
+    const { email, password, full_name, username, phone, country } = req.body || {};
+
+    // Validate required fields
+    if (!email || !password || !full_name || !username) {
+        return res.status(400).json({ error: 'Email, password, full name, and username are required' });
+    }
+    // Email format
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+        return res.status(400).json({ error: 'Invalid email address' });
+    }
+    // Username format
+    if (!/^[a-z0-9_]{3,20}$/.test(String(username).toLowerCase())) {
+        return res.status(400).json({ error: 'Username must be 3-20 chars: lowercase letters, numbers, or underscore' });
+    }
+    // Password strength
+    if (password.length < 8 || !/[A-Z]/.test(password) || !/\d/.test(password)) {
+        return res.status(400).json({
+            error: 'Password must be at least 8 characters with one uppercase letter and one number',
+        });
+    }
+
+    const hash = await bcrypt.hash(password, 10);
+
+    try {
+        const r = await db.query(
+            `INSERT INTO users
+                (username, email, password_hash, full_name, phone, country, role, status)
+             VALUES ($1, $2, $3, $4, $5, $6, 'contributor', 'pending')
+             RETURNING id, username, email, full_name, role, status, created_at`,
+            [
+                String(username).trim().toLowerCase(),
+                String(email).toLowerCase().trim(),
+                hash,
+                String(full_name).trim(),
+                phone || null,
+                country || null,
+            ]
+        );
+
+        res.status(201).json({
+            ok: true,
+            message: 'Account created. Your account is pending admin approval.',
+            user: r.rows[0],
+        });
+    } catch (e) {
+        if (e.code === '23505') {
+            return res.status(409).json({ error: 'Email or username already taken' });
+        }
+        throw e;
+    }
+}));
+
+// ─────────────────────────────────────────────
+// AUTHENTICATED — Contributor dashboard
+// ─────────────────────────────────────────────
 
 // GET /api/contributor/dashboard
 router.get('/dashboard', requireAuth, requireContributor, asyncHandler(async (req, res) => {
