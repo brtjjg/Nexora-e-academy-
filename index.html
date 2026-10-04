@@ -740,7 +740,7 @@ table tbody tr:hover{background:#f8fafc}
 <p style="color:var(--text-secondary);margin:1rem 0">Pay the admission processing fee of <strong>$0.75</strong>.</p>
 <div style="background:var(--bg);padding:1rem;border-radius:12px;margin:1rem 0;text-align:left;font-size:0.9rem"><div><strong>Application ID:</strong> <span id="regAppId" style="color:var(--gold);font-weight:700">—</span></div><div style="margin-top:0.3rem"><strong>Status:</strong> <span class="badge status-payment_due">AWAITING PAYMENT</span></div></div>
 <div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;padding:1.5rem;border-radius:12px;margin:1rem 0"><div style="font-size:0.75rem;letter-spacing:2px;opacity:0.75;text-transform:uppercase">Admission Fee</div><div style="font-size:2.5rem;font-weight:800;color:var(--gold);margin:0.3rem 0">$0.75</div></div>
-<button class="btn btn-success btn-block" id="payFeeBtn" onclick="payActivationFee()"><i class="fas fa-credit-card"></i> Pay $0.75 Now</button>
+<button class="btn btn-success btn-block" id="payFeeBtn" onclick="openActivationModal()"><i class="fas fa-credit-card"></i> Pay $0.75 Now</button>
 <div id="feeFlash" style="margin-top:1rem"></div>
 </div>
 </div>
@@ -888,6 +888,7 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="approveConfirmModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2><p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Confirm approval?</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()">Confirm Approve</button></div></div></div>
 
+<!-- Course Payment Modal -->
 <div class="modal-backdrop" id="payCourseModal">
     <div class="modal-box" style="max-width:520px">
         <h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2>
@@ -910,6 +911,40 @@ table tbody tr:hover{background:#f8fafc}
             <div class="form-group"><label>Amount ($) *</label><input type="number" id="payAmount" step="0.01" min="0.5" required></div>
             <div class="form-group"><label>Method</label><select id="payMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option></select></div>
             <div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closePayCourseModal()">Cancel</button><button type="submit" class="btn btn-success">Pay Manually</button></div>
+        </form>
+    </div>
+</div>
+
+<!-- Admission Fee Payment Modal -->
+<div class="modal-backdrop" id="payActivationModal">
+    <div class="modal-box" style="max-width:520px">
+        <h2><i class="fas fa-user-check" style="color:var(--gold)"></i> Pay Admission Fee</h2>
+        <div id="payActivationInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem">
+            <div><strong>Admission Fee</strong></div>
+            <div style="margin-top:0.3rem;font-size:1.3rem;font-weight:800;color:var(--gold)">$0.75</div>
+            <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.5rem">One-time, non-refundable processing fee.</div>
+        </div>
+
+        <div style="margin-bottom:1rem">
+            <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:0.5rem">
+                <i class="fab fa-paypal" style="color:#0070ba"></i> Pay with PayPal
+            </div>
+            <div id="paypal-activation-button-container"></div>
+            <div id="paypalActivationError" style="margin-top:0.5rem;font-size:0.85rem;color:var(--danger)"></div>
+        </div>
+
+        <div style="text-align:center;color:var(--text-secondary);font-size:0.8rem;margin:1.25rem 0;position:relative">
+            <hr style="border:none;border-top:1px solid #e2e8f0">
+            <span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--white);padding:0 0.75rem">or pay manually</span>
+        </div>
+
+        <form onsubmit="processActivationPayment(event)">
+            <div class="form-group"><label>Amount ($) *</label><input type="number" id="payActivationAmount" step="0.01" min="0.5" value="0.75" readonly></div>
+            <div class="form-group"><label>Method</label><select id="payActivationMethod"><option value="mpesa">📱 M-Pesa</option><option value="card">💳 Card</option><option value="bank">🏦 Bank</option></select></div>
+            <div style="display:flex;gap:0.5rem;justify-content:flex-end">
+                <button type="button" class="btn btn-outline" onclick="closeActivationModal()">Cancel</button>
+                <button type="submit" class="btn btn-success">Pay Manually</button>
+            </div>
         </form>
     </div>
 </div>
@@ -1354,16 +1389,86 @@ async function regStep2() {
     } catch (err) { showFlash('registerFlash', '❌ ' + (err.data?.error || err.message), 'danger'); }
     finally { setLoading(false); }
 }
-async function payActivationFee() {
-    const btn = document.getElementById('payFeeBtn');
-    btn.disabled = true;
-    showFlash('feeFlash', '<i class="fas fa-spinner fa-spin"></i> Processing...', 'info');
-    try {
-        await api('/payments/activation', { method: 'POST' });
-        showFlash('feeFlash', '✅ Payment received! You can now access courses.', 'success');
-        setTimeout(() => location.reload(), 2000);
-    } catch (err) { showFlash('feeFlash', '❌ ' + (err.data?.error || err.message), 'danger'); btn.disabled = false; }
+
+/* ─────────── Admission Fee Payment ─────────── */
+function openActivationModal() {
+    document.getElementById('payActivationModal').classList.add('active');
+    renderPayPalActivationButtons();
 }
+
+function closeActivationModal() {
+    document.getElementById('payActivationModal').classList.remove('active');
+}
+
+function renderPayPalActivationButtons() {
+    const container = document.getElementById('paypal-activation-button-container');
+    const errEl = document.getElementById('paypalActivationError');
+    if (!container) return;
+
+    container.innerHTML = '';
+    if (errEl) errEl.textContent = '';
+
+    if (!window.paypal) {
+        if (errEl) errEl.textContent = 'PayPal failed to load. Use manual payment below.';
+        return;
+    }
+
+    window.paypal.Buttons({
+        style: { layout: 'vertical', color: 'gold', shape: 'rect', label: 'paypal', height: 45 },
+
+        createOrder: function () {
+            return fetch(`${API_BASE}/paypal/create-activation-order`, {
+                method: 'POST',
+                credentials: 'include',
+                headers: { 'Content-Type': 'application/json' },
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) throw new Error(data.error);
+                return data.id;
+            });
+        },
+
+        onApprove: function (data) {
+            return fetch(`${API_BASE}/paypal/capture-activation-order/${data.orderID}`, {
+                method: 'POST',
+                credentials: 'include',
+            })
+            .then(res => res.json())
+            .then(details => {
+                if (details.error) throw new Error(details.error);
+                alert(`✅ Admission fee paid!\n\nAmount: $${parseFloat(details.amount).toFixed(2)}\nYou can now access courses.`);
+                closeActivationModal();
+                setTimeout(() => location.reload(), 1000);
+            });
+        },
+
+        onError: function (err) {
+            console.error('[paypal-activation]', err);
+            if (errEl) errEl.textContent = '❌ ' + (err.message || 'Payment failed');
+        },
+
+        onCancel: function () {
+            if (errEl) errEl.textContent = 'Payment cancelled.';
+        },
+    }).render('#paypal-activation-button-container');
+}
+
+async function processActivationPayment(e) {
+    e.preventDefault();
+    try {
+        await api('/payments/activation', {
+            method: 'POST',
+            body: { payment_method: document.getElementById('payActivationMethod').value }
+        });
+        alert('✅ Payment received! You can now access courses.');
+        closeActivationModal();
+        setTimeout(() => location.reload(), 1000);
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
 function goToDashboard() { showApp(); }
 
 function handleDocumentUpload(event, docType) {
@@ -2532,7 +2637,7 @@ async function updateCounts() {
     } catch (e) {}
 }
 
-document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeSidebar(); closeAppDetailsModal(); closePayCourseModal(); closeActivationModal(); closeRejectModal(); closeApproveModal(); closeLessonEditor(); closeGroupModal(); closeDeleteGroupModal(); } });
 
 /* ─────────── Google Sign-In (Login + Register) ─────────── */
 const GOOGLE_CLIENT_ID = '243689444748-tm3cu1e9jg9j3tf8i2h2f0cgnpgsr239.apps.googleusercontent.com';
@@ -2610,7 +2715,6 @@ async function handleGoogleLogin(response) {
     }
 }
 
-/* Auto-init whenever login OR register page becomes active */
 setInterval(() => {
     const loginActive = document.getElementById('page-login')?.classList.contains('active');
     const registerActive = document.getElementById('page-register')?.classList.contains('active');
@@ -2626,7 +2730,7 @@ document.addEventListener('DOMContentLoaded', initGoogleButton);
     else goHome();
 })();
 
-console.log('🎓 Nexora Academy v10.4 — Google Sign-In on Login + Register');
+console.log('🎓 Nexora Academy v11.0 — Admission fee via PayPal/mobile modal');
 </script>
 <script src="certificate.js"></script>
 </body>
