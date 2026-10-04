@@ -244,9 +244,9 @@ router.get('/debug-fix-review', requireAdmin, asyncHandler(async (req, res) => {
         client.release();
     }
 }));
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 // CONTRIBUTOR MANAGEMENT
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 
 // POST /api/admin/contributors  (create invite)
 router.post('/contributors', asyncHandler(async (req, res) => {
@@ -274,31 +274,68 @@ router.post('/contributors', asyncHandler(async (req, res) => {
     }
 }));
 
-// GET /api/admin/contributors
+// GET /api/admin/contributors  (?status=pending|active|all)
 router.get('/contributors', asyncHandler(async (req, res) => {
-    const r = await db.query(
-        `SELECT
-            u.id, u.username, u.email, u.full_name, u.status, u.created_at,
+    const { status } = req.query;
+    const params = [];
+    let sql = `
+        SELECT
+            u.id, u.username, u.email, u.full_name, u.phone, u.country,
+            u.status, u.created_at,
             (SELECT COUNT(*) FROM submissions s WHERE s.contributor_id = u.id) AS submission_count
-         FROM users u
-         WHERE u.role = 'contributor'
-         ORDER BY u.created_at DESC`
-    );
+        FROM users u
+        WHERE u.role = 'contributor'
+    `;
+    if (status && status !== 'all') {
+        params.push(status);
+        sql += ` AND u.status = $1`;
+    } else {
+        sql += ` AND u.status != 'rejected'`;
+    }
+    sql += ` ORDER BY u.created_at DESC`;
+
+    const r = await db.query(sql, params);
     res.json({ contributors: r.rows });
 }));
 
-// DELETE /api/admin/contributors/:id
+// POST /api/admin/contributors/:id/approve
+router.post('/contributors/:id/approve', asyncHandler(async (req, res) => {
+    const r = await db.query(
+        `UPDATE users SET status = 'active', updated_at = NOW()
+         WHERE id = $1 AND role = 'contributor'
+         RETURNING id, username, email, full_name, role, status`,
+        [req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Contributor not found' });
+    res.json({ contributor: r.rows[0] });
+}));
+
+// POST /api/admin/contributors/:id/reject
+router.post('/contributors/:id/reject', asyncHandler(async (req, res) => {
+    const { reason } = req.body || {};
+    const r = await db.query(
+        `UPDATE users SET status = 'rejected', updated_at = NOW()
+         WHERE id = $1 AND role = 'contributor'
+         RETURNING id, username, email, full_name, role, status`,
+        [req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Contributor not found' });
+    res.json({ contributor: r.rows[0], reason: reason || null });
+}));
+
+// DELETE /api/admin/contributors/:id  (suspend)
 router.delete('/contributors/:id', asyncHandler(async (req, res) => {
     await db.query(
-        `UPDATE users SET status = 'suspended' WHERE id = $1 AND role = 'contributor'`,
+        `UPDATE users SET status = 'suspended', updated_at = NOW()
+         WHERE id = $1 AND role = 'contributor'`,
         [req.params.id]
     );
     res.json({ ok: true });
 }));
 
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 // COURSE MANUALS
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 
 // POST /api/admin/manuals
 router.post('/manuals', asyncHandler(async (req, res) => {
@@ -333,9 +370,9 @@ router.delete('/manuals/:id', asyncHandler(async (req, res) => {
     res.json({ ok: true });
 }));
 
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 // SUBMISSION REVIEW
-// ─────────────────────────────────────────────
+// ═════════════════════════════════════════════
 
 // GET /api/admin/submissions  (?status=pending_review)
 router.get('/submissions', asyncHandler(async (req, res) => {
@@ -464,5 +501,5 @@ router.post('/submissions/:id/publish', asyncHandler(async (req, res) => {
         client.release();
     }
 }));
-
+  
 module.exports = router;
