@@ -1,10 +1,13 @@
+// routes/admin.js
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { asyncHandler, genAdmissionNumber } = require('../utils');
 const { requireAdmin } = require('../middleware');
 
+// ─────────────────────────────────────────────
 // GET /api/admin/stats
+// ─────────────────────────────────────────────
 router.get('/stats', requireAdmin, asyncHandler(async (req, res) => {
     const [students, courses, enrollments, apps, txs] = await Promise.all([
         db.query(`SELECT COUNT(*)::int AS c FROM users WHERE role='student'`),
@@ -37,13 +40,16 @@ router.get('/stats', requireAdmin, asyncHandler(async (req, res) => {
     });
 }));
 
+// ─────────────────────────────────────────────
 // GET /api/admin/students
+// Shows all users with role='student'
+// ─────────────────────────────────────────────
 router.get('/students', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
                 u.status, u.created_at,
                 sp.admission_number, sp.admission_status, sp.approval_status,
-                sp.activation_fee_paid,
+                COALESCE(sp.activation_fee_paid, FALSE) AS activation_fee_paid,
                 spo.sponsorship_type, spo.amount AS sponsorship_amount,
                 spo.percentage AS sponsorship_percentage, spo.sponsor_name,
                 (SELECT COUNT(*)::int FROM enrollments e WHERE e.user_id = u.id) AS enrollment_count,
@@ -67,7 +73,9 @@ router.get('/students', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ students });
 }));
 
+// ─────────────────────────────────────────────
 // GET /api/admin/students/:id
+// ─────────────────────────────────────────────
 router.get('/students/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT u.*, sp.*
@@ -80,32 +88,53 @@ router.get('/students/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ student: r.rows[0] });
 }));
 
+// ─────────────────────────────────────────────
 // POST /api/admin/students/:id/approve
+// FIXED: now updates users.role + status + activation_fee_paid
+// ─────────────────────────────────────────────
 router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
     const client = await db.getClient();
     try {
         await client.query('BEGIN');
+
         const s = await client.query(
-            `SELECT sp.admission_number, u.id, u.full_name
+            `SELECT u.id, u.full_name, u.email, u.role, u.status
              FROM users u
-             JOIN student_profiles sp ON sp.user_id = u.id
-             WHERE u.id = $1 FOR UPDATE`,
+             WHERE u.id = $1
+             FOR UPDATE`,
             [req.params.id]
         );
         if (!s.rows.length) {
             await client.query('ROLLBACK');
             return res.status(404).json({ error: 'Not found' });
         }
-        let admission = s.rows[0].admission_number;
+
+        // Get or create student_profiles row and get/create admission number
+        const spRow = await client.query(
+            `SELECT admission_number FROM student_profiles WHERE user_id = $1`,
+            [req.params.id]
+        );
+        let admission = spRow.rows[0]?.admission_number;
         if (!admission) admission = await genAdmissionNumber(client);
 
-        await client.query(
-            `UPDATE student_profiles
-             SET admission_status='approved', approval_status='approved',
-                 approved_at=NOW(), approved_by=$1, admission_number=$2
-             WHERE user_id=$3`,
-            [req.user.user_id, admission, req.params.id]
-        );
+        // Ensure student_profiles exists
+        if (!spRow.rows.length) {
+            await client.query(
+                `INSERT INTO student_profiles (user_id, admission_number, admission_status, approval_status)
+                 VALUES ($1, $2, 'approved', 'approved')`,
+                [req.params.id, admission]
+            );
+        } else {
+            await client.query(
+                `UPDATE student_profiles
+                 SET admission_status='approved', approval_status='approved',
+                     approved_at=NOW(), approved_by=$1, admission_number=$2
+                 WHERE user_id=$3`,
+                [req.user.user_id, admission, req.params.id]
+            );
+        }
+
+        // Update applications
         await client.query(
             `UPDATE applications
              SET status='approved', admission_number=$1,
@@ -113,6 +142,29 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
              WHERE user_id=$3 AND status IN ('payment_due','paid')`,
             [admission, req.user.user_id, req.params.id]
         );
+
+        // KEY FIX: promote the user to a student
+        await client.query(
+            `UPDATE users
+             SET role = 'student',
+                 status = 'active',
+                 updated_at = NOW()
+             WHERE id = $1 AND role != 'admin'`,
+            [req.params.id]
+        );
+
+        // Mark activation fee as paid if application was paid
+        const paidCheck = await client.query(
+            `SELECT 1 FROM applications WHERE user_id = $1 AND payment_status = 'paid' LIMIT 1`,
+            [req.params.id]
+        );
+        if (paidCheck.rows.length) {
+            await client.query(
+                `UPDATE student_profiles SET activation_fee_paid = TRUE WHERE user_id = $1`,
+                [req.params.id]
+            );
+        }
+
         await client.query('COMMIT');
         res.json({ ok: true, admission_number: admission });
     } catch (err) {
@@ -123,7 +175,9 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
     }
 }));
 
+// ─────────────────────────────────────────────
 // POST /api/admin/students/:id/reject
+// ─────────────────────────────────────────────
 router.post('/students/:id/reject', requireAdmin, asyncHandler(async (req, res) => {
     const { reason } = req.body;
     if (!reason) return res.status(400).json({ error: 'Reason required' });
@@ -154,7 +208,138 @@ router.post('/students/:id/reject', requireAdmin, asyncHandler(async (req, res) 
     }
 }));
 
+// ─────────────────────────────────────────────
+// POST /api/admin/applications/:id/approve
+// MISSING ROUTE — the frontend calls this path
+// ─────────────────────────────────────────────
+router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+
+        const a = await client.query(
+            `SELECT a.id, a.user_id, a.payment_status, u.role, u.status
+             FROM applications a
+             JOIN users u ON u.id = a.user_id
+             WHERE a.id = $1
+             FOR UPDATE`,
+            [req.params.id]
+        );
+        if (!a.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Application not found' });
+        }
+
+        const app = a.rows[0];
+
+        // Generate admission number
+        const spRow = await client.query(
+            `SELECT admission_number FROM student_profiles WHERE user_id = $1`,
+            [app.user_id]
+        );
+        let admission = spRow.rows[0]?.admission_number;
+        if (!admission) admission = await genAdmissionNumber(client);
+
+        // Upsert student_profiles
+        if (!spRow.rows.length) {
+            await client.query(
+                `INSERT INTO student_profiles (user_id, admission_number, admission_status, approval_status, activation_fee_paid)
+                 VALUES ($1, $2, 'approved', 'approved', $3)`,
+                [app.user_id, admission, app.payment_status === 'paid']
+            );
+        } else {
+            await client.query(
+                `UPDATE student_profiles
+                 SET admission_status='approved', approval_status='approved',
+                     approved_at=NOW(), approved_by=$1, admission_number=$2
+                 WHERE user_id=$3`,
+                [req.user.user_id, admission, app.user_id]
+            );
+        }
+
+        // Update application
+        await client.query(
+            `UPDATE applications
+             SET status='approved', admission_number=$1,
+                 reviewed_at=NOW(), reviewed_by=$2
+             WHERE id=$3`,
+            [admission, req.user.user_id, req.params.id]
+        );
+
+        // Promote user to student
+        await client.query(
+            `UPDATE users
+             SET role = 'student',
+                 status = 'active',
+                 updated_at = NOW()
+             WHERE id = $1 AND role != 'admin'`,
+            [app.user_id]
+        );
+
+        // Mark activation fee paid if applicable
+        if (app.payment_status === 'paid') {
+            await client.query(
+                `UPDATE student_profiles SET activation_fee_paid = TRUE WHERE user_id = $1`,
+                [app.user_id]
+            );
+        }
+
+        await client.query('COMMIT');
+        res.json({ ok: true, admission_number: admission });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+    } finally {
+        client.release();
+    }
+}));
+
+// ─────────────────────────────────────────────
+// POST /api/admin/applications/:id/reject
+// MISSING ROUTE — the frontend calls this path
+// ─────────────────────────────────────────────
+router.post('/applications/:id/reject', requireAdmin, asyncHandler(async (req, res) => {
+    const { reason } = req.body;
+    if (!reason) return res.status(400).json({ error: 'Reason required' });
+    const client = await db.getClient();
+    try {
+        await client.query('BEGIN');
+        const a = await client.query(
+            `SELECT user_id FROM applications WHERE id = $1`,
+            [req.params.id]
+        );
+        if (!a.rows.length) {
+            await client.query('ROLLBACK');
+            return res.status(404).json({ error: 'Application not found' });
+        }
+        const userId = a.rows[0].user_id;
+
+        await client.query(
+            `UPDATE student_profiles
+             SET admission_status='rejected', approval_status='rejected', rejection_reason=$1
+             WHERE user_id=$2`,
+            [reason, userId]
+        );
+        await client.query(
+            `UPDATE applications
+             SET status='rejected', rejection_reason=$1,
+                 reviewed_at=NOW(), reviewed_by=$2
+             WHERE id=$3`,
+            [reason, req.user.user_id, req.params.id]
+        );
+        await client.query('COMMIT');
+        res.json({ ok: true });
+    } catch (err) {
+        await client.query('ROLLBACK');
+        throw err;
+    } finally {
+        client.release();
+    }
+}));
+
+// ─────────────────────────────────────────────
 // POST /api/admin/students/:id/sponsorship
+// ─────────────────────────────────────────────
 router.post('/students/:id/sponsorship', requireAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
     const { type, amount, percentage, sponsor_name } = req.body;
@@ -190,7 +375,9 @@ router.post('/students/:id/sponsorship', requireAdmin, asyncHandler(async (req, 
     res.json({ ok: true });
 }));
 
+// ─────────────────────────────────────────────
 // GET /api/admin/activities
+// ─────────────────────────────────────────────
 router.get('/activities', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT a.*, u.full_name AS user_name
@@ -202,62 +389,17 @@ router.get('/activities', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ activities: r.rows });
 }));
 
-// ============================================================
-// DEBUG: Show current constraint + force fix + test update
-// Remove after debugging is complete
-// ============================================================
-router.get('/debug-fix-review', requireAdmin, asyncHandler(async (req, res) => {
-    const testId = '8fbc0222-03a0-4db6-b7c4-928e66db0151';
-    const client = await db.getClient();
-    try {
-        const c = await db.query(`SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'assignment_submissions_status_check'`);
-        
-        await db.query(`ALTER TABLE assignment_submissions DROP CONSTRAINT IF EXISTS assignment_submissions_status_check`);
-        await db.query(`ALTER TABLE assignment_submissions ADD CONSTRAINT assignment_submissions_status_check CHECK (status IN ('submitted','marked','graded','returned','resubmitted','rejected','pending','draft'))`);
-        
-        const verify = await db.query(`SELECT pg_get_constraintdef(oid) AS def FROM pg_constraint WHERE conname = 'assignment_submissions_status_check'`);
-        
-        await client.query('BEGIN');
-        await client.query(
-            `UPDATE assignment_submissions SET status='graded', marks=15, percentage=75, feedback='debug test', marked_at=NOW(), marked_by=$1 WHERE id=$2`,
-            [req.user.user_id, testId]
-        );
-        await client.query('COMMIT');
-        
-        res.json({ 
-            ok: true, 
-            constraintBefore: c.rows[0]?.def || 'NOT FOUND',
-            constraintAfter: verify.rows[0]?.def || 'NOT FOUND',
-            message: 'Update succeeded after constraint drop+readd'
-        });
-    } catch (err) {
-        await client.query('ROLLBACK').catch(()=>{});
-        res.status(500).json({ 
-            error: err.message, 
-            detail: err.detail, 
-            code: err.code,
-            constraint: err.constraint,
-            column: err.column,
-            table: err.table
-        });
-    } finally {
-        client.release();
-    }
-}));
 // ═════════════════════════════════════════════
 // CONTRIBUTOR MANAGEMENT
 // ═════════════════════════════════════════════
 
-// POST /api/admin/contributors  (create invite)
-router.post('/contributors', asyncHandler(async (req, res) => {
+router.post('/contributors', requireAdmin, asyncHandler(async (req, res) => {
     const { email, full_name, username, password } = req.body;
     if (!email || !full_name || !username || !password) {
         return res.status(400).json({ error: 'Missing email, full_name, username, or password' });
     }
-
     const bcrypt = require('bcrypt');
     const hash = await bcrypt.hash(password, 10);
-
     try {
         const r = await db.query(
             `INSERT INTO users (username, email, password_hash, full_name, role, status)
@@ -267,22 +409,18 @@ router.post('/contributors', asyncHandler(async (req, res) => {
         );
         res.status(201).json({ contributor: r.rows[0] });
     } catch (e) {
-        if (e.code === '23505') {
-            return res.status(409).json({ error: 'Email or username already taken' });
-        }
+        if (e.code === '23505') return res.status(409).json({ error: 'Email or username already taken' });
         throw e;
     }
 }));
 
-// GET /api/admin/contributors  (?status=pending|active|all)
-router.get('/contributors', asyncHandler(async (req, res) => {
+router.get('/contributors', requireAdmin, asyncHandler(async (req, res) => {
     const { status } = req.query;
     const params = [];
     let sql = `
-        SELECT
-            u.id, u.username, u.email, u.full_name, u.phone, u.country,
-            u.status, u.created_at,
-            (SELECT COUNT(*) FROM submissions s WHERE s.contributor_id = u.id) AS submission_count
+        SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
+               u.status, u.created_at,
+               (SELECT COUNT(*)::int FROM submissions s WHERE s.contributor_id = u.id) AS submission_count
         FROM users u
         WHERE u.role = 'contributor'
     `;
@@ -293,13 +431,11 @@ router.get('/contributors', asyncHandler(async (req, res) => {
         sql += ` AND u.status != 'rejected'`;
     }
     sql += ` ORDER BY u.created_at DESC`;
-
     const r = await db.query(sql, params);
     res.json({ contributors: r.rows });
 }));
 
-// POST /api/admin/contributors/:id/approve
-router.post('/contributors/:id/approve', asyncHandler(async (req, res) => {
+router.post('/contributors/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `UPDATE users SET status = 'active', updated_at = NOW()
          WHERE id = $1 AND role = 'contributor'
@@ -310,8 +446,7 @@ router.post('/contributors/:id/approve', asyncHandler(async (req, res) => {
     res.json({ contributor: r.rows[0] });
 }));
 
-// POST /api/admin/contributors/:id/reject
-router.post('/contributors/:id/reject', asyncHandler(async (req, res) => {
+router.post('/contributors/:id/reject', requireAdmin, asyncHandler(async (req, res) => {
     const { reason } = req.body || {};
     const r = await db.query(
         `UPDATE users SET status = 'rejected', updated_at = NOW()
@@ -323,8 +458,7 @@ router.post('/contributors/:id/reject', asyncHandler(async (req, res) => {
     res.json({ contributor: r.rows[0], reason: reason || null });
 }));
 
-// DELETE /api/admin/contributors/:id  (suspend)
-router.delete('/contributors/:id', asyncHandler(async (req, res) => {
+router.delete('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     await db.query(
         `UPDATE users SET status = 'suspended', updated_at = NOW()
          WHERE id = $1 AND role = 'contributor'`,
@@ -337,24 +471,21 @@ router.delete('/contributors/:id', asyncHandler(async (req, res) => {
 // COURSE MANUALS
 // ═════════════════════════════════════════════
 
-// POST /api/admin/manuals
-router.post('/manuals', asyncHandler(async (req, res) => {
+router.post('/manuals', requireAdmin, asyncHandler(async (req, res) => {
     const { title, course_code, instructions, file_path, file_name, assigned_to } = req.body;
     if (!title) return res.status(400).json({ error: 'Title is required' });
-
     const r = await db.query(
         `INSERT INTO course_manuals
             (title, course_code, instructions, file_path, file_name, assigned_to, created_by)
          VALUES ($1,$2,$3,$4,$5,$6,$7)
          RETURNING *`,
         [title, course_code || null, instructions || null, file_path || null,
-         file_name || null, assigned_to || null, req.user.id]
+         file_name || null, assigned_to || null, req.user.user_id]
     );
     res.status(201).json({ manual: r.rows[0] });
 }));
 
-// GET /api/admin/manuals
-router.get('/manuals', asyncHandler(async (req, res) => {
+router.get('/manuals', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT m.*, u.full_name AS assigned_to_name
          FROM course_manuals m
@@ -364,8 +495,7 @@ router.get('/manuals', asyncHandler(async (req, res) => {
     res.json({ manuals: r.rows });
 }));
 
-// DELETE /api/admin/manuals/:id
-router.delete('/manuals/:id', asyncHandler(async (req, res) => {
+router.delete('/manuals/:id', requireAdmin, asyncHandler(async (req, res) => {
     await db.query(`DELETE FROM course_manuals WHERE id = $1`, [req.params.id]);
     res.json({ ok: true });
 }));
@@ -374,8 +504,7 @@ router.delete('/manuals/:id', asyncHandler(async (req, res) => {
 // SUBMISSION REVIEW
 // ═════════════════════════════════════════════
 
-// GET /api/admin/submissions  (?status=pending_review)
-router.get('/submissions', asyncHandler(async (req, res) => {
+router.get('/submissions', requireAdmin, asyncHandler(async (req, res) => {
     const { status } = req.query;
     const params = [];
     let sql = `
@@ -388,13 +517,11 @@ router.get('/submissions', asyncHandler(async (req, res) => {
         sql += ` WHERE s.status = $1`;
     }
     sql += ` ORDER BY s.submitted_at DESC NULLS LAST, s.updated_at DESC`;
-
     const r = await db.query(sql, params);
     res.json({ submissions: r.rows });
 }));
 
-// GET /api/admin/submissions/:id
-router.get('/submissions/:id', asyncHandler(async (req, res) => {
+router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT s.*, u.full_name AS contributor_name, u.email AS contributor_email
          FROM submissions s
@@ -406,8 +533,7 @@ router.get('/submissions/:id', asyncHandler(async (req, res) => {
     res.json({ submission: r.rows[0] });
 }));
 
-// POST /api/admin/submissions/:id/review
-router.post('/submissions/:id/review', asyncHandler(async (req, res) => {
+router.post('/submissions/:id/review', requireAdmin, asyncHandler(async (req, res) => {
     const { action, feedback } = req.body;
     let newStatus;
     if (action === 'approve') newStatus = 'approved';
@@ -420,26 +546,22 @@ router.post('/submissions/:id/review', asyncHandler(async (req, res) => {
          SET status = $1, admin_feedback = $2, reviewed_by = $3, reviewed_at = NOW(), updated_at = NOW()
          WHERE id = $4
          RETURNING *`,
-        [newStatus, feedback || null, req.user.id, req.params.id]
+        [newStatus, feedback || null, req.user.user_id, req.params.id]
     );
     if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
     res.json({ submission: r.rows[0] });
 }));
 
-// POST /api/admin/submissions/:id/publish
-router.post('/submissions/:id/publish', asyncHandler(async (req, res) => {
+router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, res) => {
     const sRes = await db.query(`SELECT * FROM submissions WHERE id = $1`, [req.params.id]);
     if (!sRes.rows.length) return res.status(404).json({ error: 'Not found' });
     const s = sRes.rows[0];
-
     if (s.status !== 'approved') {
         return res.status(409).json({ error: 'Submission must be approved first' });
     }
-
     const client = await db.getClient();
     try {
         await client.query('BEGIN');
-
         const cRes = await client.query(
             `INSERT INTO courses
                 (title, code, category, level, description, duration, price,
@@ -484,14 +606,12 @@ router.post('/submissions/:id/publish', asyncHandler(async (req, res) => {
                 );
             }
         }
-
         await client.query(
             `UPDATE submissions
              SET status = 'published', course_id = $1, published_at = NOW(), updated_at = NOW()
              WHERE id = $2`,
             [courseId, s.id]
         );
-
         await client.query('COMMIT');
         res.json({ ok: true, course_id: courseId });
     } catch (e) {
@@ -501,5 +621,5 @@ router.post('/submissions/:id/publish', asyncHandler(async (req, res) => {
         client.release();
     }
 }));
-  
+
 module.exports = router;
