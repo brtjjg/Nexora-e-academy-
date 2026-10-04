@@ -654,7 +654,15 @@ table tbody tr:hover{background:#f8fafc}
 <div class="auth-card">
 <h2><i class="fas fa-sign-in-alt" style="color:var(--gold)"></i> Welcome Back</h2>
 <div id="loginFlash"></div>
-<form onsubmit="loginUser(event)">
+
+<div style="margin:1rem 0 1.25rem">
+    <div id="googleButton" style="display:flex;justify-content:center"></div>
+    <div style="display:flex;align-items:center;gap:0.75rem;margin:1.25rem 0">
+        <div style="flex:1;height:1px;background:#e2e8f0"></div>
+        <span style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px">or</span>
+        <div style="flex:1;height:1px;background:#e2e8f0"></div>
+    </div>
+</div>
 ...
 </form>
 <p class="text-center" ...>Don't have an account? ...</p>
