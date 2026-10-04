@@ -83,7 +83,8 @@ const authLimiter = rateLimit({
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
-app.use('/api/auth', require('./routes/auth-google'));
+app.use('/api/auth', loadRoute('auth'));
+app.use('/api/auth', loadRoute('auth-google'));
 app.use('/api/courses',      loadRoute('courses'));
 app.use('/api/enrollments',  loadRoute('enrollments'));
 app.use('/api/progress',     loadRoute('progress'));
