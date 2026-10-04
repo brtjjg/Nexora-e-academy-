@@ -296,5 +296,163 @@ router.get('/profile', requireAuth, requireContributor, asyncHandler(async (req,
     );
     res.json({ user: r.rows[0] });
 }));
+// POST /api/contributor/google  (PUBLIC — signs up OR logs in)
+// Body: { credential: "<google id token>" }
+router.post('/google', asyncHandler(async (req, res) => {
+    const { credential } = req.body || {};
+    if (!credential) {
+        return res.status(400).json({ error: 'Missing Google credential' });
+    }
+
+    const { OAuth2Client } = require('google-auth-library');
+    const { createSession } = require('../auth');
+
+    const COOKIE_OPTS = {
+        httpOnly: true,
+        secure: true,
+        sameSite: 'none',
+        path: '/',
+    };
+
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    let payload;
+    try {
+        const ticket = await client.verifyIdToken({
+            idToken: credential,
+            audience: process.env.GOOGLE_CLIENT_ID,
+        });
+        payload = ticket.getPayload();
+    } catch (err) {
+        return res.status(401).json({ error: 'Invalid Google token' });
+    }
+
+    if (!payload || !payload.email_verified) {
+        return res.status(401).json({ error: 'Email not verified by Google' });
+    }
+
+    const googleId = payload.sub;
+    const email = String(payload.email).toLowerCase();
+    const fullName = payload.name || email.split('@')[0];
+    const picture = payload.picture || null;
+
+    const dbClient = await db.getClient();
+    try {
+        await dbClient.query('BEGIN');
+
+        // 1) Find by google_id
+        let userRes = await dbClient.query(
+            `SELECT id, username, email, full_name, role, status
+             FROM users WHERE google_id = $1`,
+            [googleId]
+        );
+
+        let user = userRes.rows[0];
+        let isNew = false;
+
+        if (!user) {
+            // 2) Find by email
+            const byEmail = await dbClient.query(
+                `SELECT id, username, email, full_name, role, status, google_id
+                 FROM users WHERE LOWER(email) = $1`,
+                [email]
+            );
+
+            if (byEmail.rows.length) {
+                user = byEmail.rows[0];
+
+                if (user.role !== 'contributor' && user.role !== 'admin') {
+                    await dbClient.query('ROLLBACK');
+                    return res.status(403).json({
+                        error: 'This email is registered as a student. Use the main Academy site.'
+                    });
+                }
+
+                if (user.status === 'pending') {
+                    await dbClient.query('ROLLBACK');
+                    return res.status(403).json({
+                        error: 'Your contributor account is pending admin approval.'
+                    });
+                }
+
+                if (user.status !== 'active') {
+                    await dbClient.query('ROLLBACK');
+                    return res.status(403).json({ error: 'Account not active' });
+                }
+
+                await dbClient.query(
+                    `UPDATE users SET google_id = $1, updated_at = NOW() WHERE id = $2`,
+                    [googleId, user.id]
+                );
+            } else {
+                // 3) Brand-new Google contributor signup
+                isNew = true;
+
+                let base = email.split('@')[0].replace(/[^a-z0-9_]/gi, '').toLowerCase() || 'user';
+                let username = base;
+                let suffix = 0;
+                // eslint-disable-next-line no-constant-condition
+                while (true) {
+                    const u = await dbClient.query('SELECT 1 FROM users WHERE username = $1', [username]);
+                    if (!u.rows.length) break;
+                    suffix += 1;
+                    username = `${base}${suffix}`;
+                }
+
+                const created = await dbClient.query(
+                    `INSERT INTO users
+                        (username, email, password_hash, full_name, role, status, google_id, auth_provider, avatar_url)
+                     VALUES ($1,$2,NULL,$3,'contributor','pending',$4,'google',$5)
+                     RETURNING id, username, email, full_name, role, status`,
+                    [username, email, fullName, googleId, picture]
+                );
+                user = created.rows[0];
+            }
+        } else {
+            // Found by google_id
+            if (user.role !== 'contributor' && user.role !== 'admin') {
+                await dbClient.query('ROLLBACK');
+                return res.status(403).json({ error: 'Not a contributor account' });
+            }
+            if (user.status === 'pending') {
+                await dbClient.query('ROLLBACK');
+                return res.status(403).json({ error: 'Your contributor account is pending admin approval.' });
+            }
+            if (user.status !== 'active') {
+                await dbClient.query('ROLLBACK');
+                return res.status(403).json({ error: 'Account not active' });
+            }
+        }
+
+        await dbClient.query('COMMIT');
+
+        if (isNew) {
+            return res.status(201).json({
+                ok: true,
+                isNew: true,
+                status: 'pending',
+                message: 'Account created with Google. An admin will review your application.',
+            });
+        }
+
+        // Create session for existing active contributor
+        const { token, expiresAt } = await createSession(
+            user.id,
+            req.ip,
+            req.headers['user-agent']
+        );
+        res.cookie('session', token, { ...COOKIE_OPTS, expires: expiresAt });
+
+        res.json({ ok: true, role: user.role, isNew: false });
+    } catch (err) {
+        await dbClient.query('ROLLBACK');
+        if (err.code === '23505') {
+            return res.status(409).json({ error: 'Account already exists' });
+        }
+        throw err;
+    } finally {
+        dbClient.release();
+    }
+}));
 
 module.exports = router;
