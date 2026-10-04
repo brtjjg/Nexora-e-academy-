@@ -1,23 +1,24 @@
-// backend/src/routes/paypal.js
+// routes/paypal.js
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
-const { requireAuth } = require('../middleware');
 
-const PAYPAL_API = process.env.PAYPAL_ENV === 'production'
-    ? 'https://api-m.paypal.com'
-    : 'https://api-m.sandbox.paypal.com';
+// ─────────────────────────────────────────────
+// PAYPAL CONFIG
+// ─────────────────────────────────────────────
+const PAYPAL_API_BASE = process.env.PAYPAL_API_BASE || 'https://api-m.paypal.com';
+const PAYPAL_CLIENT_ID = process.env.PAYPAL_CLIENT_ID;
+const PAYPAL_CLIENT_SECRET = process.env.PAYPAL_CLIENT_SECRET;
+const ACTIVATION_FEE = 0.75;
 
-/* ═══════════════════════════════════════════════════════════
-   Helper: get PayPal OAuth access token
-   ═══════════════════════════════════════════════════════════ */
+// Get a PayPal access token
 async function getPayPalAccessToken() {
-    const auth = Buffer.from(
-        `${process.env.PAYPAL_CLIENT_ID}:${process.env.PAYPAL_CLIENT_SECRET}`
-    ).toString('base64');
-
-    const res = await fetch(`${PAYPAL_API}/v1/oauth2/token`, {
+    if (!PAYPAL_CLIENT_ID || !PAYPAL_CLIENT_SECRET) {
+        throw new Error('PayPal credentials not configured');
+    }
+    const auth = Buffer.from(`${PAYPAL_CLIENT_ID}:${PAYPAL_CLIENT_SECRET}`).toString('base64');
+    const res = await fetch(`${PAYPAL_API_BASE}/v1/oauth2/token`, {
         method: 'POST',
         headers: {
             'Authorization': `Basic ${auth}`,
@@ -25,119 +26,262 @@ async function getPayPalAccessToken() {
         },
         body: 'grant_type=client_credentials',
     });
-
-    if (!res.ok) {
-        const err = await res.text();
-        throw new Error(`PayPal auth failed: ${err}`);
-    }
     const data = await res.json();
+    if (!res.ok) throw new Error(data.error_description || 'PayPal auth failed');
     return data.access_token;
 }
 
-/* ═══════════════════════════════════════════════════════════
-   POST /api/paypal/create-order
-   ═══════════════════════════════════════════════════════════ */
-router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
-    const userId = req.user.user_id || req.user.id;
-    const { course_id, amount } = req.body;
+// ─────────────────────────────────────────────
+// COURSE PAYMENT
+// ─────────────────────────────────────────────
 
-    if (!course_id) return res.status(400).json({ error: 'course_id required' });
-
-    const amt = parseFloat(amount);
-    if (!amt || amt <= 0) return res.status(400).json({ error: 'Invalid amount' });
-
-    const courseRes = await db.query(
-        `SELECT c.id, c.title, c.price FROM courses c WHERE c.id = $1`,
-        [course_id]
-    );
-    if (!courseRes.rows.length) return res.status(404).json({ error: 'Course not found' });
-    const course = courseRes.rows[0];
-
-    const paidRes = await db.query(
-        `SELECT COALESCE(SUM(amount), 0)::numeric AS paid
-         FROM transactions
-         WHERE user_id = $1 AND course_id = $2
-           AND payment_type = 'COURSE_PAYMENT'
-           AND status = 'completed'`,
-        [userId, course_id]
-    );
-    const alreadyPaid = parseFloat(paidRes.rows[0].paid || 0);
-    const remaining = Math.max(0, parseFloat(course.price) - alreadyPaid);
-
-    if (remaining <= 0) return res.status(400).json({ error: 'Course already fully paid' });
-    if (amt > remaining + 0.01) return res.status(400).json({ error: `Amount exceeds remaining ($${remaining.toFixed(2)})` });
-
-    const accessToken = await getPayPalAccessToken();
-    const orderRes = await fetch(`${PAYPAL_API}/v2/checkout/orders`, {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${accessToken}`,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            intent: 'CAPTURE',
-            purchase_units: [{
-                amount: { currency_code: 'USD', value: amt.toFixed(2) },
-                description: `Nexora Academy — ${course.title}`,
-                custom_id: `${userId}|${course_id}`,
-            }],
-            application_context: {
-                brand_name: 'Nexora Academy',
-                landing_page: 'NO_PREFERENCE',
-                user_action: 'PAY_NOW',
-                return_url: 'https://nexora-e-academy.vercel.app/#payment-success',
-                cancel_url: 'https://nexora-e-academy.vercel.app/#payment-cancelled',
-            },
-        }),
-    });
-
-    if (!orderRes.ok) {
-        const err = await orderRes.text();
-        console.error('[paypal:create-order]', err);
-        return res.status(500).json({ error: 'Failed to create PayPal order' });
+// POST /api/paypal/create-order
+// Body: { course_id, amount }
+router.post('/create-order', asyncHandler(async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
     }
 
-    const order = await orderRes.json();
-    res.json({ id: order.id, amount: amt, remaining });
+    const { course_id, amount } = req.body || {};
+    if (!course_id || !amount) {
+        return res.status(400).json({ error: 'Missing course_id or amount' });
+    }
+
+    const amt = parseFloat(amount);
+    if (isNaN(amt) || amt <= 0) {
+        return res.status(400).json({ error: 'Invalid amount' });
+    }
+
+    try {
+        const accessToken = await getPayPalAccessToken();
+
+        const orderRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                intent: 'CAPTURE',
+                purchase_units: [{
+                    amount: { currency_code: 'USD', value: amt.toFixed(2) },
+                    description: 'Nexora Academy - Course Payment',
+                    custom_id: `course:${course_id}:${req.user.id}`,
+                }],
+            }),
+        });
+        const orderData = await orderRes.json();
+        if (!orderRes.ok) {
+            console.error('[paypal create-order]', orderData);
+            throw new Error(orderData.message || 'Order creation failed');
+        }
+
+        res.json({ id: orderData.id });
+    } catch (err) {
+        console.error('[paypal create-order]', err.message);
+        res.status(500).json({ error: 'Could not create PayPal order: ' + err.message });
+    }
+}));
+
+// POST /api/paypal/capture-order/:orderId
+router.post('/capture-order/:orderId', asyncHandler(async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { orderId } = req.params;
+
+    try {
+        const accessToken = await getPayPalAccessToken();
+
+        const captureRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        const captureData = await captureRes.json();
+        if (!captureRes.ok) {
+            console.error('[paypal capture-order]', captureData);
+            throw new Error(captureData.message || 'Capture failed');
+        }
+        if (captureData.status !== 'COMPLETED') {
+            throw new Error('Payment not completed');
+        }
+
+        const customId = captureData.purchase_units?.[0]?.payments?.captures?.[0]?.custom_id
+            || captureData.purchase_units?.[0]?.custom_id || '';
+        const parts = String(customId).split(':');
+        const courseId = parts[0] === 'course' ? parts[1] : null;
+        const paidAmount = parseFloat(captureData.purchase_units?.[0]?.payments?.captures?.[0]?.amount?.value || '0');
+
+        if (!courseId || !paidAmount) {
+            throw new Error('Could not determine course or amount');
+        }
+
+        // Record the payment
+        await db.query(
+            `INSERT INTO payments
+               (user_id, course_id, amount, payment_type, payment_method, status, transaction_id, created_at)
+             VALUES ($1, $2, $3, 'COURSE_PAYMENT', 'paypal', 'completed', $4, NOW())`,
+            [req.user.id, courseId, paidAmount, orderId]
+        );
+
+        // Update enrollment total
+        await db.query(
+            `UPDATE enrollments
+             SET total_course_paid = COALESCE(total_course_paid, 0) + $1
+             WHERE user_id = $2 AND course_id = $3`,
+            [paidAmount, req.user.id, courseId]
+        );
+
+        // Get new balances
+        const courseRes = await db.query('SELECT price FROM courses WHERE id = $1', [courseId]);
+        const coursePrice = parseFloat(courseRes.rows[0]?.price || 0);
+
+        const enrollRes = await db.query(
+            `SELECT total_course_paid FROM enrollments WHERE user_id = $1 AND course_id = $2`,
+            [req.user.id, courseId]
+        );
+        const totalPaid = parseFloat(enrollRes.rows[0]?.total_course_paid || 0);
+        const remaining = Math.max(coursePrice - totalPaid, 0);
+        const pct = coursePrice > 0 ? Math.min((totalPaid / coursePrice) * 100, 100) : 100;
+
+        res.json({
+            ok: true,
+            amount: paidAmount,
+            balances: {
+                remaining_balance: remaining,
+                payment_percentage: pct,
+                total_paid: totalPaid,
+            },
+        });
+    } catch (err) {
+        console.error('[paypal capture-order]', err.message);
+        res.status(500).json({ error: 'Could not capture PayPal payment: ' + err.message });
+    }
 }));
 
 // ─────────────────────────────────────────────
-// POST /api/paypal/webhook
-// PayPal sends payment events here.
+// ADMISSION FEE
 // ─────────────────────────────────────────────
-router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(async (req, res) => {
-    // Respond 200 immediately so PayPal doesn't retry
+
+// POST /api/paypal/create-activation-order
+router.post('/create-activation-order', asyncHandler(async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    try {
+        const accessToken = await getPayPalAccessToken();
+
+        const orderRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                intent: 'CAPTURE',
+                purchase_units: [{
+                    amount: { currency_code: 'USD', value: ACTIVATION_FEE.toFixed(2) },
+                    description: 'Nexora Academy - Admission Fee',
+                    custom_id: `activation:${req.user.id}`,
+                }],
+            }),
+        });
+        const orderData = await orderRes.json();
+        if (!orderRes.ok) {
+            console.error('[paypal create-activation-order]', orderData);
+            throw new Error(orderData.message || 'Order creation failed');
+        }
+
+        res.json({ id: orderData.id });
+    } catch (err) {
+        console.error('[paypal create-activation-order]', err.message);
+        res.status(500).json({ error: 'Could not create PayPal order: ' + err.message });
+    }
+}));
+
+// POST /api/paypal/capture-activation-order/:orderId
+router.post('/capture-activation-order/:orderId', asyncHandler(async (req, res) => {
+    if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+    }
+
+    const { orderId } = req.params;
+
+    try {
+        const accessToken = await getPayPalAccessToken();
+
+        const captureRes = await fetch(`${PAYPAL_API_BASE}/v2/checkout/orders/${orderId}/capture`, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${accessToken}`,
+                'Content-Type': 'application/json',
+            },
+        });
+        const captureData = await captureRes.json();
+        if (!captureRes.ok) {
+            console.error('[paypal capture-activation]', captureData);
+            throw new Error(captureData.message || 'Capture failed');
+        }
+        if (captureData.status !== 'COMPLETED') {
+            throw new Error('Payment not completed');
+        }
+
+        await db.query(
+            `INSERT INTO payments
+               (user_id, amount, payment_type, payment_method, status, transaction_id, created_at)
+             VALUES ($1, $2, 'ACTIVATION_FEE', 'paypal', 'completed', $3, NOW())`,
+            [req.user.id, ACTIVATION_FEE, orderId]
+        );
+
+        await db.query(
+            `UPDATE users SET activation_fee_paid = TRUE WHERE id = $1`,
+            [req.user.id]
+        );
+
+        await db.query(
+            `UPDATE applications
+             SET payment_status = 'paid', status = 'paid'
+             WHERE user_id = $1 AND payment_status = 'unpaid'`,
+            [req.user.id]
+        );
+
+        res.json({ ok: true, amount: ACTIVATION_FEE });
+    } catch (err) {
+        console.error('[paypal capture-activation]', err.message);
+        res.status(500).json({ error: 'Could not capture PayPal payment: ' + err.message });
+    }
+}));
+
+// ─────────────────────────────────────────────
+// WEBHOOK (PayPal notifications)
+// ─────────────────────────────────────────────
+
+// POST /api/paypal/webhook
+router.post('/webhook', asyncHandler(async (req, res) => {
     res.status(200).send('OK');
 
     try {
-        // Parse the body — comes as a Buffer because we used express.raw
-        let event;
-        try {
-            event = JSON.parse(req.body.toString('utf8'));
-        } catch (e) {
-            console.warn('[paypal-webhook] Invalid JSON body');
-            return;
-        }
+        let event = req.body;
+        if (Buffer.isBuffer(event)) event = JSON.parse(event.toString('utf8'));
+        else if (typeof event === 'string') event = JSON.parse(event);
 
         const eventType = event.event_type;
-        console.log('[paypal-webhook] Received event:', eventType);
+        console.log('[paypal-webhook] Event:', eventType);
 
-        // Handle the events you care about
         if (eventType === 'PAYMENT.CAPTURE.COMPLETED') {
             const resource = event.resource || {};
             const captureId = resource.id;
             const amount = parseFloat(resource.amount?.value || '0');
             const customId = resource.custom_id || '';
-            const orderId = resource.supplementary_data?.related_ids?.order_id || null;
-
-            console.log(`[paypal-webhook] Payment captured: ${captureId} · $${amount} · custom=${customId}`);
-
-            // Parse custom_id: "activation:USER_ID" or "course:COURSE_ID:USER_ID"
             const parts = String(customId).split(':');
 
             if (parts[0] === 'activation' && parts[1]) {
                 const userId = parts[1];
-                // Record activation fee payment if not already
                 const existing = await db.query(
                     `SELECT id FROM payments WHERE transaction_id = $1 AND payment_type = 'ACTIVATION_FEE'`,
                     [captureId]
@@ -149,17 +293,13 @@ router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(
                          VALUES ($1, $2, 'ACTIVATION_FEE', 'paypal', 'completed', $3, NOW())`,
                         [userId, amount, captureId]
                     );
+                    await db.query(`UPDATE users SET activation_fee_paid = TRUE WHERE id = $1`, [userId]);
                     await db.query(
-                        `UPDATE users SET activation_fee_paid = TRUE WHERE id = $1`,
-                        [userId]
-                    );
-                    await db.query(
-                        `UPDATE applications
-                         SET payment_status = 'paid', status = 'paid'
+                        `UPDATE applications SET payment_status = 'paid', status = 'paid'
                          WHERE user_id = $1 AND payment_status = 'unpaid'`,
                         [userId]
                     );
-                    console.log('[paypal-webhook] ✅ Activation fee recorded for user', userId);
+                    console.log('[paypal-webhook] ✅ Activation fee recorded for', userId);
                 }
             } else if (parts[0] === 'course' && parts[1] && parts[2]) {
                 const courseId = parts[1];
@@ -176,27 +316,16 @@ router.post('/webhook', express.raw({ type: 'application/json' }), asyncHandler(
                         [userId, courseId, amount, captureId]
                     );
                     await db.query(
-                        `UPDATE enrollments
-                         SET total_course_paid = COALESCE(total_course_paid, 0) + $1
+                        `UPDATE enrollments SET total_course_paid = COALESCE(total_course_paid, 0) + $1
                          WHERE user_id = $2 AND course_id = $3`,
                         [amount, userId, courseId]
                     );
-                    console.log('[paypal-webhook] ✅ Course payment recorded for user', userId, 'course', courseId);
+                    console.log('[paypal-webhook] ✅ Course payment recorded');
                 }
             }
-        } else if (eventType === 'PAYMENT.CAPTURE.DENIED' || eventType === 'PAYMENT.CAPTURE.REFUNDED') {
-            const resource = event.resource || {};
-            const captureId = resource.id;
-            console.log(`[paypal-webhook] Payment ${eventType}: ${captureId}`);
-            await db.query(
-                `UPDATE payments SET status = $1 WHERE transaction_id = $2`,
-                [eventType === 'PAYMENT.CAPTURE.REFUNDED' ? 'refunded' : 'failed', captureId]
-            );
-        } else {
-            console.log('[paypal-webhook] Unhandled event type:', eventType);
         }
     } catch (err) {
-        console.error('[paypal-webhook] Handler error:', err.message);
+        console.error('[paypal-webhook]', err.message);
     }
 }));
 
