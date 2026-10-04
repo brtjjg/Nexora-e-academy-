@@ -1055,6 +1055,7 @@ function showLogin() {
     document.getElementById('page-login').classList.add('active');
     document.getElementById('sidebarToggleBar').classList.remove('visible');
     updateTopNav();
+    initGoogleButton();
 }
 async function showRegister() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
