@@ -956,8 +956,18 @@ table tbody tr:hover{background:#f8fafc}
             <div id="paypal-activation-button-container"></div>
             <div id="paypalActivationError" style="margin-top:0.5rem;font-size:0.85rem;color:var(--danger)"></div>
         </div>
-
-        <div style="text-align:center;color:var(--text-secondary);font-size:0.8rem;margin:1.25rem 0;position:relative">
+      
+      <div style="margin-bottom:1rem;padding-top:1rem;border-top:1px solid #e2e8f0">
+    <div style="font-size:0.75rem;color:var(--text-secondary);text-transform:uppercase;letter-spacing:1px;font-weight:700;margin-bottom:0.5rem">
+        <i class="fas fa-mobile-alt" style="color:#16A34A"></i> Pay with M-Pesa / Card (Pesapal)
+    </div>
+    <button type="button" class="btn btn-success btn-block" id="pesapalActivationBtn" onclick="startPesapalActivation()" style="justify-content:center">
+        <i class="fas fa-external-link-alt"></i> Pay with Pesapal
+    </button>
+    <div id="pesapalActivationError" style="margin-top:0.5rem;font-size:0.85rem;color:var(--danger)"></div>
+</div>
+        
+      <div style="text-align:center;color:var(--text-secondary);font-size:0.8rem;margin:1.25rem 0;position:relative">
             <hr style="border:none;border-top:1px solid #e2e8f0">
             <span style="position:absolute;top:-9px;left:50%;transform:translateX(-50%);background:var(--white);padding:0 0.75rem">or pay manually</span>
         </div>
@@ -1485,6 +1495,95 @@ function renderPayPalActivationButtons() {
             if (errEl) errEl.textContent = 'Payment cancelled.';
         },
     }).render('#paypal-activation-button-container');
+}
+
+/* ═══════════════ PESAPAL ACTIVATION FEE ═══════════════ */
+async function startPesapalActivation() {
+    const btn = document.getElementById('pesapalActivationBtn');
+    const errEl = document.getElementById('pesapalActivationError');
+    if (errEl) errEl.textContent = '';
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Opening Pesapal...';
+
+    try {
+        const data = await api('/pesapal/create-activation-order', { method: 'POST' });
+
+        if (!data.redirect_url) {
+            throw new Error('No redirect URL returned');
+        }
+
+        // Save the tracking ID for the callback page to verify later
+        sessionStorage.setItem('pesapal_activation_tracking', data.order_tracking_id);
+        sessionStorage.setItem('pesapal_activation_ref', data.merchant_reference);
+
+        // Open Pesapal in a new tab
+        window.open(data.redirect_url, '_blank', 'noopener');
+
+        // Show "I've paid" confirmation button
+        if (errEl) {
+            errEl.style.color = 'var(--success)';
+            errEl.innerHTML = `
+                <div style="margin-top:0.75rem">
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:0.5rem">
+                        Paid on Pesapal? Click below to check your payment status:
+                    </p>
+                    <button type="button" class="btn btn-primary btn-sm" onclick="checkPesapalActivation()">
+                        <i class="fas fa-sync"></i> Check Payment Status
+                    </button>
+                </div>
+            `;
+        }
+    } catch (err) {
+        if (errEl) {
+            errEl.style.color = 'var(--danger)';
+            errEl.textContent = '❌ ' + (err.data?.error || err.message);
+        }
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-external-link-alt"></i> Pay with Pesapal';
+    }
+}
+
+async function checkPesapalActivation() {
+    const trackingId = sessionStorage.getItem('pesapal_activation_tracking');
+    if (!trackingId) {
+        alert('No pending Pesapal payment found. Please click "Pay with Pesapal" first.');
+        return;
+    }
+
+    try {
+        const status = await api('/pesapal/verify/' + encodeURIComponent(trackingId));
+
+        if (status.status === 'COMPLETED') {
+            alert('✅ Payment confirmed! Your account is now active.');
+            sessionStorage.removeItem('pesapal_activation_tracking');
+            sessionStorage.removeItem('pesapal_activation_ref');
+            closeActivationModal();
+            setTimeout(() => location.reload(), 1200);
+        } else if (status.status === 'PENDING') {
+            alert('⏳ Payment is still processing.\n\nIf you just paid, wait 30 seconds and try again.');
+        } else {
+            alert('❌ Payment failed or was cancelled.\n\nStatus: ' + status.status);
+        }
+    } catch (err) {
+        alert('❌ Could not check status: ' + (err.data?.error || err.message));
+    }
+}
+
+async function processActivationPayment(e) {
+    e.preventDefault();
+    try {
+        await api('/payments/activation', {
+            method: 'POST',
+            body: { payment_method: document.getElementById('payActivationMethod').value }
+        });
+        alert('✅ Payment recorded! You can now access courses.');
+        closeActivationModal();
+        setTimeout(() => location.reload(), 1200);
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
 }
 
 async function processActivationPayment(e) {
