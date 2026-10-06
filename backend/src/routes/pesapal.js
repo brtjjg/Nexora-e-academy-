@@ -156,13 +156,15 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
         });
 
         // Save pending transaction for verification
+        // NOTE: $4 and $5 are used to avoid PostgreSQL "inconsistent types" error
+        // when the same value goes into two columns with different types.
         await db.query(
             `INSERT INTO transactions
                (user_id, amount, currency, payment_type, payment_method, status,
                 transaction_id, merchant_reference, external_reference, created_at, updated_at)
              VALUES ($1, $2, 'USD', 'ACTIVATION_FEE', 'pesapal', 'pending',
-                     $3, $4, $4, NOW(), NOW())`,
-            [req.user.id, ACTIVATION_FEE, result.order_tracking_id, merchantRef]
+                     $3, $4, $5, NOW(), NOW())`,
+            [req.user.id, ACTIVATION_FEE, result.order_tracking_id, merchantRef, merchantRef]
         );
 
         res.json({
@@ -212,13 +214,14 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
             user,
         });
 
+        // NOTE: $5 and $6 are separate parameters to avoid "inconsistent types" error
         await db.query(
             `INSERT INTO transactions
                (user_id, course_id, amount, currency, payment_type, payment_method, status,
                 transaction_id, merchant_reference, external_reference, created_at, updated_at)
              VALUES ($1, $2, $3, 'USD', 'COURSE_PAYMENT', 'pesapal', 'pending',
-                     $4, $5, $5, NOW(), NOW())`,
-            [req.user.id, course_id, amt, result.order_tracking_id, merchantRef]
+                     $4, $5, $6, NOW(), NOW())`,
+            [req.user.id, course_id, amt, result.order_tracking_id, merchantRef, merchantRef]
         );
 
         res.json({
