@@ -16,7 +16,7 @@ const PESAPAL_CALLBACK_URL = process.env.PESAPAL_CALLBACK_URL || 'https://nexora
 const ACTIVATION_FEE = 0.75;
 
 // ─────────────────────────────────────────────
-// STEP 1 — Get bearer token
+// STEP 1 — Get bearer token from Pesapal
 // ─────────────────────────────────────────────
 async function getPesapalAccessToken() {
     if (!PESAPAL_CONSUMER_KEY || !PESAPAL_CONSUMER_SECRET) {
@@ -94,7 +94,8 @@ async function submitPesapalOrder({ merchantRef, amount, description, currency, 
 }
 
 // ─────────────────────────────────────────────
-// STEP 3 — Get transaction status
+// STEP 3 — Get transaction status from Pesapal
+// This is the ONLY trustworthy source of payment status
 // ─────────────────────────────────────────────
 async function getPesapalTransactionStatus(orderTrackingId) {
     const token = await getPesapalAccessToken();
@@ -120,7 +121,7 @@ async function getPesapalTransactionStatus(orderTrackingId) {
 
 // ─────────────────────────────────────────────
 // Helper — generate a unique merchant reference
-// Only alphanumeric, dash, underscore, dot, colon
+// Only alphanumeric, dashes, underscores, dots, colons
 // Max 50 characters
 // ─────────────────────────────────────────────
 function generateMerchantRef(prefix) {
@@ -131,9 +132,7 @@ function generateMerchantRef(prefix) {
 
 // ─────────────────────────────────────────────
 // POST /api/pesapal/create-activation-order
-// Creates order for $0.75 admission fee
-// Body: none — uses req.user
-// Returns: { redirect_url, order_tracking_id, merchant_reference }
+// Creates a Pesapal order for the $0.75 admission fee
 // ─────────────────────────────────────────────
 router.post('/create-activation-order', requireAuth, asyncHandler(async (req, res) => {
     try {
@@ -156,12 +155,13 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
             user,
         });
 
-        // Save pending transaction for later verification
+        // Save pending transaction for verification
         await db.query(
             `INSERT INTO transactions
-               (user_id, amount, payment_type, payment_method, status,
-                transaction_id, merchant_reference, created_at)
-             VALUES ($1, $2, 'ACTIVATION_FEE', 'pesapal', 'pending', $3, $4, NOW())`,
+               (user_id, amount, currency, payment_type, payment_method, status,
+                transaction_id, merchant_reference, external_reference, created_at, updated_at)
+             VALUES ($1, $2, 'USD', 'ACTIVATION_FEE', 'pesapal', 'pending',
+                     $3, $4, $4, NOW(), NOW())`,
             [req.user.id, ACTIVATION_FEE, result.order_tracking_id, merchantRef]
         );
 
@@ -178,7 +178,7 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
 
 // ─────────────────────────────────────────────
 // POST /api/pesapal/create-order
-// Creates order for course payment
+// Creates a Pesapal order for a course payment
 // Body: { course_id, amount }
 // ─────────────────────────────────────────────
 router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
@@ -212,12 +212,12 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
             user,
         });
 
-        // Save pending transaction
         await db.query(
             `INSERT INTO transactions
-               (user_id, course_id, amount, payment_type, payment_method, status,
-                transaction_id, merchant_reference, created_at)
-             VALUES ($1, $2, $3, 'COURSE_PAYMENT', 'pesapal', 'pending', $4, $5, NOW())`,
+               (user_id, course_id, amount, currency, payment_type, payment_method, status,
+                transaction_id, merchant_reference, external_reference, created_at, updated_at)
+             VALUES ($1, $2, $3, 'USD', 'COURSE_PAYMENT', 'pesapal', 'pending',
+                     $4, $5, $5, NOW(), NOW())`,
             [req.user.id, course_id, amt, result.order_tracking_id, merchantRef]
         );
 
@@ -233,17 +233,16 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
 }));
 
 // ─────────────────────────────────────────────
-// POST /api/pesapal/ipn
-// Pesapal notifies us here when payment status changes
-// Body (POST): { OrderTrackingId, OrderMerchantReference, OrderNotificationType: 'IPNCHANGE' }
-// Query (GET): same as above but as URL params
+// POST/GET /api/pesapal/ipn
+// Pesapal notification webhook
+// IMPORTANT: The IPN only sends an OrderTrackingId, never the status.
+// We must call GetTransactionStatus to find the real status.
 // ─────────────────────────────────────────────
 router.all('/ipn', asyncHandler(async (req, res) => {
     // Respond 200 immediately so Pesapal doesn't retry
     res.status(200).json({ ok: true });
 
     try {
-        // Support both GET and POST
         const orderTrackingId = req.body?.OrderTrackingId || req.query?.OrderTrackingId;
         const merchantRef = req.body?.OrderMerchantReference || req.query?.OrderMerchantReference;
         const notificationType = req.body?.OrderNotificationType || req.query?.OrderNotificationType;
@@ -255,14 +254,13 @@ router.all('/ipn', asyncHandler(async (req, res) => {
             return;
         }
 
-        // Query Pesapal for the actual status
+        // THE critical call — ask Pesapal what actually happened
         const statusData = await getPesapalTransactionStatus(orderTrackingId);
-        console.log('[pesapal-ipn] Status:', statusData.payment_status_description || statusData.status);
-
         const status = (statusData.payment_status_description || '').toUpperCase();
-        const statusCode = statusData.status_code;
 
-        // Find the transaction in our DB
+        console.log('[pesapal-ipn] Status:', status);
+
+        // Find our transaction
         const txRes = await db.query(
             `SELECT id, user_id, course_id, payment_type, amount, status
              FROM transactions
@@ -279,14 +277,15 @@ router.all('/ipn', asyncHandler(async (req, res) => {
         const tx = txRes.rows[0];
 
         if (status === 'COMPLETED') {
-            // Idempotency — skip if already completed
+            // Idempotency — skip if already processed
             if (tx.status === 'completed') {
                 console.log('[pesapal-ipn] Already completed, skipping');
                 return;
             }
 
             await db.query(
-                `UPDATE transactions SET status = 'completed', updated_at = NOW()
+                `UPDATE transactions
+                 SET status = 'completed', verified_at = NOW(), updated_at = NOW()
                  WHERE id = $1`,
                 [tx.id]
             );
@@ -314,8 +313,7 @@ router.all('/ipn', asyncHandler(async (req, res) => {
             }
         } else if (status === 'FAILED' || status === 'REVERSED' || status === 'INVALID') {
             await db.query(
-                `UPDATE transactions SET status = 'failed', updated_at = NOW()
-                 WHERE id = $1`,
+                `UPDATE transactions SET status = 'failed', updated_at = NOW() WHERE id = $1`,
                 [tx.id]
             );
             console.log('[pesapal-ipn] ❌ Payment failed:', status);
@@ -330,7 +328,6 @@ router.all('/ipn', asyncHandler(async (req, res) => {
 // ─────────────────────────────────────────────
 // GET /api/pesapal/verify/:orderTrackingId
 // Frontend calls this when the student lands on the callback page
-// Returns the current status
 // ─────────────────────────────────────────────
 router.get('/verify/:orderTrackingId', asyncHandler(async (req, res) => {
     const { orderTrackingId } = req.params;
