@@ -98,6 +98,7 @@ app.use('/api/uploads',      loadRoute('uploads'));
 app.use('/api/assignments',  loadRoute('assignments'));
 app.use('/api/public',       loadRoute('public'));
 app.use('/api/paypal',       loadRoute('paypal'));
+app.use('/api/pesapal',      loadRoute('pesapal'));
 app.use('/api/contributor',  loadRoute('contributor'));
 
 // Simple root handler — if this works, Express is alive
