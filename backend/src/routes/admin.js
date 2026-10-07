@@ -28,7 +28,7 @@ if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
 // Use memory storage so we can push the buffer straight to Supabase
 const uploadManual = multer({
     storage: multer.memoryStorage(),
-    limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB
+    limits: { fileSize: 25 * 1024 * 1024 },
     fileFilter: (req, file, cb) => {
         const allowed = ['.pdf', '.doc', '.docx', '.txt', '.rtf'];
         const ext = path.extname(file.originalname).toLowerCase();
@@ -37,14 +37,12 @@ const uploadManual = multer({
     },
 });
 
-// Sanitize filename — turn "CamScanner 05-10-2026 20.38.pdf" into
-// "CamScanner_05-10-2026_20_38.pdf" so it's URL-safe
 function sanitizeFilename(name) {
     const ext = path.extname(name).toLowerCase();
     const base = path.basename(name, ext)
-        .replace(/[^a-zA-Z0-9_-]/g, '_')   // spaces, dots → underscore
-        .replace(/_+/g, '_')                // collapse repeats
-        .replace(/^_|_$/g, '');             // trim leading/trailing _
+        .replace(/[^a-zA-Z0-9_-]/g, '_')
+        .replace(/_+/g, '_')
+        .replace(/^_|_$/g, '');
     return `${base}${ext}`;
 }
 
@@ -419,6 +417,184 @@ router.get('/activities', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 // ═════════════════════════════════════════════
+// STUDENT AUDIT — for certificate issuance decisions
+// ═════════════════════════════════════════════
+router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // 1) Student basic info
+    const stu = await db.query(
+        `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
+                u.status, u.created_at,
+                sp.admission_number, sp.approval_status,
+                COALESCE(sp.activation_fee_paid, FALSE) AS activation_fee_paid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 AND u.role = 'student'`,
+        [id]
+    );
+    if (!stu.rows.length) return res.status(404).json({ error: 'Student not found' });
+    const student = stu.rows[0];
+
+    // 2) Enrollments + progress + payment
+    // Progress is tracked in `lesson_progress` (lesson_id, user_id).
+    // We join through lessons → modules to filter by course.
+    const enr = await db.query(
+        `SELECT e.course_id,
+                c.title AS course_title,
+                c.price AS course_price,
+                COALESCE(e.total_course_paid, 0) AS total_course_paid,
+                (SELECT COUNT(*)::int FROM modules m WHERE m.course_id = e.course_id) AS total_modules,
+                (SELECT COUNT(*)::int FROM lessons l
+                    JOIN modules m ON m.id = l.module_id
+                    WHERE m.course_id = e.course_id) AS total_lessons,
+                (SELECT COUNT(*)::int FROM lesson_progress lp
+                    JOIN lessons l ON l.id = lp.lesson_id
+                    JOIN modules m ON m.id = l.module_id
+                    WHERE lp.user_id = e.user_id AND m.course_id = e.course_id) AS completed_lessons
+         FROM enrollments e
+         JOIN courses c ON c.id = e.course_id
+         WHERE e.user_id = $1
+         ORDER BY e.created_at DESC`,
+        [id]
+    );
+    const enrollments = enr.rows.map(e => ({
+        ...e,
+        payment_pct: e.course_price > 0
+            ? Math.min(100, Math.round((e.total_course_paid / e.course_price) * 100))
+            : 100,
+        progress_pct: e.total_lessons > 0
+            ? Math.round((e.completed_lessons / e.total_lessons) * 100)
+            : 0,
+        remaining_balance: Math.max(0, parseFloat(e.course_price || 0) - parseFloat(e.total_course_paid || 0)),
+    }));
+
+    // 3) Exam + CAT results — try `assessment_attempts` first
+    let results = [];
+    try {
+        const r = await db.query(
+            `SELECT aa.course_id,
+                    COALESCE(aa.assessment_type, 'exam') AS assessment_type,
+                    aa.score, aa.total_marks, aa.percentage, aa.passed, aa.submitted_at
+             FROM assessment_attempts aa
+             WHERE aa.user_id = $1
+             ORDER BY aa.submitted_at DESC`,
+            [id]
+        );
+        results = r.rows;
+    } catch (e) {
+        console.warn('[audit] assessment_attempts query failed:', e.message);
+    }
+
+    // 4) Groups + message count
+    const grp = await db.query(
+        `SELECT g.id, g.name, g.category,
+                (SELECT COUNT(*)::int FROM group_messages gm
+                    WHERE gm.group_id = g.id AND gm.user_id = $1) AS my_messages
+         FROM group_members m
+         JOIN groups g ON g.id = m.group_id
+         WHERE m.user_id = $1`,
+        [id]
+    );
+
+    // 5) Payments total
+    const pay = await db.query(
+        `SELECT COALESCE(SUM(amount), 0) AS total_paid,
+                COUNT(*)::int AS tx_count
+         FROM transactions
+         WHERE user_id = $1 AND status = 'completed'`,
+        [id]
+    );
+
+    // 6) Assignments
+    let assignments = { submitted: 0, reviewed: 0, returned: 0 };
+    try {
+        const a = await db.query(
+            `SELECT
+                COUNT(*)::int AS submitted,
+                COUNT(*) FILTER (WHERE status = 'reviewed')::int AS reviewed,
+                COUNT(*) FILTER (WHERE status = 'returned')::int AS returned
+             FROM assignment_submissions
+             WHERE user_id = $1`,
+            [id]
+        );
+        assignments = a.rows[0];
+    } catch (e) {
+        console.warn('[audit] assignment_submissions query failed:', e.message);
+    }
+
+    // 7) Certificates already issued
+    const cert = await db.query(
+        `SELECT certificate_id, course_name, issued_date, revoked
+         FROM certificates
+         WHERE user_id = $1
+         ORDER BY issued_date DESC`,
+        [id]
+    );
+
+    // ══════════ ELIGIBILITY SCORING ══════════
+    const reasons = [];
+    let score = 0;
+
+    // 30 pts — admission fee paid
+    if (student.activation_fee_paid) { score += 30; }
+    else reasons.push('Admission fee NOT paid');
+
+    // 25 pts — at least one enrollment with 100% payment
+    const fullyPaidCourses = enrollments.filter(e => e.payment_pct >= 100);
+    if (fullyPaidCourses.length > 0) { score += 25; }
+    else reasons.push('No fully-paid course');
+
+    // 25 pts — at least one completed course (all lessons done)
+    const completedCourses = enrollments.filter(e => e.progress_pct >= 100);
+    if (completedCourses.length > 0) { score += 25; }
+    else if (enrollments.some(e => e.progress_pct > 0)) reasons.push('Courses started but not completed');
+    else reasons.push('No course started');
+
+    // 10 pts — no failed exams
+    const failedExams = results.filter(r => r.assessment_type === 'exam' && !r.passed);
+    if (failedExams.length === 0) { score += 10; }
+    else reasons.push(`${failedExams.length} failed exam(s)`);
+
+    // 10 pts — active in community
+    const totalMsgs = grp.rows.reduce((s, g) => s + (g.my_messages || 0), 0);
+    if (totalMsgs > 0) { score += 10; }
+    else if (grp.rows.length === 0) reasons.push('Not in any group');
+    else reasons.push('No group messages');
+
+    let verdict = 'not_ready';
+    let recommendation = 'Do NOT issue yet';
+    if (score >= 90 && failedExams.length === 0 && completedCourses.length > 0) {
+        verdict = 'ready';
+        recommendation = 'Issue the certificate — student meets all criteria';
+    } else if (score >= 60) {
+        verdict = 'partial';
+        recommendation = 'Student is close but not fully eligible. Review reasons below.';
+    }
+
+    res.json({
+        student,
+        enrollments,
+        results,
+        groups: grp.rows,
+        total_group_messages: totalMsgs,
+        payments: pay.rows[0],
+        assignments,
+        certificates_issued: cert.rows,
+        eligibility: {
+            score,
+            max: 100,
+            verdict,
+            recommendation,
+            reasons,
+            fully_paid_courses: fullyPaidCourses.length,
+            completed_courses: completedCourses.length,
+            failed_exams: failedExams.length,
+        },
+    });
+}));
+
+// ═════════════════════════════════════════════
 // CONTRIBUTOR MANAGEMENT
 // ═════════════════════════════════════════════
 
@@ -463,9 +639,7 @@ router.get('/contributors', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ contributors: r.rows });
 }));
 
-// ─────────────────────────────────────────────
 // GET /api/admin/contributors/:id
-// ─────────────────────────────────────────────
 router.get('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
         `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
@@ -479,10 +653,7 @@ router.get('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ contributor: r.rows[0] });
 }));
 
-// ─────────────────────────────────────────────
 // PUT /api/admin/contributors/:id
-// Edit contributor account (name, phone, country, status)
-// ─────────────────────────────────────────────
 router.put('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     const { full_name, phone, country, status } = req.body || {};
     const fields = [];
@@ -512,9 +683,7 @@ router.put('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ contributor: r.rows[0] });
 }));
 
-// ─────────────────────────────────────────────
 // GET /api/admin/contributors/:id/submissions
-// ─────────────────────────────────────────────
 router.get('/contributors/:id/submissions', requireAdmin, asyncHandler(async (req, res) => {
     const u = await db.query(
         `SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'contributor'`,
@@ -553,177 +722,6 @@ router.post('/contributors/:id/reject', requireAdmin, asyncHandler(async (req, r
     );
     if (!r.rows.length) return res.status(404).json({ error: 'Contributor not found' });
     res.json({ contributor: r.rows[0], reason: reason || null });
-}));
-
-/* ═══════════════════════════════════════════════════════════
-   ADMIN: GET /api/admin/students/:id/audit
-   Full audit of a student — for certificate issuance decisions
-   ═══════════════════════════════════════════════════════════ */
-router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) => {
-    const { id } = req.params;
-
-    // 1) Student basic info
-    const stu = await db.query(
-        `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
-                u.status, u.created_at,
-                sp.admission_number, sp.approval_status,
-                COALESCE(sp.activation_fee_paid, FALSE) AS activation_fee_paid
-         FROM users u
-         LEFT JOIN student_profiles sp ON sp.user_id = u.id
-         WHERE u.id = $1 AND u.role = 'student'`,
-        [id]
-    );
-    if (!stu.rows.length) return res.status(404).json({ error: 'Student not found' });
-    const student = stu.rows[0];
-
-    // 2) Enrollments + progress + payment
-    const enr = await db.query(
-        `SELECT e.course_id, c.title AS course_title, c.price AS course_price,
-                COALESCE(e.total_course_paid, 0) AS total_course_paid,
-                (SELECT COUNT(*)::int FROM modules m WHERE m.course_id = e.course_id) AS total_modules,
-                (SELECT COUNT(*)::int FROM lessons l
-                    JOIN modules m ON m.id = l.module_id
-                    WHERE m.course_id = e.course_id) AS total_lessons,
-                (SELECT COUNT(*)::int FROM progress p
-                    WHERE p.user_id = e.user_id AND p.course_id = e.course_id) AS completed_lessons
-         FROM enrollments e
-         JOIN courses c ON c.id = e.course_id
-         WHERE e.user_id = $1
-         ORDER BY e.created_at DESC`,
-        [id]
-    );
-    const enrollments = enr.rows.map(e => ({
-        ...e,
-        payment_pct: e.course_price > 0
-            ? Math.min(100, Math.round((e.total_course_paid / e.course_price) * 100))
-            : 100,
-        progress_pct: e.total_lessons > 0
-            ? Math.round((e.completed_lessons / e.total_lessons) * 100)
-            : 0,
-        remaining_balance: Math.max(0, parseFloat(e.course_price || 0) - parseFloat(e.total_course_paid || 0)),
-    }));
-
-    // 3) Exam + CAT results
-    let results = [];
-    try {
-        const r = await db.query(
-            `SELECT course_id, assessment_type, score, total_marks, percentage, passed, submitted_at
-             FROM assessment_results
-             WHERE user_id = $1
-             ORDER BY submitted_at DESC`,
-            [id]
-        );
-        results = r.rows;
-    } catch (e) {
-        // Table may not exist yet — ignore
-        results = [];
-    }
-
-    // 4) Groups + message count
-    const grp = await db.query(
-        `SELECT g.id, g.name, g.category,
-                (SELECT COUNT(*)::int FROM group_messages gm
-                    WHERE gm.group_id = g.id AND gm.user_id = $1) AS my_messages
-         FROM group_members m
-         JOIN groups g ON g.id = m.group_id
-         WHERE m.user_id = $1`,
-        [id]
-    );
-
-    // 5) Payments total
-    const pay = await db.query(
-        `SELECT COALESCE(SUM(amount), 0) AS total_paid,
-                COUNT(*)::int AS tx_count
-         FROM transactions
-         WHERE user_id = $1 AND status = 'completed'`,
-        [id]
-    );
-
-    // 6) Assignments
-    let assignments = { submitted: 0, reviewed: 0, returned: 0 };
-    try {
-        const a = await db.query(
-            `SELECT
-                COUNT(*)::int AS submitted,
-                COUNT(*) FILTER (WHERE status = 'reviewed')::int AS reviewed,
-                COUNT(*) FILTER (WHERE status = 'returned')::int AS returned
-             FROM assignment_submissions
-             WHERE user_id = $1`,
-            [id]
-        );
-        assignments = a.rows[0];
-    } catch (e) {}
-
-    // 7) Certificates already issued
-    const cert = await db.query(
-        `SELECT certificate_id, course_name, issued_date, revoked
-         FROM certificates
-         WHERE user_id = $1
-         ORDER BY issued_date DESC`,
-        [id]
-    );
-
-    // ══════════ ELIGIBILITY SCORING ══════════
-    const reasons = [];
-    let score = 0;
-
-    // 30 pts — admission fee paid
-    if (student.activation_fee_paid) { score += 30; }
-    else reasons.push('Admission fee NOT paid');
-
-    // 25 pts — at least one enrollment with 100% payment
-    const fullyPaidCourses = enrollments.filter(e => e.payment_pct >= 100);
-    if (fullyPaidCourses.length > 0) { score += 25; }
-    else reasons.push('No fully-paid course');
-
-    // 25 pts — at least one completed course (all lessons done)
-    const completedCourses = enrollments.filter(e => e.progress_pct >= 100);
-    if (completedCourses.length > 0) { score += 25; }
-    else if (enrollments.some(e => e.progress_pct > 0)) reasons.push('Courses started but not completed');
-    else reasons.push('No course started');
-
-    // 10 pts — no failed exams on completed courses
-    const failedExams = results.filter(r => r.assessment_type === 'exam' && !r.passed);
-    if (failedExams.length === 0) { score += 10; }
-    else reasons.push(`${failedExams.length} failed exam(s)`);
-
-    // 10 pts — active in community (at least 1 message)
-    const totalMsgs = grp.rows.reduce((s, g) => s + (g.my_messages || 0), 0);
-    if (totalMsgs > 0) { score += 10; }
-    else if (grp.rows.length === 0) reasons.push('Not in any group');
-    else reasons.push('No group messages');
-
-    // Determine readiness
-    let verdict = 'not_ready';
-    let recommendation = 'Do NOT issue yet';
-    if (score >= 90 && failedExams.length === 0 && completedCourses.length > 0) {
-        verdict = 'ready';
-        recommendation = 'Issue the certificate — student meets all criteria';
-    } else if (score >= 60) {
-        verdict = 'partial';
-        recommendation = 'Student is close but not fully eligible. Review reasons below.';
-    }
-
-    res.json({
-        student,
-        enrollments,
-        results,
-        groups: grp.rows,
-        total_group_messages: totalMsgs,
-        payments: pay.rows[0],
-        assignments,
-        certificates_issued: cert.rows,
-        eligibility: {
-            score,
-            max: 100,
-            verdict,
-            recommendation,
-            reasons,
-            fully_paid_courses: fullyPaidCourses.length,
-            completed_courses: completedCourses.length,
-            failed_exams: failedExams.length,
-        },
-    });
 }));
 
 router.delete('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
@@ -768,17 +766,13 @@ router.delete('/manuals/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ ok: true });
 }));
 
-// ─────────────────────────────────────────────
 // POST /api/admin/manuals/upload
-// Upload a PDF/DOC to Supabase Storage (persistent)
-// ─────────────────────────────────────────────
 router.post('/manuals/upload', requireAdmin, uploadManual.single('file'), asyncHandler(async (req, res) => {
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
 
     const safeName = sanitizeFilename(req.file.originalname);
     const uniqueName = `${Date.now()}_${safeName}`;
 
-    // ── Path 1: Supabase (persistent) ──
     if (supabase) {
         try {
             const { data, error } = await supabase.storage
@@ -797,18 +791,16 @@ router.post('/manuals/upload', requireAdmin, uploadManual.single('file'), asyncH
             console.log('[manuals/upload] Uploaded to Supabase:', urlData.publicUrl);
 
             return res.json({
-                path: urlData.publicUrl,       // full https URL — works from any origin
+                path: urlData.publicUrl,
                 filename: uniqueName,
                 originalname: req.file.originalname,
                 storage: 'supabase',
             });
         } catch (err) {
             console.error('[manuals/upload] Supabase failed:', err.message);
-            // fall through to local fallback
         }
     }
 
-    // ── Path 2: Local disk (fallback — will be wiped on redeploy) ──
     const MANUALS_DIR = path.join(__dirname, '..', 'uploads', 'manuals');
     if (!fs.existsSync(MANUALS_DIR)) fs.mkdirSync(MANUALS_DIR, { recursive: true });
 
@@ -824,10 +816,7 @@ router.post('/manuals/upload', requireAdmin, uploadManual.single('file'), asyncH
     });
 }));
 
-// ─────────────────────────────────────────────
 // POST /api/admin/manuals/broadcast
-// Create a manual and send to ALL contributors
-// ─────────────────────────────────────────────
 router.post('/manuals/broadcast', requireAdmin, asyncHandler(async (req, res) => {
     const { title, course_code, instructions, file_path, file_name } = req.body || {};
     if (!title) return res.status(400).json({ error: 'Title is required' });
@@ -876,10 +865,7 @@ router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ submission: r.rows[0] });
 }));
 
-// ─────────────────────────────────────────────
 // PUT /api/admin/submissions/:id
-// Update submission price/metadata before publishing
-// ─────────────────────────────────────────────
 router.put('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     const { price, discount_enabled, discount_price, discount_label, discount_ends_at } = req.body || {};
     const fields = [];
@@ -920,10 +906,7 @@ router.post('/submissions/:id/review', requireAdmin, asyncHandler(async (req, re
     res.json({ submission: r.rows[0] });
 }));
 
-// ─────────────────────────────────────────────
 // POST /api/admin/submissions/:id/publish
-// Publishes to courses, accepts price + discount overrides
-// ─────────────────────────────────────────────
 router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, res) => {
     const { price, discount_enabled, discount_price, discount_label, discount_ends_at } = req.body || {};
 
