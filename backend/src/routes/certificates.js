@@ -337,11 +337,33 @@ router.post('/:id/reissue', requireAdmin, asyncHandler(async (req, res) => {
         ]
     );
 
-    res.status(201).json({
-        certificate: ins.rows[0],
-        replaces: o.certificate_id,
-        verify_url: `https://nexora-certificates.vercel.app/#verify/${certificate_id}`,
-    });
+    const cert = ins.rows[0];
+const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
+
+// Look up the student's email (the old cert doesn't carry it)
+try {
+    const stu = await db.query(`SELECT email, full_name FROM users WHERE id = $1`, [o.user_id]);
+    if (stu.rows.length) {
+        await sendCertificateEmail({
+            to: stu.rows[0].email,
+            studentName: stu.rows[0].full_name,
+            certificateId: certificate_id,
+            courseName: o.course_name,
+            certificateType: cert.certificate_type,
+            issuedDate: cert.issued_date,
+            verifyUrl,
+        });
+    }
+} catch (mailErr) {
+    console.error('[email] Reissue email failed:', mailErr.message);
+}
+
+res.status(201).json({
+    certificate: cert,
+    replaces: o.certificate_id,
+    verify_url: verifyUrl,
+    email_sent: mailer ? true : false,
+});
 }));
 
 module.exports = router;
