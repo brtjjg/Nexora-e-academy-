@@ -2116,7 +2116,8 @@ async function loadContributors(status) {
 
         c.innerHTML = `<div class="table-wrapper"><table>
             <thead><tr>
-                <th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Country</th><th>Status</th><th>Submissions</th><th>Created</th><th>Actions</th>
+                <th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Country</th>
+                <th>Status</th><th>Submissions</th><th>Created</th><th>Actions</th>
             </tr></thead>
             <tbody>${contributors.map(u => `
                 <tr>
@@ -2126,9 +2127,12 @@ async function loadContributors(status) {
                     <td>${esc(u.phone || '—')}</td>
                     <td>${esc(u.country || '—')}</td>
                     <td><span class="status-pill ${u.status === 'active' ? 'approved' : u.status === 'pending' ? 'pending' : 'rejected'}">${u.status.toUpperCase()}</span></td>
-                    <td>${u.submission_count || 0}</td>
+                    <td><span class="clickable-count" onclick="viewContributorSubmissions('${u.id}', '${esc(u.full_name)}')">${u.submission_count || 0}</span></td>
                     <td>${fmtDate(u.created_at)}</td>
                     <td><div class="student-actions">
+                        <button class="action-btn view" title="View Profile" onclick="viewContributorProfile('${u.id}')"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn documents" title="Edit Account" onclick="editContributor('${u.id}')"><i class="fas fa-edit"></i></button>
+                        <button class="action-btn payments" title="Submissions" onclick="viewContributorSubmissions('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-file-signature"></i></button>
                         ${u.status === 'pending' ? `<button class="action-btn approve" title="Approve" onclick="approveContributor('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-check"></i></button>` : ''}
                         ${u.status !== 'rejected' ? `<button class="action-btn reject" title="Reject" onclick="rejectContributor('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-times"></i></button>` : ''}
                     </div></td>
@@ -2140,6 +2144,126 @@ async function loadContributors(status) {
     }
 }
 
+/* ═══════════════════════════════════════════
+   CONTRIBUTOR PROFILE / EDIT / SUBMISSIONS
+   ═══════════════════════════════════════════ */
+
+async function viewContributorProfile(id) {
+    try {
+        const { contributor: u } = await api('/admin/contributors/' + id);
+        document.getElementById('appDetailsContent').innerHTML = `
+            <h2>Contributor Profile</h2>
+            <div style="background:var(--bg);padding:1.25rem;border-radius:12px;font-size:0.95rem;line-height:1.9">
+                <div><strong>Full Name:</strong> ${esc(u.full_name)}</div>
+                <div><strong>Username:</strong> ${esc(u.username)}</div>
+                <div><strong>Email:</strong> ${esc(u.email)}</div>
+                <div><strong>Phone:</strong> ${esc(u.phone || '—')}</div>
+                <div><strong>Country:</strong> ${esc(u.country || '—')}</div>
+                <div><strong>Status:</strong> <span class="status-pill ${u.status === 'active' ? 'approved' : u.status === 'pending' ? 'pending' : 'rejected'}">${u.status.toUpperCase()}</span></div>
+                <div><strong>Submissions:</strong> ${u.submission_count || 0}</div>
+                <div><strong>Joined:</strong> ${fmtDateTime(u.created_at)}</div>
+            </div>
+            <div style="margin-top:1.5rem;display:flex;gap:0.5rem;flex-wrap:wrap">
+                <button class="btn btn-primary" onclick="editContributor('${u.id}')"><i class="fas fa-edit"></i> Edit Account</button>
+                <button class="btn btn-success" onclick="viewContributorSubmissions('${u.id}', '${esc(u.full_name)}')"><i class="fas fa-file-signature"></i> View Submissions (${u.submission_count || 0})</button>
+            </div>
+        `;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function editContributor(id) {
+    try {
+        const { contributor: u } = await api('/admin/contributors/' + id);
+        document.getElementById('appDetailsContent').innerHTML = `
+            <h2>Edit Contributor</h2>
+            <div class="form-group"><label>Full Name</label><input type="text" id="editContribFullName" value="${esc(u.full_name || '')}"></div>
+            <div class="form-row">
+                <div class="form-group"><label>Phone</label><input type="text" id="editContribPhone" value="${esc(u.phone || '')}"></div>
+                <div class="form-group"><label>Country</label><input type="text" id="editContribCountry" value="${esc(u.country || '')}"></div>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select id="editContribStatus">
+                    <option value="pending" ${u.status === 'pending' ? 'selected' : ''}>Pending</option>
+                    <option value="active" ${u.status === 'active' ? 'selected' : ''}>Active</option>
+                    <option value="rejected" ${u.status === 'rejected' ? 'selected' : ''}>Rejected</option>
+                    <option value="suspended" ${u.status === 'suspended' ? 'selected' : ''}>Suspended</option>
+                </select>
+            </div>
+            <div style="background:var(--bg);padding:0.75rem;border-radius:8px;font-size:0.85rem;color:var(--text-secondary)">
+                <i class="fas fa-info-circle"></i> Username (<strong>${esc(u.username)}</strong>) and email (<strong>${esc(u.email)}</strong>) cannot be changed here.
+            </div>
+        `;
+        document.getElementById('appDetailsFooter').innerHTML = `
+            <button class="btn btn-outline" onclick="closeAppDetailsModal()">Cancel</button>
+            <button class="btn btn-success" onclick="saveContributorEdit('${u.id}')"><i class="fas fa-save"></i> Save Changes</button>
+        `;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function saveContributorEdit(id) {
+    const full_name = document.getElementById('editContribFullName').value.trim();
+    const phone = document.getElementById('editContribPhone').value.trim() || null;
+    const country = document.getElementById('editContribCountry').value.trim() || null;
+    const status = document.getElementById('editContribStatus').value;
+    try {
+        await api('/admin/contributors/' + id, {
+            method: 'PUT',
+            body: { full_name, phone, country, status },
+        });
+        alert('✅ Contributor updated');
+        closeAppDetailsModal();
+        loadContributors('all');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function viewContributorSubmissions(id, name) {
+    try {
+        const { submissions } = await api('/admin/contributors/' + id + '/submissions');
+        const rowsHTML = !submissions.length
+            ? `<div class="empty-state">This contributor has not submitted any courses yet.</div>`
+            : `<div class="table-wrapper"><table>
+                <thead><tr><th>Course</th><th>Status</th><th>Price</th><th>Submitted</th><th>Actions</th></tr></thead>
+                <tbody>${submissions.map(s => {
+                    const pill = s.status === 'published' ? 'approved'
+                              : s.status === 'pending_review' ? 'pending'
+                              : s.status === 'rejected' ? 'rejected'
+                              : s.status === 'changes_requested' ? 'pending'
+                              : s.status === 'approved' ? 'paid'
+                              : 'pending';
+                    return `<tr>
+                        <td><strong>${esc(s.title)}</strong></td>
+                        <td><span class="status-pill ${pill}">${esc(s.status.replace('_', ' ').toUpperCase())}</span></td>
+                        <td>${s.price ? fmtMoney(s.price) : '—'}</td>
+                        <td>${fmtDate(s.submitted_at || s.created_at)}</td>
+                        <td><div class="student-actions">
+                            <button class="action-btn view" title="${s.status === 'published' ? 'View' : 'Review'}" onclick="closeAppDetailsModal();reviewSubmissionAdmin('${s.id}')"><i class="fas fa-eye"></i></button>
+                        </div></td>
+                    </tr>`;
+                }).join('')}</tbody>
+            </table></div>`;
+
+        document.getElementById('appDetailsContent').innerHTML = `
+            <h2>Submissions — ${esc(name)}</h2>
+            <p style="color:var(--text-secondary);margin-bottom:1rem">${submissions.length} submission${submissions.length !== 1 ? 's' : ''} total.</p>
+            ${rowsHTML}
+        `;
+        document.getElementById('appDetailsFooter').innerHTML = `<button class="btn btn-outline" onclick="closeAppDetailsModal()">Close</button>`;
+        document.getElementById('appDetailsModal').classList.add('active');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+  
 async function approveContributor(id, name) {
     if (!confirm(`Approve ${name} as a contributor?`)) return;
     try {
@@ -2252,6 +2376,26 @@ async function reviewSubmissionAdmin(id) {
             </div>
         `).join('') || '<p style="color:var(--text-secondary)">No modules submitted.</p>';
 
+        const canReview = s.status === 'pending_review' || s.status === 'changes_requested';
+        const canPublish = s.status === 'approved';
+
+        const priceHTML = `
+            <div style="margin-top:1.5rem;padding:1.25rem;background:#fffbeb;border-radius:12px;border:2px solid #fde68a">
+                <h3 style="color:var(--navy);margin-bottom:0.75rem;font-size:1rem">💰 Price Configuration</h3>
+                <div class="form-row">
+                    <div class="form-group"><label>Price ($)</label><input type="number" step="0.01" min="0" id="reviewPrice" value="${parseFloat(s.price || 0).toFixed(2)}"></div>
+                    <div class="form-group"><label>&nbsp;</label><div style="padding-top:10px"><label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:600;color:var(--navy)"><input type="checkbox" id="reviewDiscountEnabled" style="width:18px;height:18px;accent-color:var(--gold)" onchange="document.getElementById('reviewDiscountFields').style.display=this.checked?'block':'none'"> Enable Discount</label></div></div>
+                </div>
+                <div id="reviewDiscountFields" style="display:none;margin-top:0.75rem">
+                    <div class="form-row">
+                        <div class="form-group"><label>Discounted Price ($)</label><input type="number" step="0.01" min="0" id="reviewDiscountPrice" value="0"></div>
+                        <div class="form-group"><label>Label</label><input type="text" id="reviewDiscountLabel" value="Limited Time Offer"></div>
+                    </div>
+                    <div class="form-group"><label>Discount Ends</label><input type="datetime-local" id="reviewDiscountEndsAt"></div>
+                </div>
+            </div>
+        `;
+
         document.getElementById('appDetailsContent').innerHTML = `
             <h2 style="margin-bottom:0.5rem">${esc(s.title)}</h2>
             <div style="margin-bottom:1rem">
@@ -2263,32 +2407,35 @@ async function reviewSubmissionAdmin(id) {
                 <div><strong>Category:</strong> ${esc(s.category || '—')}</div>
                 <div><strong>Level:</strong> ${esc(s.level || '—')}</div>
                 <div><strong>Duration:</strong> ${esc(s.duration || '—')}</div>
-                <div><strong>Price:</strong> $${parseFloat(s.price || 0).toFixed(2)}</div>
                 <div><strong>Modules:</strong> ${modules.length} &nbsp; <strong>Lessons:</strong> ${lessonCount}</div>
                 <div><strong>Submitted:</strong> ${s.submitted_at ? fmtDateTime(s.submitted_at) : '—'}</div>
             </div>
             ${s.description ? `<div style="margin-bottom:1.5rem"><strong style="color:var(--navy);display:block;margin-bottom:0.5rem">Description</strong><p style="white-space:pre-wrap;color:var(--text-secondary);font-size:0.9rem">${esc(s.description)}</p></div>` : ''}
             <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">Course Structure</h3>
             ${modulesHTML}
-            ${s.status === 'pending_review' || s.status === 'changes_requested' ? `
+
+            ${(canReview || canPublish) ? priceHTML : ''}
+
+            ${canReview ? `
                 <div style="margin-top:1.5rem;padding:1.25rem;background:#f0f9ff;border-radius:12px;border:2px solid #bae6fd">
                     <h3 style="color:var(--navy);margin-bottom:1rem;font-size:1rem">📝 Review Decision</h3>
                     <div class="form-group">
-                        <label>Feedback (optional for approval, required for rejection)</label>
+                        <label>Feedback (required for request changes / reject)</label>
                         <textarea id="reviewFeedback" rows="3" placeholder="What needs to change? Or notes for the contributor."></textarea>
                     </div>
                     <div style="display:flex;gap:0.5rem;flex-wrap:wrap">
-                        <button class="btn btn-success btn-sm" onclick="submitReview('${s.id}', 'approve')"><i class="fas fa-check"></i> Approve</button>
-                        <button class="btn btn-warning btn-sm" onclick="submitReview('${s.id}', 'request_changes')"><i class="fas fa-undo"></i> Request Changes</button>
-                        <button class="btn btn-danger btn-sm" onclick="submitReview('${s.id}', 'reject')"><i class="fas fa-times"></i> Reject</button>
+                        <button class="btn btn-success btn-sm" onclick="submitReviewWithPrice('${s.id}', 'approve')"><i class="fas fa-check"></i> Approve</button>
+                        <button class="btn btn-warning btn-sm" onclick="submitReviewWithPrice('${s.id}', 'request_changes')"><i class="fas fa-undo"></i> Request Changes</button>
+                        <button class="btn btn-danger btn-sm" onclick="submitReviewWithPrice('${s.id}', 'reject')"><i class="fas fa-times"></i> Reject</button>
                     </div>
                 </div>
             ` : ''}
-            ${s.status === 'approved' ? `
+
+            ${canPublish ? `
                 <div style="margin-top:1.5rem;padding:1.25rem;background:#dcfce7;border-radius:12px;border:2px solid #86efac">
                     <h3 style="color:var(--navy);margin-bottom:0.5rem;font-size:1rem">✅ Ready to Publish</h3>
-                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem">Publishing will create a new course in the student catalog with all submitted modules and lessons.</p>
-                    <button class="btn btn-success" onclick="publishSubmission('${s.id}')"><i class="fas fa-rocket"></i> Publish to Student Catalog</button>
+                    <p style="font-size:0.85rem;color:var(--text-secondary);margin-bottom:1rem">Adjust the price above (if needed), then publish. The course will be visible to students immediately.</p>
+                    <button class="btn btn-success" onclick="publishSubmissionWithPrice('${s.id}')"><i class="fas fa-rocket"></i> Approve & Publish</button>
                 </div>
             ` : ''}
         `;
@@ -2299,6 +2446,54 @@ async function reviewSubmissionAdmin(id) {
     }
 }
 
+async function submitReviewWithPrice(id, action) {
+    const feedback = document.getElementById('reviewFeedback')?.value || '';
+    if ((action === 'reject' || action === 'request_changes') && !feedback.trim()) {
+        alert('⚠️ Please provide feedback');
+        return;
+    }
+    try {
+        const price = parseFloat(document.getElementById('reviewPrice')?.value || 0);
+        await api('/admin/submissions/' + id, { method: 'PUT', body: { price } }).catch(() => {});
+    } catch (e) {}
+
+    try {
+        await api('/admin/submissions/' + id + '/review', { method: 'POST', body: { action, feedback } });
+        alert('✅ Review submitted');
+        closeAppDetailsModal();
+        loadSubmissions('pending_review');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+
+async function publishSubmissionWithPrice(id) {
+    const price = parseFloat(document.getElementById('reviewPrice')?.value || 0);
+    const discountEnabled = document.getElementById('reviewDiscountEnabled')?.checked || false;
+    const discountPrice = discountEnabled ? parseFloat(document.getElementById('reviewDiscountPrice')?.value || 0) : null;
+    const discountLabel = discountEnabled ? (document.getElementById('reviewDiscountLabel')?.value || 'Limited Time Offer') : null;
+    const discountEndsAt = discountEnabled ? (document.getElementById('reviewDiscountEndsAt')?.value || null) : null;
+
+    if (!confirm('Publish this course to the student catalog? Students will see it immediately.')) return;
+    try {
+        const r = await api('/admin/submissions/' + id + '/publish', {
+            method: 'POST',
+            body: {
+                price,
+                discount_enabled: discountEnabled,
+                discount_price: discountPrice,
+                discount_label: discountLabel,
+                discount_ends_at: discountEndsAt ? new Date(discountEndsAt).toISOString() : null,
+            },
+        });
+        alert('✅ Published! Course ID: ' + (r.course_id || '—'));
+        closeAppDetailsModal();
+        loadSubmissions('published');
+        loadContributors('all');
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
 async function submitReview(id, action) {
     const feedback = document.getElementById('reviewFeedback')?.value || '';
     if ((action === 'reject' || action === 'request_changes') && !feedback.trim()) {
