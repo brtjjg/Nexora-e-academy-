@@ -555,6 +555,177 @@ router.post('/contributors/:id/reject', requireAdmin, asyncHandler(async (req, r
     res.json({ contributor: r.rows[0], reason: reason || null });
 }));
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN: GET /api/admin/students/:id/audit
+   Full audit of a student — for certificate issuance decisions
+   ═══════════════════════════════════════════════════════════ */
+router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) => {
+    const { id } = req.params;
+
+    // 1) Student basic info
+    const stu = await db.query(
+        `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
+                u.status, u.created_at,
+                sp.admission_number, sp.approval_status,
+                COALESCE(sp.activation_fee_paid, FALSE) AS activation_fee_paid
+         FROM users u
+         LEFT JOIN student_profiles sp ON sp.user_id = u.id
+         WHERE u.id = $1 AND u.role = 'student'`,
+        [id]
+    );
+    if (!stu.rows.length) return res.status(404).json({ error: 'Student not found' });
+    const student = stu.rows[0];
+
+    // 2) Enrollments + progress + payment
+    const enr = await db.query(
+        `SELECT e.course_id, c.title AS course_title, c.price AS course_price,
+                COALESCE(e.total_course_paid, 0) AS total_course_paid,
+                (SELECT COUNT(*)::int FROM modules m WHERE m.course_id = e.course_id) AS total_modules,
+                (SELECT COUNT(*)::int FROM lessons l
+                    JOIN modules m ON m.id = l.module_id
+                    WHERE m.course_id = e.course_id) AS total_lessons,
+                (SELECT COUNT(*)::int FROM progress p
+                    WHERE p.user_id = e.user_id AND p.course_id = e.course_id) AS completed_lessons
+         FROM enrollments e
+         JOIN courses c ON c.id = e.course_id
+         WHERE e.user_id = $1
+         ORDER BY e.created_at DESC`,
+        [id]
+    );
+    const enrollments = enr.rows.map(e => ({
+        ...e,
+        payment_pct: e.course_price > 0
+            ? Math.min(100, Math.round((e.total_course_paid / e.course_price) * 100))
+            : 100,
+        progress_pct: e.total_lessons > 0
+            ? Math.round((e.completed_lessons / e.total_lessons) * 100)
+            : 0,
+        remaining_balance: Math.max(0, parseFloat(e.course_price || 0) - parseFloat(e.total_course_paid || 0)),
+    }));
+
+    // 3) Exam + CAT results
+    let results = [];
+    try {
+        const r = await db.query(
+            `SELECT course_id, assessment_type, score, total_marks, percentage, passed, submitted_at
+             FROM assessment_results
+             WHERE user_id = $1
+             ORDER BY submitted_at DESC`,
+            [id]
+        );
+        results = r.rows;
+    } catch (e) {
+        // Table may not exist yet — ignore
+        results = [];
+    }
+
+    // 4) Groups + message count
+    const grp = await db.query(
+        `SELECT g.id, g.name, g.category,
+                (SELECT COUNT(*)::int FROM group_messages gm
+                    WHERE gm.group_id = g.id AND gm.user_id = $1) AS my_messages
+         FROM group_members m
+         JOIN groups g ON g.id = m.group_id
+         WHERE m.user_id = $1`,
+        [id]
+    );
+
+    // 5) Payments total
+    const pay = await db.query(
+        `SELECT COALESCE(SUM(amount), 0) AS total_paid,
+                COUNT(*)::int AS tx_count
+         FROM transactions
+         WHERE user_id = $1 AND status = 'completed'`,
+        [id]
+    );
+
+    // 6) Assignments
+    let assignments = { submitted: 0, reviewed: 0, returned: 0 };
+    try {
+        const a = await db.query(
+            `SELECT
+                COUNT(*)::int AS submitted,
+                COUNT(*) FILTER (WHERE status = 'reviewed')::int AS reviewed,
+                COUNT(*) FILTER (WHERE status = 'returned')::int AS returned
+             FROM assignment_submissions
+             WHERE user_id = $1`,
+            [id]
+        );
+        assignments = a.rows[0];
+    } catch (e) {}
+
+    // 7) Certificates already issued
+    const cert = await db.query(
+        `SELECT certificate_id, course_name, issued_date, revoked
+         FROM certificates
+         WHERE user_id = $1
+         ORDER BY issued_date DESC`,
+        [id]
+    );
+
+    // ══════════ ELIGIBILITY SCORING ══════════
+    const reasons = [];
+    let score = 0;
+
+    // 30 pts — admission fee paid
+    if (student.activation_fee_paid) { score += 30; }
+    else reasons.push('Admission fee NOT paid');
+
+    // 25 pts — at least one enrollment with 100% payment
+    const fullyPaidCourses = enrollments.filter(e => e.payment_pct >= 100);
+    if (fullyPaidCourses.length > 0) { score += 25; }
+    else reasons.push('No fully-paid course');
+
+    // 25 pts — at least one completed course (all lessons done)
+    const completedCourses = enrollments.filter(e => e.progress_pct >= 100);
+    if (completedCourses.length > 0) { score += 25; }
+    else if (enrollments.some(e => e.progress_pct > 0)) reasons.push('Courses started but not completed');
+    else reasons.push('No course started');
+
+    // 10 pts — no failed exams on completed courses
+    const failedExams = results.filter(r => r.assessment_type === 'exam' && !r.passed);
+    if (failedExams.length === 0) { score += 10; }
+    else reasons.push(`${failedExams.length} failed exam(s)`);
+
+    // 10 pts — active in community (at least 1 message)
+    const totalMsgs = grp.rows.reduce((s, g) => s + (g.my_messages || 0), 0);
+    if (totalMsgs > 0) { score += 10; }
+    else if (grp.rows.length === 0) reasons.push('Not in any group');
+    else reasons.push('No group messages');
+
+    // Determine readiness
+    let verdict = 'not_ready';
+    let recommendation = 'Do NOT issue yet';
+    if (score >= 90 && failedExams.length === 0 && completedCourses.length > 0) {
+        verdict = 'ready';
+        recommendation = 'Issue the certificate — student meets all criteria';
+    } else if (score >= 60) {
+        verdict = 'partial';
+        recommendation = 'Student is close but not fully eligible. Review reasons below.';
+    }
+
+    res.json({
+        student,
+        enrollments,
+        results,
+        groups: grp.rows,
+        total_group_messages: totalMsgs,
+        payments: pay.rows[0],
+        assignments,
+        certificates_issued: cert.rows,
+        eligibility: {
+            score,
+            max: 100,
+            verdict,
+            recommendation,
+            reasons,
+            fully_paid_courses: fullyPaidCourses.length,
+            completed_courses: completedCourses.length,
+            failed_exams: failedExams.length,
+        },
+    });
+}));
+
 router.delete('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
     await db.query(
         `UPDATE users SET status = 'suspended', updated_at = NOW()
