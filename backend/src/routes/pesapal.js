@@ -95,7 +95,6 @@ async function submitPesapalOrder({ merchantRef, amount, description, currency, 
 
 // ─────────────────────────────────────────────
 // STEP 3 — Get transaction status from Pesapal
-// This is the ONLY trustworthy source of payment status
 // ─────────────────────────────────────────────
 async function getPesapalTransactionStatus(orderTrackingId) {
     const token = await getPesapalAccessToken();
@@ -121,8 +120,6 @@ async function getPesapalTransactionStatus(orderTrackingId) {
 
 // ─────────────────────────────────────────────
 // Helper — generate a unique merchant reference
-// Only alphanumeric, dashes, underscores, dots, colons
-// Max 50 characters
 // ─────────────────────────────────────────────
 function generateMerchantRef(prefix) {
     const timestamp = Date.now().toString(36);
@@ -145,7 +142,7 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
         }
         const user = userRes.rows[0];
 
-        // Prevent double payment if already paid
+        // Prevent double payment
         const existing = await db.query(
             `SELECT id FROM transactions
              WHERE user_id = $1 AND payment_type = 'ACTIVATION_FEE'
@@ -167,8 +164,6 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
             user,
         });
 
-        // Save pending transaction for verification
-        // NOTE: $4 and $5 are separate parameters to avoid PostgreSQL "inconsistent types" error
         await db.query(
             `INSERT INTO transactions
                (user_id, amount, currency, payment_type, payment_method, status,
@@ -190,15 +185,12 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
 }));
 
 // ─────────────────────────────────────────────
-// POST /api/pesapal/create-course-order
-// Creates a Pesapal order for a course payment.
-// Body: { course_id }   (amount is calculated server-side)
-//
-// This route name MUST match the frontend call:
-//   api('/pesapal/create-course-order', { method: 'POST', body: { course_id } })
+// POST /api/pesapal/create-course-order   ← RENAMED
+// Body: { course_id }   (amount optional — backend computes if missing)
 // ─────────────────────────────────────────────
 router.post('/create-course-order', requireAuth, asyncHandler(async (req, res) => {
-    const { course_id } = req.body || {};
+    const { course_id, amount } = req.body || {};
+
     if (!course_id) {
         return res.status(400).json({ error: 'Missing course_id' });
     }
@@ -213,10 +205,10 @@ router.post('/create-course-order', requireAuth, asyncHandler(async (req, res) =
         }
         const user = userRes.rows[0];
 
-        // Look up the enrollment + course so we know exactly how much is still owed
+        // Look up the enrollment + course to compute remaining balance
         const enrollRes = await db.query(
             `SELECT e.course_id,
-                    e.course_price,
+                    COALESCE(e.course_price, c.price, 0) AS course_price,
                     COALESCE(e.total_course_paid, 0) AS total_paid,
                     c.title AS course_title
              FROM enrollments e
@@ -238,34 +230,38 @@ router.post('/create-course-order', requireAuth, asyncHandler(async (req, res) =
             return res.status(400).json({ error: 'This course is already fully paid' });
         }
 
-        // Pesapal's minimum accepted amount is 0.50
-        const amount = Math.max(remaining, 0.50);
+        // Amount: prefer client-supplied, else use server-computed remaining
+        let amt = parseFloat(amount || 0);
+        if (!amt || amt <= 0 || amt > remaining) {
+            amt = remaining;
+        }
+        // Pesapal minimum is 0.50
+        amt = Math.max(amt, 0.50);
 
         const merchantRef = generateMerchantRef('NXA-CRS');
 
         const result = await submitPesapalOrder({
             merchantRef,
-            amount,
+            amount: amt,
             description: `Nexora - ${enrollment.course_title}`.substring(0, 100),
             currency: 'USD',
             user,
         });
 
-        // NOTE: $5 and $6 are separate parameters to avoid "inconsistent types" error
         await db.query(
             `INSERT INTO transactions
                (user_id, course_id, amount, currency, payment_type, payment_method, status,
                 transaction_id, merchant_reference, external_reference, created_at, updated_at)
              VALUES ($1, $2, $3, 'USD', 'COURSE_PAYMENT', 'pesapal', 'pending',
                      $4, $5, $6, NOW(), NOW())`,
-            [req.user.id, course_id, amount, result.order_tracking_id, merchantRef, merchantRef]
+            [req.user.id, course_id, amt, result.order_tracking_id, merchantRef, merchantRef]
         );
 
         res.json({
             redirect_url: result.redirect_url,
             order_tracking_id: result.order_tracking_id,
             merchant_reference: merchantRef,
-            amount,
+            amount: amt,
         });
     } catch (err) {
         console.error('[pesapal] create-course-order:', err.message);
@@ -276,11 +272,8 @@ router.post('/create-course-order', requireAuth, asyncHandler(async (req, res) =
 // ─────────────────────────────────────────────
 // POST/GET /api/pesapal/ipn
 // Pesapal notification webhook
-// IMPORTANT: The IPN only sends an OrderTrackingId, never the status.
-// We must call GetTransactionStatus to find the real status.
 // ─────────────────────────────────────────────
 router.all('/ipn', asyncHandler(async (req, res) => {
-    // Respond 200 immediately so Pesapal doesn't retry
     res.status(200).json({ ok: true });
 
     try {
@@ -295,13 +288,11 @@ router.all('/ipn', asyncHandler(async (req, res) => {
             return;
         }
 
-        // THE critical call — ask Pesapal what actually happened
         const statusData = await getPesapalTransactionStatus(orderTrackingId);
         const status = (statusData.payment_status_description || '').toUpperCase();
 
         console.log('[pesapal-ipn] Status:', status);
 
-        // Find our transaction
         const txRes = await db.query(
             `SELECT id, user_id, course_id, payment_type, amount, status
              FROM transactions
@@ -318,7 +309,6 @@ router.all('/ipn', asyncHandler(async (req, res) => {
         const tx = txRes.rows[0];
 
         if (status === 'COMPLETED') {
-            // Idempotency — skip if already processed
             if (tx.status === 'completed') {
                 console.log('[pesapal-ipn] Already completed, skipping');
                 return;
@@ -368,10 +358,8 @@ router.all('/ipn', asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/pesapal/verify/:orderTrackingId
-// Frontend calls this when the student lands on the callback page.
-//
-// This route does the FULL verification and DB write, so the frontend
-// can rely on a single call after payment. It is idempotent.
+// Frontend calls this after payment
+// Applies the DB updates if status is COMPLETED
 // ─────────────────────────────────────────────
 router.get('/verify/:orderTrackingId', asyncHandler(async (req, res) => {
     const { orderTrackingId } = req.params;
@@ -379,8 +367,6 @@ router.get('/verify/:orderTrackingId', asyncHandler(async (req, res) => {
         const statusData = await getPesapalTransactionStatus(orderTrackingId);
         const status = (statusData.payment_status_description || 'PENDING').toUpperCase();
 
-        // If completed, also apply the DB updates here so the user doesn't
-        // have to wait for the IPN webhook to fire (which can be delayed).
         if (status === 'COMPLETED') {
             const txRes = await db.query(
                 `SELECT id, user_id, course_id, payment_type, amount, status
