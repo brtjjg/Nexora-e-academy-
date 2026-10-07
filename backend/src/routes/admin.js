@@ -8,22 +8,26 @@ const bcrypt = require('bcrypt');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const { createClient } = require('@supabase/supabase-js');
 
-// Manual uploads directory
-const MANUALS_DIR = path.join(__dirname, '..', 'uploads', 'manuals');
-if (!fs.existsSync(MANUALS_DIR)) fs.mkdirSync(MANUALS_DIR, { recursive: true });
+// ═════════════════════════════════════════════
+// SUPABASE STORAGE (persistent, survives redeploys)
+// ═════════════════════════════════════════════
+const SUPABASE_URL = process.env.SUPABASE_URL;
+const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const SUPABASE_BUCKET = process.env.SUPABASE_BUCKET || 'nexora-manuals';
 
-const manualStorage = multer.diskStorage({
-    destination: (req, file, cb) => cb(null, MANUALS_DIR),
-    filename: (req, file, cb) => {
-        const ts = Date.now();
-        const safe = String(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
-        cb(null, `${ts}_${safe}`);
-    },
-});
+let supabase = null;
+if (SUPABASE_URL && SUPABASE_SERVICE_KEY) {
+    supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
+    console.log('[supabase] Client initialized');
+} else {
+    console.warn('[supabase] Missing SUPABASE_URL or SUPABASE_SERVICE_KEY — manual uploads will fall back to local disk');
+}
 
+// Use memory storage so we can push the buffer straight to Supabase
 const uploadManual = multer({
-    storage: manualStorage,
+    storage: multer.memoryStorage(),
     limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB
     fileFilter: (req, file, cb) => {
         const allowed = ['.pdf', '.doc', '.docx', '.txt', '.rtf'];
@@ -33,7 +37,16 @@ const uploadManual = multer({
     },
 });
 
-// Replace the /manuals/upload handler with this version that uses multer:
+// Sanitize filename — turn "CamScanner 05-10-2026 20.38.pdf" into
+// "CamScanner_05-10-2026_20_38.pdf" so it's URL-safe
+function sanitizeFilename(name) {
+    const ext = path.extname(name).toLowerCase();
+    const base = path.basename(name, ext)
+        .replace(/[^a-zA-Z0-9_-]/g, '_')   // spaces, dots → underscore
+        .replace(/_+/g, '_')                // collapse repeats
+        .replace(/^_|_$/g, '');             // trim leading/trailing _
+    return `${base}${ext}`;
+}
 
 // ─────────────────────────────────────────────
 // GET /api/admin/stats
@@ -586,14 +599,58 @@ router.delete('/manuals/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // POST /api/admin/manuals/upload
-// Upload a PDF/DOC attachment for a manual
+// Upload a PDF/DOC to Supabase Storage (persistent)
 // ─────────────────────────────────────────────
 router.post('/manuals/upload', requireAdmin, uploadManual.single('file'), asyncHandler(async (req, res) => {
-    // This route is handled by multer middleware in server.js
-    // See instructions below for wiring multer
     if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
-    const path = `/uploads/manuals/${req.file.filename}`;
-    res.json({ path, filename: req.file.filename, originalname: req.file.originalname });
+
+    const safeName = sanitizeFilename(req.file.originalname);
+    const uniqueName = `${Date.now()}_${safeName}`;
+
+    // ── Path 1: Supabase (persistent) ──
+    if (supabase) {
+        try {
+            const { data, error } = await supabase.storage
+                .from(SUPABASE_BUCKET)
+                .upload(uniqueName, req.file.buffer, {
+                    contentType: req.file.mimetype,
+                    upsert: false,
+                });
+
+            if (error) throw error;
+
+            const { data: urlData } = supabase.storage
+                .from(SUPABASE_BUCKET)
+                .getPublicUrl(uniqueName);
+
+            console.log('[manuals/upload] Uploaded to Supabase:', urlData.publicUrl);
+
+            return res.json({
+                path: urlData.publicUrl,       // full https URL — works from any origin
+                filename: uniqueName,
+                originalname: req.file.originalname,
+                storage: 'supabase',
+            });
+        } catch (err) {
+            console.error('[manuals/upload] Supabase failed:', err.message);
+            // fall through to local fallback
+        }
+    }
+
+    // ── Path 2: Local disk (fallback — will be wiped on redeploy) ──
+    const MANUALS_DIR = path.join(__dirname, '..', 'uploads', 'manuals');
+    if (!fs.existsSync(MANUALS_DIR)) fs.mkdirSync(MANUALS_DIR, { recursive: true });
+
+    const localPath = path.join(MANUALS_DIR, uniqueName);
+    fs.writeFileSync(localPath, req.file.buffer);
+    console.log('[manuals/upload] Saved to local disk (fallback):', localPath);
+
+    res.json({
+        path: `/uploads/manuals/${uniqueName}`,
+        filename: uniqueName,
+        originalname: req.file.originalname,
+        storage: 'local',
+    });
 }));
 
 // ─────────────────────────────────────────────
