@@ -321,23 +321,77 @@ table tbody tr:hover{background:#f8fafc}
 .chat-meta .chat-avatar{width:28px;height:28px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:0.75rem}
 .chat-meta .chat-avatar.admin{background:var(--gold)}
 
-/* ─── PAYMENT SECTION STYLES ─── */
-.payment-methods-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
-@media(max-width:600px){.payment-methods-grid{grid-template-columns:1fr}}
-.payment-method-card{background:var(--bg);border:2px solid #e2e8f0;border-radius:12px;padding:1.25rem;text-align:center;transition:all 0.15s}
-.payment-method-card:hover{border-color:var(--blue);background:#f0f9ff}
-.payment-method-card .pm-icon{font-size:2rem;margin-bottom:0.5rem}
-.payment-method-card .pm-title{font-weight:700;color:var(--navy);font-size:0.95rem;margin-bottom:0.3rem}
-.payment-method-card .pm-desc{font-size:0.8rem;color:var(--text-secondary);margin-bottom:0.75rem}
-.payment-method-card .pm-btn{display:inline-flex;align-items:center;gap:6px;padding:8px 18px;border-radius:50px;font-weight:600;font-size:0.82rem;border:none;cursor:pointer;font-family:inherit}
-.pm-btn-paypal{background:#0070ba;color:#fff}
-.pm-btn-pesapal{background:#16A34A;color:#fff}
-.pm-btn-paypal:hover{background:#005a9e}
-.pm-btn-pesapal:hover{background:#15803d}
-.payment-status-badge{display:inline-flex;align-items:center;gap:6px;padding:6px 14px;border-radius:50px;font-size:0.8rem;font-weight:700}
-.payment-status-badge.paid{background:#dcfce7;color:#166534}
-.payment-status-badge.unpaid{background:#fee2e2;color:#991b1b}
-.payment-status-badge.partial{background:#fef3c7;color:#92400e}
+/* ─── PAYMENT SECTION STYLES (UPDATED TO STACK) ─── */
+.payment-methods-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+.payment-method-card {
+    background: var(--bg);
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.15s;
+    width: 100%;
+}
+.payment-method-card:hover {
+    border-color: var(--blue);
+    background: #f0f9ff;
+}
+.payment-method-card .pm-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+.payment-method-card .pm-title {
+    font-weight: 700;
+    color: var(--navy);
+    font-size: 0.95rem;
+    margin-bottom: 0.3rem;
+}
+.payment-method-card .pm-desc {
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    margin-bottom: 0.75rem;
+}
+.payment-method-card .pm-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 24px;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    width: 100%;
+    justify-content: center;
+}
+.pm-btn-paypal {
+    background: #0070ba;
+    color: #fff;
+}
+.pm-btn-pesapal {
+    background: #16A34A;
+    color: #fff;
+}
+.pm-btn-paypal:hover { background: #005a9e; }
+.pm-btn-pesapal:hover { background: #15803d; }
+.payment-status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    border-radius: 50px;
+    font-size: 0.8rem;
+    font-weight: 700;
+}
+.payment-status-badge.paid { background: #dcfce7; color: #166534; }
+.payment-status-badge.unpaid { background: #fee2e2; color: #991b1b; }
+.payment-status-badge.partial { background: #fef3c7; color: #92400e; }
 </style>
 </head>
 <body>
@@ -739,13 +793,14 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="approveConfirmModal"><div class="modal-box" style="max-width:520px"><h2><i class="fas fa-check-circle" style="color:var(--success)"></i> Approve</h2><p id="approveConfirmText" style="color:var(--text-secondary);margin-bottom:1.5rem">Confirm approval?</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeApproveModal()">Cancel</button><button type="button" class="btn btn-success" onclick="confirmApprove()">Confirm Approve</button></div></div></div>
 
-<!-- ═══════════ COURSE PAYMENT MODAL (NO MANUAL FORM) ═══════════ -->
+<!-- ═══════════ COURSE PAYMENT MODAL (STACKED LAYOUT) ═══════════ -->
 <div class="modal-backdrop" id="payCourseModal">
     <div class="modal-box" style="max-width:520px">
         <h2><i class="fas fa-credit-card" style="color:var(--gold)"></i> Pay for Course</h2>
         <div id="payCourseInfo" style="margin-bottom:1.5rem;background:var(--bg);padding:1rem;border-radius:12px;font-size:0.9rem"></div>
 
         <div class="payment-methods-grid">
+            <!-- PayPal Card -->
             <div class="payment-method-card">
                 <div class="pm-icon"><i class="fab fa-paypal" style="color:#0070ba"></i></div>
                 <div class="pm-title">PayPal</div>
@@ -753,6 +808,8 @@ table tbody tr:hover{background:#f8fafc}
                 <div id="paypal-button-container"></div>
                 <div id="paypalError" style="margin-top:0.5rem;font-size:0.8rem;color:var(--danger)"></div>
             </div>
+            
+            <!-- Pesapal Card (Below PayPal) -->
             <div class="payment-method-card">
                 <div class="pm-icon"><i class="fas fa-mobile-alt" style="color:#16A34A"></i></div>
                 <div class="pm-title">Pesapal</div>
@@ -770,7 +827,7 @@ table tbody tr:hover{background:#f8fafc}
     </div>
 </div>
 
-<!-- ═══════════ ADMISSION FEE PAYMENT MODAL (NO MANUAL FORM) ═══════════ -->
+<!-- ═══════════ ADMISSION FEE PAYMENT MODAL (STACKED LAYOUT) ═══════════ -->
 <div class="modal-backdrop" id="payActivationModal">
     <div class="modal-box" style="max-width:520px">
         <h2><i class="fas fa-user-check" style="color:var(--gold)"></i> Pay Admission Fee</h2>
@@ -781,6 +838,7 @@ table tbody tr:hover{background:#f8fafc}
         </div>
 
         <div class="payment-methods-grid">
+            <!-- PayPal Card -->
             <div class="payment-method-card">
                 <div class="pm-icon"><i class="fab fa-paypal" style="color:#0070ba"></i></div>
                 <div class="pm-title">PayPal</div>
@@ -788,6 +846,8 @@ table tbody tr:hover{background:#f8fafc}
                 <div id="paypal-activation-button-container"></div>
                 <div id="paypalActivationError" style="margin-top:0.5rem;font-size:0.8rem;color:var(--danger)"></div>
             </div>
+            
+            <!-- Pesapal Card (Below PayPal) -->
             <div class="payment-method-card">
                 <div class="pm-icon"><i class="fas fa-mobile-alt" style="color:#16A34A"></i></div>
                 <div class="pm-title">Pesapal</div>
@@ -1458,7 +1518,6 @@ async function updateStudentDashboard() {
         const { enrollments } = await api('/enrollments');
         const { certificates } = await api('/certificates/me');
         
-        // Get admission fee status
         let app = null;
         try { const r = await api('/applications/me'); app = r.application; } catch (e) {}
         const admissionPaid = (app && app.payment_status === 'paid') || (currentUser && currentUser.activationFeePaid === true);
@@ -1932,7 +1991,11 @@ async function startPesapalCoursePayment() {
     } catch (err) {
         if (errEl) {
             errEl.style.color = 'var(--danger)';
-            errEl.textContent = '❌ ' + (err.data?.error || err.message);
+            if (err.status === 404) {
+                errEl.innerHTML = '❌ Backend endpoint /pesapal/create-course-order not found.<br><small>Please ask your developer to add this API route.</small>';
+            } else {
+                errEl.textContent = '❌ ' + (err.data?.error || err.message);
+            }
         }
     } finally {
         btn.disabled = false;
@@ -3008,7 +3071,7 @@ document.addEventListener('DOMContentLoaded', initGoogleButton);
     else goHome();
 })();
 
-console.log('🎓 Nexora Academy v12.0 — Clean payment flow (PayPal + Pesapal only)');
+console.log('🎓 Nexora Academy v12.1 — Stacked layout, Pesapal endpoint warning');
 </script>
 <script src="certificate.js"></script>
 </body>
