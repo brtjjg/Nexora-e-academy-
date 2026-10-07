@@ -983,4 +983,277 @@ router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, r
     }
 }));
 
+/* ═══════════════════════════════════════════════════════════
+   PUBLIC (webhook): POST /api/admin/contributor-applications/decide
+   Called by Google Apps Script when the sheet's "Status" changes.
+   Verifies with a shared secret. Sends approve/reject email + creates user.
+   ═══════════════════════════════════════════════════════════ */
+router.post('/contributor-applications/decide', asyncHandler(async (req, res) => {
+    const secret = req.headers['x-webhook-secret'];
+    if (!process.env.FORM_WEBHOOK_SECRET) {
+        return res.status(500).json({ error: 'Webhook secret not configured on server' });
+    }
+    if (secret !== process.env.FORM_WEBHOOK_SECRET) {
+        return res.status(401).json({ error: 'Unauthorized' });
+    }
+
+    const {
+        full_name, email, phone, country,
+        education, expertise, course_interests,
+        status,           // "Approved" or "Rejected"
+        reason,           // optional, for rejections
+    } = req.body || {};
+
+    if (!email || !status) {
+        return res.status(400).json({ error: 'email and status are required' });
+    }
+    if (!['Approved', 'Rejected'].includes(status)) {
+        return res.status(400).json({ error: 'status must be "Approved" or "Rejected"' });
+    }
+
+    const emailLower = String(email).toLowerCase().trim();
+
+    // ══════════ REJECTION PATH ══════════
+    if (status === 'Rejected') {
+        try {
+            await sendContributorDecisionEmail({
+                to: emailLower,
+                name: full_name || 'Applicant',
+                approved: false,
+                reason: reason || null,
+            });
+        } catch (e) { console.error('[form] reject email failed:', e.message); }
+
+        return res.json({ ok: true, action: 'rejected', email });
+    }
+
+    // ══════════ APPROVAL PATH ══════════
+
+    // 1) Check if user exists
+    const existing = await db.query(
+        `SELECT id, username, email, full_name, role, status FROM users WHERE LOWER(email) = $1`,
+        [emailLower]
+    );
+
+    let user = existing.rows[0] || null;
+    let tempPassword = null;
+
+    if (user) {
+        // Already exists — just make sure they're an active contributor
+        if (user.role !== 'contributor' && user.role !== 'admin') {
+            await db.query(
+                `UPDATE users SET role = 'contributor', status = 'active', updated_at = NOW()
+                 WHERE id = $1`,
+                [user.id]
+            );
+            user.role = 'contributor';
+        } else if (user.status !== 'active') {
+            await db.query(
+                `UPDATE users SET status = 'active', updated_at = NOW() WHERE id = $1`,
+                [user.id]
+            );
+            user.status = 'active';
+        }
+    } else {
+        // Create new contributor account
+        const baseUsername = String(full_name || emailLower.split('@')[0])
+            .toLowerCase()
+            .replace(/[^a-z0-9_]/g, '')
+            .slice(0, 18) || 'contributor';
+
+        // Ensure username is unique
+        let username = baseUsername;
+        let suffix = 0;
+        while (true) {
+            const u = await db.query(`SELECT 1 FROM users WHERE username = $1`, [username]);
+            if (!u.rows.length) break;
+            suffix += 1;
+            username = `${baseUsername}${suffix}`;
+        }
+
+        // Generate temp password
+        tempPassword = generateTempPassword();
+
+        const hash = await bcrypt.hash(tempPassword, 10);
+
+        const ins = await db.query(
+            `INSERT INTO users
+                (username, email, password_hash, full_name, phone, country, role, status)
+             VALUES ($1, $2, $3, $4, $5, $6, 'contributor', 'active')
+             RETURNING id, username, email, full_name, role, status`,
+            [username, emailLower, hash, full_name || 'Contributor', phone || null, country || null]
+        );
+        user = ins.rows[0];
+
+        console.log('[form] Created contributor:', username, '→', emailLower);
+    }
+
+    // 2) Send approval email with credentials + portal link + manuals list
+    try {
+        await sendContributorDecisionEmail({
+            to: emailLower,
+            name: full_name || user.full_name || 'Contributor',
+            approved: true,
+            username: user.username,
+            tempPassword,        // only present for new accounts; null for existing
+            portalUrl: 'https://nexora-contributor-portal.vercel.app',
+        });
+    } catch (e) {
+        console.error('[form] approve email failed:', e.message);
+    }
+
+    res.json({
+        ok: true,
+        action: 'approved',
+        email,
+        username: user.username,
+        is_new: !!tempPassword,
+    });
+}));
+
+// ─────────────────────────────────────────────
+// Helper: generate temp password
+// ─────────────────────────────────────────────
+function generateTempPassword() {
+    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const lower = 'abcdefghjkmnpqrstuvwxyz';
+    const digits = '23456789';
+    const all = upper + lower + digits;
+    let pw = '';
+    pw += upper[Math.floor(Math.random() * upper.length)];
+    pw += lower[Math.floor(Math.random() * lower.length)];
+    pw += digits[Math.floor(Math.random() * digits.length)];
+    for (let i = 0; i < 7; i++) {
+        pw += all[Math.floor(Math.random() * all.length)];
+    }
+    // Shuffle
+    return pw.split('').sort(() => Math.random() - 0.5).join('');
+}
+
+// ─────────────────────────────────────────────
+// Helper: send contributor decision email
+// ─────────────────────────────────────────────
+const nodemailer = require('nodemailer');
+let formMailer = null;
+if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    formMailer = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '465', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
+        connectionTimeout: 10000,
+        greetingTimeout: 10000,
+        socketTimeout: 15000,
+    });
+}
+
+async function sendContributorDecisionEmail({ to, name, approved, reason, username, tempPassword, portalUrl }) {
+    if (!formMailer) {
+        console.warn('[form] Email skipped (no SMTP) →', to);
+        return { skipped: true };
+    }
+
+    if (!approved) {
+        const html = `
+        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#F5F7FA;padding:20px">
+          <div style="background:linear-gradient(135deg,#0B1F3A,#172B4D);padding:30px;text-align:center;border-bottom:3px solid #D4A63A">
+            <h1 style="color:#D4A63A;margin:0;letter-spacing:3px;font-size:22px">NEXORA ACADEMY</h1>
+            <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:2px">CONTRIBUTOR PROGRAM</p>
+          </div>
+          <div style="background:#fff;padding:30px;border-radius:0 0 12px 12px">
+            <h2 style="color:#0B1F3A;margin:0 0 12px">Hello ${name},</h2>
+            <p style="color:#64748B;line-height:1.7;font-size:15px">
+              Thank you for applying to the Nexora Contributor Program. After careful review, we are unable to approve your application at this time.
+            </p>
+            ${reason ? `<div style="background:#FEF3C7;padding:14px;border-radius:10px;margin:20px 0;border-left:4px solid #D4A63A"><strong style="color:#92400E">Reason:</strong><div style="color:#78350F;margin-top:6px">${reason}</div></div>` : ''}
+            <p style="color:#64748B;line-height:1.7;font-size:14px">
+              You are welcome to reapply in the future with additional qualifications or experience.
+            </p>
+            <p style="color:#94A3B8;font-size:12px;margin-top:24px;padding-top:20px;border-top:1px solid #E2E8F0">
+              Questions? Contact nexoraacademyhelpdesk@gmail.com
+            </p>
+          </div>
+        </div>`;
+
+        await formMailer.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+            to,
+            subject: 'Nexora Contributor Application — Decision',
+            html,
+        });
+        return { sent: true };
+    }
+
+    // ── Approval email ──
+    const credBlock = tempPassword ? `
+        <div style="background:#F5F7FA;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #16A34A">
+          <div style="font-size:13px;color:#64748B;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Your Contributor Credentials</div>
+          <div style="font-family:monospace;font-size:15px;color:#0B1F3A;margin-top:8px">
+            <div><strong>Username:</strong> ${username}</div>
+            <div style="margin-top:4px"><strong>Password:</strong> ${tempPassword}</div>
+          </div>
+          <div style="font-size:12px;color:#92400E;margin-top:10px">⚠️ Please change your password immediately after first login.</div>
+        </div>` : `
+        <div style="background:#DCFCE7;padding:14px;border-radius:10px;margin:20px 0;border-left:4px solid #16A34A">
+          <strong style="color:#166534">Your existing Nexora account is now active as a Contributor.</strong>
+          <div style="font-size:13px;color:#166534;margin-top:6px">Use your existing username and password to log in.</div>
+        </div>`;
+
+    const html = `
+    <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;background:#F5F7FA;padding:20px">
+      <div style="background:linear-gradient(135deg,#0B1F3A,#172B4D);padding:30px;text-align:center;border-bottom:3px solid #D4A63A">
+        <h1 style="color:#D4A63A;margin:0;letter-spacing:3px;font-size:22px">NEXORA ACADEMY</h1>
+        <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:2px">CONTRIBUTOR PROGRAM</p>
+      </div>
+      <div style="background:#fff;padding:30px;border-radius:0 0 12px 12px">
+        <h2 style="color:#0B1F3A;margin:0 0 12px">🎉 Welcome aboard, ${name}!</h2>
+        <p style="color:#64748B;line-height:1.7;font-size:15px">
+          Your application to become a <strong>Nexora Academy Contributor</strong> has been <strong style="color:#16A34A">approved</strong>.
+          You can now access the Contributor Portal to start creating courses.
+        </p>
+
+        ${credBlock}
+
+        <div style="text-align:center;margin:26px 0">
+          <a href="${portalUrl}"
+             style="background:#29A9E8;color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:700;display:inline-block;font-size:14px;letter-spacing:0.5px">
+            Open Contributor Portal →
+          </a>
+        </div>
+
+        <div style="background:#EEF7FF;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #29A9E8">
+          <div style="font-weight:700;color:#0B1F3A;margin-bottom:8px">📚 Available on the Portal:</div>
+          <ul style="color:#334155;font-size:14px;line-height:1.9;margin:0;padding-left:20px">
+            <li>Contributor Manual</li>
+            <li>Course Development Manual</li>
+            <li>Assessment Guidelines</li>
+            <li>Submission Procedures</li>
+            <li>Other official resources</li>
+          </ul>
+        </div>
+
+        <p style="color:#64748B;line-height:1.7;font-size:14px">
+          Read the Contributor Manual carefully before submitting your first course. If you have questions,
+          reach the team at
+          <a href="mailto:nexoraacademyhelpdesk@gmail.com" style="color:#29A9E8">nexoraacademyhelpdesk@gmail.com</a>
+          or join the
+          <a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" style="color:#29A9E8">WhatsApp group</a>.
+        </p>
+
+        <p style="color:#94A3B8;font-size:12px;margin-top:24px;padding-top:20px;border-top:1px solid #E2E8F0">
+          Welcome to the Nexora Academy team. We look forward to your courses!<br>
+          — The Nexora Academy Team
+        </p>
+      </div>
+    </div>`;
+
+    await formMailer.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to,
+        subject: '🎉 You\'re approved — Welcome to Nexora Contributor Program',
+        html,
+    });
+    return { sent: true };
+}
+
 module.exports = router;
