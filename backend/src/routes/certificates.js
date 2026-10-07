@@ -4,6 +4,73 @@ const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
+const nodemailer = require('nodemailer');
+
+// ─── Email setup ──────────────────────────────────────
+let mailer = null;
+if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
+    mailer = nodemailer.createTransport({
+        host: process.env.SMTP_HOST,
+        port: parseInt(process.env.SMTP_PORT || '587', 10),
+        secure: process.env.SMTP_SECURE === 'true',
+        auth: {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        },
+    });
+    console.log('[email] SMTP configured:', process.env.SMTP_HOST);
+} else {
+    console.warn('[email] SMTP not configured — certificate emails will be skipped');
+}
+
+async function sendCertificateEmail({ to, studentName, certificateId, courseName, certificateType, issuedDate, verifyUrl }) {
+    if (!mailer) {
+        console.log('[email] Skipped (no SMTP) →', to);
+        return { skipped: true };
+    }
+    const typeLabel = (certificateType || 'Completion').toUpperCase();
+    const dateStr = new Date(issuedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+    const html = `
+    <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#F5F7FA;padding:20px">
+      <div style="background:linear-gradient(135deg,#0B1F3A,#172B4D);padding:30px;text-align:center;border-bottom:3px solid #D4A63A">
+        <h1 style="color:#D4A63A;margin:0;letter-spacing:3px;font-size:22px">NEXORA ACADEMY</h1>
+        <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:2px">CERTIFICATE PORTAL</p>
+      </div>
+      <div style="background:#fff;padding:30px;border-radius:0 0 12px 12px">
+        <h2 style="color:#0B1F3A;margin:0 0 12px">🎓 Congratulations, ${studentName}!</h2>
+        <p style="color:#64748B;line-height:1.7;font-size:15px">
+          Your <strong>Certificate of ${typeLabel}</strong> for <strong>${courseName}</strong> has been issued.
+        </p>
+        <div style="background:#F5F7FA;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #D4A63A">
+          <div style="font-size:13px;color:#64748B;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Certificate ID</div>
+          <div style="font-size:20px;color:#0B1F3A;font-weight:800;font-family:monospace">${certificateId}</div>
+          <div style="font-size:13px;color:#64748B;margin-top:12px">Issued on <strong>${dateStr}</strong></div>
+        </div>
+        <p style="color:#64748B;font-size:14px;line-height:1.7">
+          You can view and download your certificate anytime using the link below:
+        </p>
+        <div style="text-align:center;margin:24px 0">
+          <a href="${verifyUrl}" style="background:#29A9E8;color:#fff;padding:12px 28px;border-radius:50px;text-decoration:none;font-weight:700;display:inline-block;font-size:14px">
+            View My Certificate
+          </a>
+        </div>
+        <p style="color:#94A3B8;font-size:12px;line-height:1.6;margin-top:24px;padding-top:20px;border-top:1px solid #E2E8F0">
+          Anyone can verify this certificate at <a href="${verifyUrl}" style="color:#29A9E8">${verifyUrl}</a>.<br>
+          If you didn't expect this email, contact nexoraacademyhelpdesk@gmail.com.
+        </p>
+      </div>
+    </div>`;
+
+    await mailer.sendMail({
+        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        to,
+        subject: `🎓 Your ${typeLabel} Certificate — ${courseName}`,
+        html,
+    });
+    console.log('[email] Sent certificate to', to);
+    return { sent: true };
+}
 
 /* ═══════════════════════════════════════════════════════════
    PUBLIC: GET /api/certificates/verify/:id
@@ -167,9 +234,28 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
         ]
     );
 
-    res.status(201).json({
-        certificate: ins.rows[0],
-        verify_url: `https://nexora-certificates.vercel.app/#verify/${certificate_id}`,
+    const cert = ins.rows[0];
+const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
+
+// Send email to student (non-blocking — errors are logged, not thrown)
+try {
+    await sendCertificateEmail({
+        to: student.email,
+        studentName: student.full_name,
+        certificateId: certificate_id,
+        courseName: course.title,
+        certificateType: cert.certificate_type,
+        issuedDate: cert.issued_date,
+        verifyUrl,
+    });
+} catch (mailErr) {
+    console.error('[email] Failed:', mailErr.message);
+}
+
+res.status(201).json({
+    certificate: cert,
+    verify_url: verifyUrl,
+    email_sent: mailer ? true : false,
     });
 }));
 
