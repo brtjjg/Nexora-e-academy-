@@ -145,6 +145,18 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
         }
         const user = userRes.rows[0];
 
+        // Prevent double payment if already paid
+        const existing = await db.query(
+            `SELECT id FROM transactions
+             WHERE user_id = $1 AND payment_type = 'ACTIVATION_FEE'
+               AND status = 'completed'
+             LIMIT 1`,
+            [req.user.id]
+        );
+        if (existing.rows.length) {
+            return res.status(400).json({ error: 'Admission fee already paid' });
+        }
+
         const merchantRef = generateMerchantRef('NXA-ACT');
 
         const result = await submitPesapalOrder({
@@ -156,8 +168,7 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
         });
 
         // Save pending transaction for verification
-        // NOTE: $4 and $5 are used to avoid PostgreSQL "inconsistent types" error
-        // when the same value goes into two columns with different types.
+        // NOTE: $4 and $5 are separate parameters to avoid PostgreSQL "inconsistent types" error
         await db.query(
             `INSERT INTO transactions
                (user_id, amount, currency, payment_type, payment_method, status,
@@ -179,19 +190,17 @@ router.post('/create-activation-order', requireAuth, asyncHandler(async (req, re
 }));
 
 // ─────────────────────────────────────────────
-// POST /api/pesapal/create-order
-// Creates a Pesapal order for a course payment
-// Body: { course_id, amount }
+// POST /api/pesapal/create-course-order
+// Creates a Pesapal order for a course payment.
+// Body: { course_id }   (amount is calculated server-side)
+//
+// This route name MUST match the frontend call:
+//   api('/pesapal/create-course-order', { method: 'POST', body: { course_id } })
 // ─────────────────────────────────────────────
-router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
-    const { course_id, amount } = req.body || {};
-    if (!course_id || !amount) {
-        return res.status(400).json({ error: 'Missing course_id or amount' });
-    }
-
-    const amt = parseFloat(amount);
-    if (isNaN(amt) || amt <= 0) {
-        return res.status(400).json({ error: 'Invalid amount' });
+router.post('/create-course-order', requireAuth, asyncHandler(async (req, res) => {
+    const { course_id } = req.body || {};
+    if (!course_id) {
+        return res.status(400).json({ error: 'Missing course_id' });
     }
 
     try {
@@ -204,12 +213,40 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
         }
         const user = userRes.rows[0];
 
+        // Look up the enrollment + course so we know exactly how much is still owed
+        const enrollRes = await db.query(
+            `SELECT e.course_id,
+                    e.course_price,
+                    COALESCE(e.total_course_paid, 0) AS total_paid,
+                    c.title AS course_title
+             FROM enrollments e
+             JOIN courses c ON c.id = e.course_id
+             WHERE e.user_id = $1 AND e.course_id = $2
+             LIMIT 1`,
+            [req.user.id, course_id]
+        );
+        if (!enrollRes.rows.length) {
+            return res.status(404).json({ error: 'You are not enrolled in this course' });
+        }
+
+        const enrollment = enrollRes.rows[0];
+        const price = parseFloat(enrollment.course_price || 0);
+        const paid = parseFloat(enrollment.total_paid || 0);
+        const remaining = Math.max(price - paid, 0);
+
+        if (remaining <= 0) {
+            return res.status(400).json({ error: 'This course is already fully paid' });
+        }
+
+        // Pesapal's minimum accepted amount is 0.50
+        const amount = Math.max(remaining, 0.50);
+
         const merchantRef = generateMerchantRef('NXA-CRS');
 
         const result = await submitPesapalOrder({
             merchantRef,
-            amount: amt,
-            description: 'Nexora Academy - Course Payment',
+            amount,
+            description: `Nexora - ${enrollment.course_title}`.substring(0, 100),
             currency: 'USD',
             user,
         });
@@ -221,16 +258,17 @@ router.post('/create-order', requireAuth, asyncHandler(async (req, res) => {
                 transaction_id, merchant_reference, external_reference, created_at, updated_at)
              VALUES ($1, $2, $3, 'USD', 'COURSE_PAYMENT', 'pesapal', 'pending',
                      $4, $5, $6, NOW(), NOW())`,
-            [req.user.id, course_id, amt, result.order_tracking_id, merchantRef, merchantRef]
+            [req.user.id, course_id, amount, result.order_tracking_id, merchantRef, merchantRef]
         );
 
         res.json({
             redirect_url: result.redirect_url,
             order_tracking_id: result.order_tracking_id,
             merchant_reference: merchantRef,
+            amount,
         });
     } catch (err) {
-        console.error('[pesapal] create-order:', err.message);
+        console.error('[pesapal] create-course-order:', err.message);
         res.status(500).json({ error: 'Could not create Pesapal order: ' + err.message });
     }
 }));
@@ -330,19 +368,71 @@ router.all('/ipn', asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/pesapal/verify/:orderTrackingId
-// Frontend calls this when the student lands on the callback page
+// Frontend calls this when the student lands on the callback page.
+//
+// This route does the FULL verification and DB write, so the frontend
+// can rely on a single call after payment. It is idempotent.
 // ─────────────────────────────────────────────
 router.get('/verify/:orderTrackingId', asyncHandler(async (req, res) => {
     const { orderTrackingId } = req.params;
     try {
         const statusData = await getPesapalTransactionStatus(orderTrackingId);
+        const status = (statusData.payment_status_description || 'PENDING').toUpperCase();
+
+        // If completed, also apply the DB updates here so the user doesn't
+        // have to wait for the IPN webhook to fire (which can be delayed).
+        if (status === 'COMPLETED') {
+            const txRes = await db.query(
+                `SELECT id, user_id, course_id, payment_type, amount, status
+                 FROM transactions
+                 WHERE transaction_id = $1
+                 LIMIT 1`,
+                [orderTrackingId]
+            );
+
+            if (txRes.rows.length) {
+                const tx = txRes.rows[0];
+
+                if (tx.status !== 'completed') {
+                    await db.query(
+                        `UPDATE transactions
+                         SET status = 'completed', verified_at = NOW(), updated_at = NOW()
+                         WHERE id = $1`,
+                        [tx.id]
+                    );
+
+                    if (tx.payment_type === 'ACTIVATION_FEE') {
+                        await db.query(
+                            `UPDATE users SET activation_fee_paid = TRUE WHERE id = $1`,
+                            [tx.user_id]
+                        );
+                        await db.query(
+                            `UPDATE applications
+                             SET payment_status = 'paid', status = 'paid'
+                             WHERE user_id = $1 AND payment_status = 'unpaid'`,
+                            [tx.user_id]
+                        );
+                    } else if (tx.payment_type === 'COURSE_PAYMENT' && tx.course_id) {
+                        await db.query(
+                            `UPDATE enrollments
+                             SET total_course_paid = COALESCE(total_course_paid, 0) + $1
+                             WHERE user_id = $2 AND course_id = $3`,
+                            [tx.amount, tx.user_id, tx.course_id]
+                        );
+                    }
+                    console.log('[pesapal/verify] ✅ Applied payment for', orderTrackingId);
+                }
+            }
+        }
+
         res.json({
-            status: statusData.payment_status_description || 'PENDING',
+            status,
             status_code: statusData.status_code,
             amount: statusData.amount,
             merchant_reference: statusData.merchant_reference,
         });
     } catch (err) {
+        console.error('[pesapal/verify]', err.message);
         res.status(500).json({ error: err.message });
     }
 }));
