@@ -5,6 +5,35 @@ const db = require('../db');
 const { asyncHandler, genAdmissionNumber } = require('../utils');
 const { requireAdmin } = require('../middleware');
 const bcrypt = require('bcrypt');
+const multer = require('multer');
+const path = require('path');
+const fs = require('fs');
+
+// Manual uploads directory
+const MANUALS_DIR = path.join(__dirname, '..', 'uploads', 'manuals');
+if (!fs.existsSync(MANUALS_DIR)) fs.mkdirSync(MANUALS_DIR, { recursive: true });
+
+const manualStorage = multer.diskStorage({
+    destination: (req, file, cb) => cb(null, MANUALS_DIR),
+    filename: (req, file, cb) => {
+        const ts = Date.now();
+        const safe = String(file.originalname).replace(/[^a-zA-Z0-9._-]/g, '_');
+        cb(null, `${ts}_${safe}`);
+    },
+});
+
+const uploadManual = multer({
+    storage: manualStorage,
+    limits: { fileSize: 25 * 1024 * 1024 }, // 25 MB
+    fileFilter: (req, file, cb) => {
+        const allowed = ['.pdf', '.doc', '.docx', '.txt', '.rtf'];
+        const ext = path.extname(file.originalname).toLowerCase();
+        if (allowed.includes(ext)) cb(null, true);
+        else cb(new Error('Only PDF, DOC, DOCX, TXT, RTF allowed'));
+    },
+});
+
+// Replace the /manuals/upload handler with this version that uses multer:
 
 // ─────────────────────────────────────────────
 // GET /api/admin/stats
@@ -553,6 +582,37 @@ router.get('/manuals', requireAdmin, asyncHandler(async (req, res) => {
 router.delete('/manuals/:id', requireAdmin, asyncHandler(async (req, res) => {
     await db.query(`DELETE FROM course_manuals WHERE id = $1`, [req.params.id]);
     res.json({ ok: true });
+}));
+
+// ─────────────────────────────────────────────
+// POST /api/admin/manuals/upload
+// Upload a PDF/DOC attachment for a manual
+// ─────────────────────────────────────────────
+router.post('/manuals/upload', requireAdmin, uploadManual.single('file'), asyncHandler(async (req, res) => {
+    // This route is handled by multer middleware in server.js
+    // See instructions below for wiring multer
+    if (!req.file) return res.status(400).json({ error: 'No file uploaded' });
+    const path = `/uploads/manuals/${req.file.filename}`;
+    res.json({ path, filename: req.file.filename, originalname: req.file.originalname });
+}));
+
+// ─────────────────────────────────────────────
+// POST /api/admin/manuals/broadcast
+// Create a manual and send to ALL contributors
+// ─────────────────────────────────────────────
+router.post('/manuals/broadcast', requireAdmin, asyncHandler(async (req, res) => {
+    const { title, course_code, instructions, file_path, file_name } = req.body || {};
+    if (!title) return res.status(400).json({ error: 'Title is required' });
+
+    const r = await db.query(
+        `INSERT INTO course_manuals
+            (title, course_code, instructions, file_path, file_name, assigned_to, created_by)
+         VALUES ($1, $2, $3, $4, $5, NULL, $6)
+         RETURNING *`,
+        [title, course_code || null, instructions || null, file_path || null,
+         file_name || null, req.user.user_id]
+    );
+    res.status(201).json({ manual: r.rows[0] });
 }));
 
 // ═════════════════════════════════════════════
