@@ -65,8 +65,19 @@ function loadRoute(name) {
 
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), { maxAge: '7d' }));
-
+app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), {
+    maxAge: '7d',
+    setHeaders: (res, filePath) => {
+        res.setHeader('Access-Control-Allow-Origin', '*');
+        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+        // Force download for these types
+        const ext = path.extname(filePath).toLowerCase();
+        if (['.pdf', '.doc', '.docx', '.txt', '.rtf'].includes(ext)) {
+            const name = path.basename(filePath);
+            res.setHeader('Content-Disposition', `inline; filename="${name}"`);
+        }
+    },
+}));
 const apiLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
     max: 500,
