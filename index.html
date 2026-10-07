@@ -886,6 +886,49 @@ table tbody tr:hover{background:#f8fafc}
 
 <div class="modal-backdrop" id="deleteGroupModal"><div class="modal-box" style="max-width:480px"><h2><i class="fas fa-trash" style="color:var(--danger)"></i> Delete Group</h2><p style="color:var(--text-secondary);margin-bottom:1.5rem">This will permanently remove the group and all its messages. This cannot be undone.</p><div style="display:flex;gap:0.5rem;justify-content:flex-end"><button type="button" class="btn btn-outline" onclick="closeDeleteGroupModal()">Cancel</button><button type="button" class="btn btn-danger" onclick="confirmDeleteGroup()">Delete</button></div></div></div>
 
+<div class="modal-backdrop" id="sendManualModal">
+    <div class="modal-box" style="max-width:620px">
+        <h2><i class="fas fa-paper-plane" style="color:var(--gold)"></i> Send Manual to Contributors</h2>
+
+        <div id="sendManualFlash"></div>
+
+        <div style="background:#dcfce7;border-left:4px solid var(--success);padding:0.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:0.85rem;color:#166534">
+            <i class="fas fa-users"></i> This manual will appear on <strong>every contributor's dashboard</strong>.
+        </div>
+
+        <div class="form-group">
+            <label>Title <span class="required">*</span></label>
+            <input type="text" id="manualTitle" placeholder="e.g., Course Submission Guidelines 2026">
+        </div>
+
+        <div class="form-group">
+            <label>Course Code (optional)</label>
+            <input type="text" id="manualCourseCode" placeholder="e.g., NXA-WEB-101">
+        </div>
+
+        <div class="form-group">
+            <label>Instructions / Description</label>
+            <textarea id="manualInstructions" rows="5" placeholder="Explain what contributors should do with this manual."></textarea>
+        </div>
+
+        <div class="form-group">
+            <label>Attach File (optional)</label>
+            <div class="file-upload-container" onclick="document.getElementById('manualFileInput').click()">
+                <div class="upload-icon"><i class="fas fa-file-pdf"></i></div>
+                <div class="upload-text">Click to attach a PDF, DOC, or DOCX</div>
+                <div class="upload-hint">Max 25 MB</div>
+                <input type="file" id="manualFileInput" accept=".pdf,.doc,.docx,.txt,.rtf" onchange="onManualFilePick(event)">
+            </div>
+            <div id="manualFileChosen" style="margin-top:0.5rem;font-size:0.85rem;color:var(--text-secondary)"></div>
+        </div>
+
+        <div style="display:flex;gap:0.5rem;justify-content:flex-end;margin-top:1.5rem">
+            <button type="button" class="btn btn-outline" onclick="closeSendManualModal()">Cancel</button>
+            <button type="button" class="btn btn-success" id="sendManualBtn" onclick="submitManual()"><i class="fas fa-paper-plane"></i> Send to All Contributors</button>
+        </div>
+    </div>
+</div>
+  
 <div class="modal-backdrop" id="loadingModal"><div class="modal-box" style="max-width:320px;text-align:center"><i class="fas fa-spinner fa-spin" style="font-size:2.5rem;color:var(--gold)"></i><p style="margin-top:1rem;color:var(--text-secondary)">Please wait...</p></div></div>
 
 <footer class="footer">
@@ -1136,8 +1179,8 @@ const PAGE_NAMES = {
   'admin-groups':'Groups / Discussion','admin-revenue':'Revenue','admin-payments':'Payments','admin-assignments':'Assignments',
   'student-dashboard':'Dashboard','student-wallet':'Wallet','student-courses':'My Courses','student-course-viewer':'Course',
   'student-results':'Results','student-exams':'Exams','student-certificates':'Certificates','student-groups':'Groups / Discussion',
-  'student-profile':'Profile','group-chat':'Group Chat','notifications':'Notifications','learning':'Learning','admin-contributors': 'Contributors',
-'admin-submissions': 'Submissions',
+  'student-profile':'Profile','group-chat':'Group Chat','notifications':'Notifications','learning':'Learning',
+ 'admin-contributors': 'Contributors','admin-submissions': 'Submissions','admin-manuals': 'Manuals',
 };
 
 async function navigateTo(page) {
@@ -1208,7 +1251,8 @@ async function navigateTo(page) {
         else if (page === 'student-profile') renderStudentProfile();
         else if (page === 'notifications') await renderNotificationPrefs();
         else if (page === 'admin-contributors') loadContributors('pending');
-else if (page === 'admin-submissions') loadSubmissions('pending_review');
+        else if (page === 'admin-submissions') loadSubmissions('pending_review');
+        else if (page === 'admin-manuals') loadManuals();
     } catch (err) { console.error(err); }
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -2099,6 +2143,155 @@ async function renderAdminApplications() {
 let debounceTimer;
 function debouncedApps() { clearTimeout(debounceTimer); debounceTimer = setTimeout(renderAdminApplications, 300); }
 
+  /* ═══════════════════════════════════════════
+   ADMIN MANUALS
+   ═══════════════════════════════════════════ */
+
+let manualFileTarget = null;
+
+function openSendManualModal() {
+    document.getElementById('manualTitle').value = '';
+    document.getElementById('manualCourseCode').value = '';
+    document.getElementById('manualInstructions').value = '';
+    document.getElementById('manualFileInput').value = '';
+    document.getElementById('manualFileChosen').textContent = '';
+    document.getElementById('sendManualFlash').innerHTML = '';
+    manualFileTarget = null;
+    document.getElementById('sendManualModal').classList.add('active');
+}
+
+function closeSendManualModal() {
+    document.getElementById('sendManualModal').classList.remove('active');
+    manualFileTarget = null;
+}
+
+function onManualFilePick(event) {
+    const f = event.target.files[0];
+    if (!f) return;
+    if (f.size > 25 * 1024 * 1024) {
+        alert('⚠️ Max 25 MB');
+        event.target.value = '';
+        return;
+    }
+    manualFileTarget = f;
+    document.getElementById('manualFileChosen').innerHTML = `<i class="fas fa-paperclip"></i> ${esc(f.name)} (${(f.size / 1024).toFixed(0)} KB)`;
+}
+
+async function submitManual() {
+    const btn = document.getElementById('sendManualBtn');
+    const flash = document.getElementById('sendManualFlash');
+    const title = document.getElementById('manualTitle').value.trim();
+    const course_code = document.getElementById('manualCourseCode').value.trim() || null;
+    const instructions = document.getElementById('manualInstructions').value.trim() || null;
+
+    if (!title) {
+        flash.innerHTML = '<div class="flash flash-danger">⚠️ Title is required</div>';
+        return;
+    }
+
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+    flash.innerHTML = '';
+
+    try {
+        let file_path = null;
+        let file_name = null;
+
+        // Upload file first (if any)
+        if (manualFileTarget) {
+            const fd = new FormData();
+            fd.append('file', manualFileTarget);
+            const up = await apiForm('/admin/manuals/upload', fd);
+            file_path = up.path;
+            file_name = up.originalname || up.filename;
+        }
+
+        // Create the manual (assigned_to = NULL → all contributors)
+        await api('/admin/manuals/broadcast', {
+            method: 'POST',
+            body: { title, course_code, instructions, file_path, file_name },
+        });
+
+        flash.innerHTML = '<div class="flash flash-success">✅ Manual sent to all contributors</div>';
+        setTimeout(() => {
+            closeSendManualModal();
+            loadManuals();
+        }, 800);
+    } catch (err) {
+        flash.innerHTML = `<div class="flash flash-danger">❌ ${esc(err.data?.error || err.message)}</div>`;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fas fa-paper-plane"></i> Send to All Contributors';
+    }
+}
+
+async function loadManuals() {
+    const c = document.getElementById('adminManualsList');
+    const statsEl = document.getElementById('adminManualsStats');
+    if (!c) return;
+
+    c.innerHTML = '<div class="empty-state">Loading...</div>';
+
+    try {
+        const { manuals } = await api('/admin/manuals');
+        const list = manuals || [];
+
+        // Badge on sidebar
+        const badge = document.getElementById('manualsCount');
+        if (badge) badge.textContent = list.length;
+
+        // Stats
+        if (statsEl) {
+            const broadcastCount = list.filter(m => !m.assigned_to).length;
+            const assignedCount = list.filter(m => m.assigned_to).length;
+            statsEl.innerHTML = `
+                <div class="summary-card"><div class="num">${list.length}</div><div class="lbl">Total Manuals</div></div>
+                <div class="summary-card green"><div class="num">${broadcastCount}</div><div class="lbl">Sent to All</div></div>
+                <div class="summary-card gold"><div class="num">${assignedCount}</div><div class="lbl">Targeted</div></div>
+            `;
+        }
+
+        if (!list.length) {
+            c.innerHTML = '<div class="empty-state">No manuals sent yet. Click "Send Manual to Contributors" to share your first guideline document.</div>';
+            return;
+        }
+
+        c.innerHTML = `<div class="table-wrapper"><table>
+            <thead><tr>
+                <th>Title</th>
+                <th>Course Code</th>
+                <th>Recipients</th>
+                <th>Attachment</th>
+                <th>Sent</th>
+                <th>Actions</th>
+            </tr></thead>
+            <tbody>${list.map(m => `
+                <tr>
+                    <td><strong>${esc(m.title)}</strong>${m.instructions ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.instructions)}</div>` : ''}</td>
+                    <td>${esc(m.course_code || '—')}</td>
+                    <td>${m.assigned_to ? `<span class="status-pill pending">${esc(m.assigned_to_name || 'Specific')}</span>` : '<span class="status-pill approved">All Contributors</span>'}</td>
+                    <td>${m.file_path ? `<a href="https://nexora-api-sskg.onrender.com${esc(m.file_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> ${esc(m.file_name || 'File')}</a>` : '—'}</td>
+                    <td>${fmtDate(m.created_at)}</td>
+                    <td><button class="action-btn reject" title="Delete" onclick="deleteManual('${m.id}')"><i class="fas fa-trash"></i></button></td>
+                </tr>
+            `).join('')}</tbody>
+        </table></div>`;
+    } catch (err) {
+        c.innerHTML = `<div class="empty-state">Failed: ${esc(err.message)}</div>`;
+    }
+}
+
+async function deleteManual(id) {
+    if (!confirm('Delete this manual? Contributors will no longer see it.')) return;
+    try {
+        await api('/admin/manuals/' + id, { method: 'DELETE' });
+        alert('✅ Manual deleted');
+        loadManuals();
+    } catch (err) {
+        alert('❌ ' + (err.data?.error || err.message));
+    }
+}
+  
 /* ═══════════════════════════════════════════
    CONTRIBUTORS ADMIN
    ═══════════════════════════════════════════ */
