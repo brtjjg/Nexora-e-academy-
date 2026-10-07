@@ -87,6 +87,93 @@ router.get('/', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 /* ═══════════════════════════════════════════════════════════
+   ADMIN: POST /api/certificates
+   Issue a new certificate manually
+   Body: { user_id, course_id, grade? }
+   ═══════════════════════════════════════════════════════════ */
+router.post('/', requireAdmin, asyncHandler(async (req, res) => {
+    const { user_id, course_id, grade } = req.body || {};
+    if (!user_id || !course_id) {
+        return res.status(400).json({ error: 'user_id and course_id are required' });
+    }
+
+    // 1) Load student
+    const stu = await db.query(
+        `SELECT id, full_name, email FROM users WHERE id = $1`,
+        [user_id]
+    );
+    if (!stu.rows.length) {
+        return res.status(404).json({ error: 'Student not found' });
+    }
+    const student = stu.rows[0];
+
+    // 2) Load course
+    const crs = await db.query(
+        `SELECT id, title, code, duration FROM courses WHERE id = $1`,
+        [course_id]
+    );
+    if (!crs.rows.length) {
+        return res.status(404).json({ error: 'Course not found' });
+    }
+    const course = crs.rows[0];
+
+    // 3) Prevent duplicates (same student + same course, not revoked)
+    const dup = await db.query(
+        `SELECT id, certificate_id FROM certificates
+         WHERE user_id = $1 AND course_id = $2 AND revoked = FALSE
+         LIMIT 1`,
+        [user_id, course_id]
+    );
+    if (dup.rows.length) {
+        return res.status(409).json({
+            error: 'Certificate already issued for this student and course',
+            certificate_id: dup.rows[0].certificate_id,
+        });
+    }
+
+    // 4) Generate a unique certificate_id
+    //    Format: NXA-CP-2026-000001  (CP = course prefix, or "GEN")
+    const prefix = (course.code || 'GEN').replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 6) || 'GEN';
+    const year = new Date().getFullYear();
+    const seqRow = await db.query(
+        `SELECT COUNT(*)::int AS c FROM certificates
+         WHERE certificate_id LIKE $1`,
+        [`NXA-${prefix}-${year}-%`]
+    );
+    const nextNum = String(seqRow.rows[0].c + 1).padStart(6, '0');
+    const certificate_id = `NXA-${prefix}-${year}-${nextNum}`;
+
+    // 5) Generate a random verification token (32 hex chars)
+    const crypto = require('crypto');
+    const verification_token = crypto.randomBytes(16).toString('hex');
+
+    // 6) Insert
+    const ins = await db.query(
+        `INSERT INTO certificates
+            (certificate_id, verification_token, user_id, course_id,
+             student_name, course_name, course_duration, grade, issued_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING *`,
+        [
+            certificate_id,
+            verification_token,
+            user_id,
+            course_id,
+            student.full_name || 'Student',
+            course.title || 'Course',
+            course.duration || null,
+            grade || 'Pass',
+            req.user.user_id || req.user.id,
+        ]
+    );
+
+    res.status(201).json({
+        certificate: ins.rows[0],
+        verify_url: `https://nexora-certificates.vercel.app/#verify/${certificate_id}`,
+    });
+}));
+
+/* ═══════════════════════════════════════════════════════════
    ADMIN: POST /api/certificates/:id/revoke
    ═══════════════════════════════════════════════════════════ */
 router.post('/:id/revoke', requireAdmin, asyncHandler(async (req, res) => {
