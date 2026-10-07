@@ -442,6 +442,7 @@ table tbody tr:hover{background:#f8fafc}
 <div class="menu-label">Courses</div>
 <div class="menu-item" onclick="navigateTo('admin-courses')"><i class="fas fa-book"></i><span>All Courses</span><span class="badge-count" id="courseCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-builder')"><i class="fas fa-plus-circle"></i><span>Add New Course</span></div>
+<div class="menu-item" onclick="navigateTo('admin-manuals')"><i class="fas fa-book-open"></i><span>Manuals</span><span class="badge-count" id="manualsCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('admin-assignments')"><i class="fas fa-tasks"></i><span>Assignments</span><span class="badge-count" id="adminAssignmentsCount">0</span></div>
 <div class="menu-label">Assessment</div>
 <div class="menu-item" onclick="navigateTo('admin-exams')"><i class="fas fa-pencil-alt"></i><span>Examinations</span></div>
@@ -694,6 +695,20 @@ table tbody tr:hover{background:#f8fafc}
 <div id="page-admin-students" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-users" style="color:var(--gold)"></i> Students</h2><div id="adminStudentsList"></div></div>
 <div id="page-admin-courses" class="page"><h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-book" style="color:var(--gold)"></i> All Courses</h2><div id="adminCoursesList" class="courses-grid"></div></div>
 
+<div id="page-admin-manuals" class="page">
+    <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:0.5rem;margin-bottom:1.5rem">
+        <h2 style="color:var(--navy);margin:0"><i class="fas fa-book-open" style="color:var(--gold)"></i> Course Manuals</h2>
+        <button class="btn btn-primary" onclick="openSendManualModal()"><i class="fas fa-paper-plane"></i> Send Manual to Contributors</button>
+    </div>
+
+    <div style="background:#eff6ff;border-left:4px solid var(--blue);padding:0.85rem 1rem;border-radius:8px;margin-bottom:1.5rem;font-size:0.88rem;color:#1e40af">
+        <i class="fas fa-info-circle"></i> <strong>How this works:</strong> Manuals you send here appear on <strong>every contributor's dashboard</strong>. Use this to share course guidelines, submission templates, or reference PDFs.
+    </div>
+
+    <div id="adminManualsStats" class="summary-cards"></div>
+    <div id="adminManualsList"></div>
+</div>
+  
 <div id="page-admin-builder" class="page">
 <div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)">
 <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid #e2e8f0">
