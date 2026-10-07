@@ -188,4 +188,74 @@ router.post('/:id/revoke', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ certificate: r.rows[0] });
 }));
 
+/* ═══════════════════════════════════════════════════════════
+   ADMIN: POST /api/certificates/:id/restore
+   Un-revoke a certificate (flip revoked = FALSE)
+   ═══════════════════════════════════════════════════════════ */
+router.post('/:id/restore', requireAdmin, asyncHandler(async (req, res) => {
+    const r = await db.query(
+        `UPDATE certificates
+         SET revoked = FALSE, revoked_at = NULL, revoke_reason = NULL
+         WHERE id = $1
+         RETURNING *`,
+        [req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Certificate not found' });
+    res.json({ certificate: r.rows[0] });
+}));
+
+/* ═══════════════════════════════════════════════════════════
+   ADMIN: POST /api/certificates/:id/reissue
+   Creates a NEW certificate for the same student+course
+   (old one stays revoked for history)
+   ═══════════════════════════════════════════════════════════ */
+router.post('/:id/reissue', requireAdmin, asyncHandler(async (req, res) => {
+    // Find the old certificate to copy student + course from
+    const old = await db.query(
+        `SELECT * FROM certificates WHERE id = $1`,
+        [req.params.id]
+    );
+    if (!old.rows.length) return res.status(404).json({ error: 'Certificate not found' });
+    const o = old.rows[0];
+
+    // Reuse the issue endpoint's logic — generate new ID + token
+    const prefix = 'RE';  // "Reissue" prefix
+    const year = new Date().getFullYear();
+    const seqRow = await db.query(
+        `SELECT COUNT(*)::int AS c FROM certificates
+         WHERE certificate_id LIKE $1`,
+        [`NXA-${prefix}-${year}-%`]
+    );
+    const nextNum = String(seqRow.rows[0].c + 1).padStart(6, '0');
+    const certificate_id = `NXA-${prefix}-${year}-${nextNum}`;
+
+    const crypto = require('crypto');
+    const verification_token = crypto.randomBytes(16).toString('hex');
+
+    const ins = await db.query(
+        `INSERT INTO certificates
+            (certificate_id, verification_token, user_id, course_id,
+             student_name, course_name, course_duration, grade, issued_by)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+         RETURNING *`,
+        [
+            certificate_id,
+            verification_token,
+            o.user_id,
+            o.course_id,
+            o.student_name,
+            o.course_name,
+            o.course_duration,
+            o.grade || 'Pass',
+            req.user.user_id || req.user.id,
+        ]
+    );
+
+    res.status(201).json({
+        certificate: ins.rows[0],
+        replaces: o.certificate_id,
+        verify_url: `https://nexora-certificates.vercel.app/#verify/${certificate_id}`,
+    });
+}));
+
 module.exports = router;
