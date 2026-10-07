@@ -4,6 +4,7 @@ const router = express.Router();
 const db = require('../db');
 const { asyncHandler, genAdmissionNumber } = require('../utils');
 const { requireAdmin } = require('../middleware');
+const bcrypt = require('bcrypt');
 
 // ─────────────────────────────────────────────
 // GET /api/admin/stats
@@ -42,7 +43,6 @@ router.get('/stats', requireAdmin, asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/admin/students
-// Shows all users with role='student'
 // ─────────────────────────────────────────────
 router.get('/students', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -90,7 +90,6 @@ router.get('/students/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // POST /api/admin/students/:id/approve
-// FIXED: now updates users.role + status + activation_fee_paid
 // ─────────────────────────────────────────────
 router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
     const client = await db.getClient();
@@ -109,7 +108,6 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
             return res.status(404).json({ error: 'Not found' });
         }
 
-        // Get or create student_profiles row and get/create admission number
         const spRow = await client.query(
             `SELECT admission_number FROM student_profiles WHERE user_id = $1`,
             [req.params.id]
@@ -117,7 +115,6 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
         let admission = spRow.rows[0]?.admission_number;
         if (!admission) admission = await genAdmissionNumber(client);
 
-        // Ensure student_profiles exists
         if (!spRow.rows.length) {
             await client.query(
                 `INSERT INTO student_profiles (user_id, admission_number, admission_status, approval_status)
@@ -134,7 +131,6 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
             );
         }
 
-        // Update applications
         await client.query(
             `UPDATE applications
              SET status='approved', admission_number=$1,
@@ -143,7 +139,6 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
             [admission, req.user.user_id, req.params.id]
         );
 
-        // KEY FIX: promote the user to a student
         await client.query(
             `UPDATE users
              SET role = 'student',
@@ -153,7 +148,6 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
             [req.params.id]
         );
 
-        // Mark activation fee as paid if application was paid
         const paidCheck = await client.query(
             `SELECT 1 FROM applications WHERE user_id = $1 AND payment_status = 'paid' LIMIT 1`,
             [req.params.id]
@@ -210,7 +204,6 @@ router.post('/students/:id/reject', requireAdmin, asyncHandler(async (req, res) 
 
 // ─────────────────────────────────────────────
 // POST /api/admin/applications/:id/approve
-// MISSING ROUTE — the frontend calls this path
 // ─────────────────────────────────────────────
 router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
     const client = await db.getClient();
@@ -232,7 +225,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
 
         const app = a.rows[0];
 
-        // Generate admission number
         const spRow = await client.query(
             `SELECT admission_number FROM student_profiles WHERE user_id = $1`,
             [app.user_id]
@@ -240,7 +232,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
         let admission = spRow.rows[0]?.admission_number;
         if (!admission) admission = await genAdmissionNumber(client);
 
-        // Upsert student_profiles
         if (!spRow.rows.length) {
             await client.query(
                 `INSERT INTO student_profiles (user_id, admission_number, admission_status, approval_status, activation_fee_paid)
@@ -257,7 +248,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
             );
         }
 
-        // Update application
         await client.query(
             `UPDATE applications
              SET status='approved', admission_number=$1,
@@ -266,7 +256,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
             [admission, req.user.user_id, req.params.id]
         );
 
-        // Promote user to student
         await client.query(
             `UPDATE users
              SET role = 'student',
@@ -276,7 +265,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
             [app.user_id]
         );
 
-        // Mark activation fee paid if applicable
         if (app.payment_status === 'paid') {
             await client.query(
                 `UPDATE student_profiles SET activation_fee_paid = TRUE WHERE user_id = $1`,
@@ -296,7 +284,6 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
 
 // ─────────────────────────────────────────────
 // POST /api/admin/applications/:id/reject
-// MISSING ROUTE — the frontend calls this path
 // ─────────────────────────────────────────────
 router.post('/applications/:id/reject', requireAdmin, asyncHandler(async (req, res) => {
     const { reason } = req.body;
@@ -398,7 +385,6 @@ router.post('/contributors', requireAdmin, asyncHandler(async (req, res) => {
     if (!email || !full_name || !username || !password) {
         return res.status(400).json({ error: 'Missing email, full_name, username, or password' });
     }
-    const bcrypt = require('bcrypt');
     const hash = await bcrypt.hash(password, 10);
     try {
         const r = await db.query(
@@ -433,6 +419,75 @@ router.get('/contributors', requireAdmin, asyncHandler(async (req, res) => {
     sql += ` ORDER BY u.created_at DESC`;
     const r = await db.query(sql, params);
     res.json({ contributors: r.rows });
+}));
+
+// ─────────────────────────────────────────────
+// GET /api/admin/contributors/:id
+// ─────────────────────────────────────────────
+router.get('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
+    const r = await db.query(
+        `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
+                u.status, u.created_at, u.updated_at,
+                (SELECT COUNT(*)::int FROM submissions s WHERE s.contributor_id = u.id) AS submission_count
+         FROM users u
+         WHERE u.id = $1 AND u.role = 'contributor'`,
+        [req.params.id]
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Contributor not found' });
+    res.json({ contributor: r.rows[0] });
+}));
+
+// ─────────────────────────────────────────────
+// PUT /api/admin/contributors/:id
+// Edit contributor account (name, phone, country, status)
+// ─────────────────────────────────────────────
+router.put('/contributors/:id', requireAdmin, asyncHandler(async (req, res) => {
+    const { full_name, phone, country, status } = req.body || {};
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (full_name !== undefined) { fields.push(`full_name = $${idx++}`); values.push(full_name); }
+    if (phone !== undefined) { fields.push(`phone = $${idx++}`); values.push(phone); }
+    if (country !== undefined) { fields.push(`country = $${idx++}`); values.push(country); }
+    if (status !== undefined) {
+        if (!['pending', 'active', 'rejected', 'suspended'].includes(status)) {
+            return res.status(400).json({ error: 'Invalid status' });
+        }
+        fields.push(`status = $${idx++}`); values.push(status);
+    }
+
+    if (!fields.length) return res.status(400).json({ error: 'Nothing to update' });
+
+    values.push(req.params.id);
+    const r = await db.query(
+        `UPDATE users SET ${fields.join(', ')}, updated_at = NOW()
+         WHERE id = $${idx} AND role = 'contributor'
+         RETURNING id, username, email, full_name, phone, country, role, status`,
+        values
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Contributor not found' });
+    res.json({ contributor: r.rows[0] });
+}));
+
+// ─────────────────────────────────────────────
+// GET /api/admin/contributors/:id/submissions
+// ─────────────────────────────────────────────
+router.get('/contributors/:id/submissions', requireAdmin, asyncHandler(async (req, res) => {
+    const u = await db.query(
+        `SELECT id, full_name, email FROM users WHERE id = $1 AND role = 'contributor'`,
+        [req.params.id]
+    );
+    if (!u.rows.length) return res.status(404).json({ error: 'Contributor not found' });
+
+    const s = await db.query(
+        `SELECT id, title, status, submitted_at, reviewed_at, published_at, created_at, updated_at, price
+         FROM submissions
+         WHERE contributor_id = $1
+         ORDER BY updated_at DESC`,
+        [req.params.id]
+    );
+    res.json({ contributor: u.rows[0], submissions: s.rows });
 }));
 
 router.post('/contributors/:id/approve', requireAdmin, asyncHandler(async (req, res) => {
@@ -533,6 +588,31 @@ router.get('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
     res.json({ submission: r.rows[0] });
 }));
 
+// ─────────────────────────────────────────────
+// PUT /api/admin/submissions/:id
+// Update submission price/metadata before publishing
+// ─────────────────────────────────────────────
+router.put('/submissions/:id', requireAdmin, asyncHandler(async (req, res) => {
+    const { price, discount_enabled, discount_price, discount_label, discount_ends_at } = req.body || {};
+    const fields = [];
+    const values = [];
+    let idx = 1;
+
+    if (price !== undefined) { fields.push(`price = $${idx++}`); values.push(parseFloat(price) || 0); }
+
+    if (!fields.length) return res.status(400).json({ error: 'Nothing to update' });
+
+    values.push(req.params.id);
+    const r = await db.query(
+        `UPDATE submissions SET ${fields.join(', ')}, updated_at = NOW()
+         WHERE id = $${idx}
+         RETURNING *`,
+        values
+    );
+    if (!r.rows.length) return res.status(404).json({ error: 'Not found' });
+    res.json({ submission: r.rows[0] });
+}));
+
 router.post('/submissions/:id/review', requireAdmin, asyncHandler(async (req, res) => {
     const { action, feedback } = req.body;
     let newStatus;
@@ -552,13 +632,26 @@ router.post('/submissions/:id/review', requireAdmin, asyncHandler(async (req, re
     res.json({ submission: r.rows[0] });
 }));
 
+// ─────────────────────────────────────────────
+// POST /api/admin/submissions/:id/publish
+// Publishes to courses, accepts price + discount overrides
+// ─────────────────────────────────────────────
 router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, res) => {
+    const { price, discount_enabled, discount_price, discount_label, discount_ends_at } = req.body || {};
+
     const sRes = await db.query(`SELECT * FROM submissions WHERE id = $1`, [req.params.id]);
     if (!sRes.rows.length) return res.status(404).json({ error: 'Not found' });
     const s = sRes.rows[0];
     if (s.status !== 'approved') {
         return res.status(409).json({ error: 'Submission must be approved first' });
     }
+
+    const finalPrice = price != null ? parseFloat(price) : parseFloat(s.price || 0);
+    const finalDiscountEnabled = !!discount_enabled;
+    const finalDiscountPrice = discount_price != null ? parseFloat(discount_price) : null;
+    const finalDiscountLabel = discount_label || null;
+    const finalDiscountEndsAt = discount_ends_at || null;
+
     const client = await db.getClient();
     try {
         await client.query('BEGIN');
@@ -566,13 +659,17 @@ router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, r
             `INSERT INTO courses
                 (title, code, category, level, description, duration, price,
                  cover_image_url, status, created_by,
-                 cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours)
-             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'published',$9,$10,$11,$12,$13)
+                 cat_pass_mark, exam_pass_mark, cat_unlock_hours, exam_unlock_hours,
+                 discount_enabled, discount_price, discount_label, discount_ends_at,
+                 original_price)
+             VALUES ($1,$2,$3,$4,$5,$6,$7,$8,'published',$9,$10,$11,$12,$13,$14,$15,$16,$17,$18)
              RETURNING *`,
             [
                 s.title, s.code, s.category, s.level, s.description, s.duration,
-                s.price, s.cover_image_url, s.contributor_id,
+                finalPrice, s.cover_image_url, s.contributor_id,
                 s.cat_pass_mark, s.exam_pass_mark, s.cat_unlock_hours, s.exam_unlock_hours,
+                finalDiscountEnabled, finalDiscountPrice, finalDiscountLabel, finalDiscountEndsAt,
+                finalPrice,
             ]
         );
         const courseId = cRes.rows[0].id;
@@ -613,7 +710,7 @@ router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, r
             [courseId, s.id]
         );
         await client.query('COMMIT');
-        res.json({ ok: true, course_id: courseId });
+        res.json({ ok: true, course_id: courseId, price: finalPrice });
     } catch (e) {
         await client.query('ROLLBACK');
         throw e;
