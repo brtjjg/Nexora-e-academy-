@@ -2270,7 +2270,7 @@ async function loadManuals() {
                     <td><strong>${esc(m.title)}</strong>${m.instructions ? `<div style="font-size:0.8rem;color:var(--text-secondary);margin-top:2px;max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(m.instructions)}</div>` : ''}</td>
                     <td>${esc(m.course_code || '—')}</td>
                     <td>${m.assigned_to ? `<span class="status-pill pending">${esc(m.assigned_to_name || 'Specific')}</span>` : '<span class="status-pill approved">All Contributors</span>'}</td>
-                    <td>${m.file_path ? `<a href="https://nexora-api-sskg.onrender.com${esc(m.file_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> ${esc(m.file_name || 'File')}</a>` : '—'}</td>
+                    <td>${m.file_path ? `<a href="${m.file_path.startsWith('http') ? esc(m.file_path) : 'https://nexora-api-sskg.onrender.com' + esc(m.file_path)}" target="_blank" class="btn btn-outline btn-sm"><i class="fas fa-download"></i> ${esc(m.file_name || 'File')}</a>` : '—'}
                     <td>${fmtDate(m.created_at)}</td>
                     <td><button class="action-btn reject" title="Delete" onclick="deleteManual('${m.id}')"><i class="fas fa-trash"></i></button></td>
                 </tr>
