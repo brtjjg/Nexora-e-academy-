@@ -1258,7 +1258,7 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, portal
               <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">4</div>
             </td>
             <td valign="top" style="color:#334155;font-size:14px;line-height:1.6">
-              <strong>Get it published</strong> — our team will carefully review your work and get back to you with feedback. <strong>70% of every sale</strong>.
+              <strong>Get it published</strong> — our team will carefully review your work and get back to you with feedback. <strong>UPDATES WILL BE SHARED</strong>.
             </td>
           </tr>
         </table>
