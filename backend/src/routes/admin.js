@@ -9,9 +9,10 @@ const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
+const { sendEmail } = require('../utils/sendEmail');
 
 // ═════════════════════════════════════════════
-// SUPABASE STORAGE (persistent)
+// SUPABASE STORAGE
 // ═════════════════════════════════════════════
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
@@ -129,12 +130,10 @@ router.get('/students/:id', requireAdmin, asyncHandler(async (req, res) => {
 
 // ─────────────────────────────────────────────
 // GET /api/admin/students/:id/audit
-// Full audit for certificate issuance decisions
 // ─────────────────────────────────────────────
 router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) => {
     const { id } = req.params;
 
-    // 1) Student basic info
     const stu = await db.query(
         `SELECT u.id, u.username, u.email, u.full_name, u.phone, u.country,
                 u.status, u.created_at,
@@ -148,7 +147,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
     if (!stu.rows.length) return res.status(404).json({ error: 'Student not found' });
     const student = stu.rows[0];
 
-    // 2) Enrollments + progress + payment
     const enr = await db.query(
         `SELECT e.course_id,
                 c.title AS course_title,
@@ -179,18 +177,13 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         remaining_balance: Math.max(0, parseFloat(e.course_price || 0) - parseFloat(e.total_course_paid || 0)),
     }));
 
-    // 3) Exam + CAT results
     let results = [];
     try {
         const r = await db.query(
             `SELECT aa.course_id,
                     c.title AS course_title,
                     aa.assessment_type,
-                    aa.score,
-                    aa.total_marks,
-                    aa.percentage,
-                    aa.passed,
-                    aa.submitted_at
+                    aa.score, aa.total_marks, aa.percentage, aa.passed, aa.submitted_at
              FROM assessment_attempts aa
              LEFT JOIN courses c ON c.id = aa.course_id
              WHERE aa.user_id = $1
@@ -203,7 +196,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         console.warn('[audit] assessment_attempts query failed:', e.message);
     }
 
-    // 4) Groups + message count
     const grp = await db.query(
         `SELECT g.id, g.name, g.category,
                 (SELECT COUNT(*)::int FROM group_messages gm
@@ -214,7 +206,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         [id]
     );
 
-    // 5) Payments total
     const pay = await db.query(
         `SELECT COALESCE(SUM(amount), 0) AS total_paid,
                 COUNT(*)::int AS tx_count
@@ -223,7 +214,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         [id]
     );
 
-    // 6) Assignments
     let assignments = { submitted: 0, reviewed: 0, returned: 0 };
     try {
         const a = await db.query(
@@ -240,7 +230,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         console.warn('[audit] assignment_submissions query failed:', e.message);
     }
 
-    // 7) Certificates already issued
     const cert = await db.query(
         `SELECT certificate_id, course_name, issued_date, revoked
          FROM certificates
@@ -249,7 +238,6 @@ router.get('/students/:id/audit', requireAdmin, asyncHandler(async (req, res) =>
         [id]
     );
 
-    // ══════════ ELIGIBILITY SCORING ══════════
     const reasons = [];
     let score = 0;
 
@@ -359,9 +347,7 @@ router.post('/students/:id/approve', requireAdmin, asyncHandler(async (req, res)
 
         await client.query(
             `UPDATE users
-             SET role = 'student',
-                 status = 'active',
-                 updated_at = NOW()
+             SET role = 'student', status = 'active', updated_at = NOW()
              WHERE id = $1 AND role != 'admin'`,
             [req.params.id]
         );
@@ -398,8 +384,7 @@ router.post('/students/:id/reject', requireAdmin, asyncHandler(async (req, res) 
         await client.query('BEGIN');
         await client.query(
             `UPDATE student_profiles
-             SET admission_status='rejected', approval_status='rejected',
-                 rejection_reason=$1
+             SET admission_status='rejected', approval_status='rejected', rejection_reason=$1
              WHERE user_id=$2`,
             [reason, req.params.id]
         );
@@ -476,9 +461,7 @@ router.post('/applications/:id/approve', requireAdmin, asyncHandler(async (req, 
 
         await client.query(
             `UPDATE users
-             SET role = 'student',
-                 status = 'active',
-                 updated_at = NOW()
+             SET role = 'student', status = 'active', updated_at = NOW()
              WHERE id = $1 AND role != 'admin'`,
             [app.user_id]
         );
@@ -985,8 +968,6 @@ router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, r
 
 /* ═══════════════════════════════════════════════════════════
    PUBLIC (webhook): POST /api/admin/contributor-applications/decide
-   Called by Google Apps Script when the sheet's "Status" changes.
-   Verifies with a shared secret. Sends approve/reject email + creates user.
    ═══════════════════════════════════════════════════════════ */
 router.post('/contributor-applications/decide', asyncHandler(async (req, res) => {
     const secret = req.headers['x-webhook-secret'];
@@ -1000,8 +981,7 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
     const {
         full_name, email, phone, country,
         education, expertise, course_interests,
-        status,           // "Approved" or "Rejected"
-        reason,           // optional, for rejections
+        status, reason,
     } = req.body || {};
 
     if (!email || !status) {
@@ -1015,21 +995,17 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
 
     // ══════════ REJECTION PATH ══════════
     if (status === 'Rejected') {
-        try {
-            await sendContributorDecisionEmail({
-                to: emailLower,
-                name: full_name || 'Applicant',
-                approved: false,
-                reason: reason || null,
-            });
-        } catch (e) { console.error('[form] reject email failed:', e.message); }
+        sendContributorDecisionEmail({
+            to: emailLower,
+            name: full_name || 'Applicant',
+            approved: false,
+            reason: reason || null,
+        }).catch(e => console.error('[form] reject email failed:', e.message));
 
         return res.json({ ok: true, action: 'rejected', email });
     }
 
     // ══════════ APPROVAL PATH ══════════
-
-    // 1) Check if user exists
     const existing = await db.query(
         `SELECT id, username, email, full_name, role, status FROM users WHERE LOWER(email) = $1`,
         [emailLower]
@@ -1039,7 +1015,6 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
     let tempPassword = null;
 
     if (user) {
-        // Already exists — just make sure they're an active contributor
         if (user.role !== 'contributor' && user.role !== 'admin') {
             await db.query(
                 `UPDATE users SET role = 'contributor', status = 'active', updated_at = NOW()
@@ -1055,13 +1030,11 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
             user.status = 'active';
         }
     } else {
-        // Create new contributor account
         const baseUsername = String(full_name || emailLower.split('@')[0])
             .toLowerCase()
             .replace(/[^a-z0-9_]/g, '')
             .slice(0, 18) || 'contributor';
 
-        // Ensure username is unique
         let username = baseUsername;
         let suffix = 0;
         while (true) {
@@ -1071,9 +1044,7 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
             username = `${baseUsername}${suffix}`;
         }
 
-        // Generate temp password
         tempPassword = generateTempPassword();
-
         const hash = await bcrypt.hash(tempPassword, 10);
 
         const ins = await db.query(
@@ -1088,19 +1059,15 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
         console.log('[form] Created contributor:', username, '→', emailLower);
     }
 
-    // 2) Send approval email with credentials + portal link + manuals list
-    try {
-        await sendContributorDecisionEmail({
-            to: emailLower,
-            name: full_name || user.full_name || 'Contributor',
-            approved: true,
-            username: user.username,
-            tempPassword,        // only present for new accounts; null for existing
-            portalUrl: 'https://nexora-contributor-portal.vercel.app',
-        });
-    } catch (e) {
-        console.error('[form] approve email failed:', e.message);
-    }
+    // Send email in BACKGROUND — do NOT await
+    sendContributorDecisionEmail({
+        to: emailLower,
+        name: full_name || user.full_name || 'Contributor',
+        approved: true,
+        username: user.username,
+        tempPassword,
+        portalUrl: 'https://nexora-contributor-portal.vercel.app',
+    }).catch(e => console.error('[form] approve email failed:', e.message));
 
     res.json({
         ok: true,
@@ -1126,33 +1093,13 @@ function generateTempPassword() {
     for (let i = 0; i < 7; i++) {
         pw += all[Math.floor(Math.random() * all.length)];
     }
-    // Shuffle
     return pw.split('').sort(() => Math.random() - 0.5).join('');
 }
 
 // ─────────────────────────────────────────────
-// Helper: send contributor decision email
+// Helper: contributor decision email (uses Brevo API)
 // ─────────────────────────────────────────────
-const nodemailer = require('nodemailer');
-let formMailer = null;
-if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    formMailer = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '465', 10),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: { user: process.env.SMTP_USER, pass: process.env.SMTP_PASS },
-        connectionTimeout: 10000,
-        greetingTimeout: 10000,
-        socketTimeout: 15000,
-    });
-}
-
 async function sendContributorDecisionEmail({ to, name, approved, reason, username, tempPassword, portalUrl }) {
-    if (!formMailer) {
-        console.warn('[form] Email skipped (no SMTP) →', to);
-        return { skipped: true };
-    }
-
     if (!approved) {
         const html = `
         <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#F5F7FA;padding:20px">
@@ -1175,16 +1122,14 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
           </div>
         </div>`;
 
-        await formMailer.sendMail({
-            from: process.env.SMTP_FROM || process.env.SMTP_USER,
+        return sendEmail({
             to,
+            toName: name,
             subject: 'Nexora Contributor Application — Decision',
             html,
         });
-        return { sent: true };
     }
 
-    // ── Approval email ──
     const credBlock = tempPassword ? `
         <div style="background:#F5F7FA;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #16A34A">
           <div style="font-size:13px;color:#64748B;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Your Contributor Credentials</div>
@@ -1247,13 +1192,12 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
       </div>
     </div>`;
 
-    await formMailer.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    return sendEmail({
         to,
+        toName: name,
         subject: '🎉 You\'re approved — Welcome to Nexora Contributor Program',
         html,
     });
-    return { sent: true };
 }
 
 module.exports = router;
