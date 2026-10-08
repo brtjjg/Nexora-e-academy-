@@ -4,30 +4,13 @@ const router = express.Router();
 const db = require('../db');
 const { asyncHandler } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
-const nodemailer = require('nodemailer');
+const { sendEmail } = require('../utils/sendEmail');
+const crypto = require('crypto');
 
-// ─── Email setup ──────────────────────────────────────
-let mailer = null;
-if (process.env.SMTP_HOST && process.env.SMTP_USER && process.env.SMTP_PASS) {
-    mailer = nodemailer.createTransport({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587', 10),
-        secure: process.env.SMTP_SECURE === 'true',
-        auth: {
-            user: process.env.SMTP_USER,
-            pass: process.env.SMTP_PASS,
-        },
-    });
-    console.log('[email] SMTP configured:', process.env.SMTP_HOST);
-} else {
-    console.warn('[email] SMTP not configured — certificate emails will be skipped');
-}
-
+/* ═══════════════════════════════════════════════════════════
+   Email helper — Certificate issuance
+   ═══════════════════════════════════════════════════════════ */
 async function sendCertificateEmail({ to, studentName, certificateId, courseName, certificateType, issuedDate, verifyUrl }) {
-    if (!mailer) {
-        console.log('[email] Skipped (no SMTP) →', to);
-        return { skipped: true };
-    }
     const typeLabel = (certificateType || 'Completion').toUpperCase();
     const dateStr = new Date(issuedDate).toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
 
@@ -62,19 +45,16 @@ async function sendCertificateEmail({ to, studentName, certificateId, courseName
       </div>
     </div>`;
 
-    await mailer.sendMail({
-        from: process.env.SMTP_FROM || process.env.SMTP_USER,
+    return sendEmail({
         to,
+        toName: studentName,
         subject: `🎓 Your ${typeLabel} Certificate — ${courseName}`,
         html,
     });
-    console.log('[email] Sent certificate to', to);
-    return { sent: true };
 }
 
 /* ═══════════════════════════════════════════════════════════
    PUBLIC: GET /api/certificates/verify/:id
-   Verifies a certificate by certificate_id OR verification_token
    ═══════════════════════════════════════════════════════════ */
 router.get('/verify/:id', asyncHandler(async (req, res) => {
     const r = await db.query(`
@@ -87,6 +67,8 @@ router.get('/verify/:id', asyncHandler(async (req, res) => {
             c.course_name,
             c.course_duration,
             c.grade,
+            c.certificate_type,
+            c.remarks,
             u.id AS student_id,
             u.email AS student_email
         FROM certificates c
@@ -114,6 +96,8 @@ router.get('/verify/:id', asyncHandler(async (req, res) => {
             course_name: cert.course_name,
             course_duration: cert.course_duration,
             grade: cert.grade,
+            certificate_type: cert.certificate_type,
+            remarks: cert.remarks,
             issued_date: cert.issued_date,
         },
     });
@@ -128,6 +112,7 @@ router.get('/me', requireAuth, asyncHandler(async (req, res) => {
         SELECT
             id, certificate_id, user_id, course_id,
             student_name, course_name, course_duration, grade,
+            certificate_type, remarks,
             issued_date, revoked
         FROM certificates
         WHERE user_id = $1 AND revoked = FALSE
@@ -143,7 +128,8 @@ router.get('/', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(`
         SELECT
             c.id, c.certificate_id, c.student_name, c.course_name,
-            c.course_duration, c.grade, c.issued_date, c.revoked,
+            c.course_duration, c.grade, c.certificate_type, c.remarks,
+            c.issued_date, c.revoked,
             u.email AS student_email
         FROM certificates c
         LEFT JOIN users u ON u.id = c.user_id
@@ -154,37 +140,28 @@ router.get('/', requireAdmin, asyncHandler(async (req, res) => {
 }));
 
 /* ═══════════════════════════════════════════════════════════
-   ADMIN: POST /api/certificates
-   Issue a new certificate manually
-   Body: { user_id, course_id, grade? }
+   ADMIN: POST /api/certificates — Issue a new certificate
    ═══════════════════════════════════════════════════════════ */
 router.post('/', requireAdmin, asyncHandler(async (req, res) => {
-    const { user_id, course_id, grade } = req.body || {};
+    const { user_id, course_id, grade, certificate_type, remarks } = req.body || {};
     if (!user_id || !course_id) {
         return res.status(400).json({ error: 'user_id and course_id are required' });
     }
 
-    // 1) Load student
     const stu = await db.query(
         `SELECT id, full_name, email FROM users WHERE id = $1`,
         [user_id]
     );
-    if (!stu.rows.length) {
-        return res.status(404).json({ error: 'Student not found' });
-    }
+    if (!stu.rows.length) return res.status(404).json({ error: 'Student not found' });
     const student = stu.rows[0];
 
-    // 2) Load course
     const crs = await db.query(
         `SELECT id, title, code, duration FROM courses WHERE id = $1`,
         [course_id]
     );
-    if (!crs.rows.length) {
-        return res.status(404).json({ error: 'Course not found' });
-    }
+    if (!crs.rows.length) return res.status(404).json({ error: 'Course not found' });
     const course = crs.rows[0];
 
-    // 3) Prevent duplicates (same student + same course, not revoked)
     const dup = await db.query(
         `SELECT id, certificate_id FROM certificates
          WHERE user_id = $1 AND course_id = $2 AND revoked = FALSE
@@ -198,28 +175,23 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
         });
     }
 
-    // 4) Generate a unique certificate_id
-    //    Format: NXA-CP-2026-000001  (CP = course prefix, or "GEN")
     const prefix = (course.code || 'GEN').replace(/[^A-Z0-9]/gi, '').toUpperCase().slice(0, 6) || 'GEN';
     const year = new Date().getFullYear();
     const seqRow = await db.query(
-        `SELECT COUNT(*)::int AS c FROM certificates
-         WHERE certificate_id LIKE $1`,
+        `SELECT COUNT(*)::int AS c FROM certificates WHERE certificate_id LIKE $1`,
         [`NXA-${prefix}-${year}-%`]
     );
     const nextNum = String(seqRow.rows[0].c + 1).padStart(6, '0');
     const certificate_id = `NXA-${prefix}-${year}-${nextNum}`;
 
-    // 5) Generate a random verification token (32 hex chars)
-    const crypto = require('crypto');
     const verification_token = crypto.randomBytes(16).toString('hex');
 
-    // 6) Insert
     const ins = await db.query(
         `INSERT INTO certificates
             (certificate_id, verification_token, user_id, course_id,
-             student_name, course_name, course_duration, grade, issued_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             student_name, course_name, course_duration, grade, issued_by,
+             certificate_type, remarks)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [
             certificate_id,
@@ -231,15 +203,16 @@ router.post('/', requireAdmin, asyncHandler(async (req, res) => {
             course.duration || null,
             grade || 'Pass',
             req.user.user_id || req.user.id,
+            certificate_type || 'Completion',
+            remarks || null,
         ]
     );
 
     const cert = ins.rows[0];
-const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
+    const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
 
-// Send email to student (non-blocking — errors are logged, not thrown)
-try {
-    await sendCertificateEmail({
+    // Send email in background (do not block response)
+    sendCertificateEmail({
         to: student.email,
         studentName: student.full_name,
         certificateId: certificate_id,
@@ -247,15 +220,12 @@ try {
         certificateType: cert.certificate_type,
         issuedDate: cert.issued_date,
         verifyUrl,
-    });
-} catch (mailErr) {
-    console.error('[email] Failed:', mailErr.message);
-}
+    }).catch(mailErr => console.error('[email] Cert issue failed:', mailErr.message));
 
-res.status(201).json({
-    certificate: cert,
-    verify_url: verifyUrl,
-    email_sent: mailer ? true : false,
+    res.status(201).json({
+        certificate: cert,
+        verify_url: verifyUrl,
+        email_queued: true,
     });
 }));
 
@@ -276,7 +246,6 @@ router.post('/:id/revoke', requireAdmin, asyncHandler(async (req, res) => {
 
 /* ═══════════════════════════════════════════════════════════
    ADMIN: POST /api/certificates/:id/restore
-   Un-revoke a certificate (flip revoked = FALSE)
    ═══════════════════════════════════════════════════════════ */
 router.post('/:id/restore', requireAdmin, asyncHandler(async (req, res) => {
     const r = await db.query(
@@ -292,37 +261,28 @@ router.post('/:id/restore', requireAdmin, asyncHandler(async (req, res) => {
 
 /* ═══════════════════════════════════════════════════════════
    ADMIN: POST /api/certificates/:id/reissue
-   Creates a NEW certificate for the same student+course
-   (old one stays revoked for history)
    ═══════════════════════════════════════════════════════════ */
 router.post('/:id/reissue', requireAdmin, asyncHandler(async (req, res) => {
-    // Find the old certificate to copy student + course from
-    const old = await db.query(
-        `SELECT * FROM certificates WHERE id = $1`,
-        [req.params.id]
-    );
+    const old = await db.query(`SELECT * FROM certificates WHERE id = $1`, [req.params.id]);
     if (!old.rows.length) return res.status(404).json({ error: 'Certificate not found' });
     const o = old.rows[0];
 
-    // Reuse the issue endpoint's logic — generate new ID + token
-    const prefix = 'RE';  // "Reissue" prefix
     const year = new Date().getFullYear();
     const seqRow = await db.query(
-        `SELECT COUNT(*)::int AS c FROM certificates
-         WHERE certificate_id LIKE $1`,
-        [`NXA-${prefix}-${year}-%`]
+        `SELECT COUNT(*)::int AS c FROM certificates WHERE certificate_id LIKE $1`,
+        [`NXA-RE-${year}-%`]
     );
     const nextNum = String(seqRow.rows[0].c + 1).padStart(6, '0');
-    const certificate_id = `NXA-${prefix}-${year}-${nextNum}`;
+    const certificate_id = `NXA-RE-${year}-${nextNum}`;
 
-    const crypto = require('crypto');
     const verification_token = crypto.randomBytes(16).toString('hex');
 
     const ins = await db.query(
         `INSERT INTO certificates
             (certificate_id, verification_token, user_id, course_id,
-             student_name, course_name, course_duration, grade, issued_by)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+             student_name, course_name, course_duration, grade, issued_by,
+             certificate_type, remarks)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
          RETURNING *`,
         [
             certificate_id,
@@ -334,36 +294,37 @@ router.post('/:id/reissue', requireAdmin, asyncHandler(async (req, res) => {
             o.course_duration,
             o.grade || 'Pass',
             req.user.user_id || req.user.id,
+            o.certificate_type || 'Completion',
+            o.remarks || null,
         ]
     );
 
     const cert = ins.rows[0];
-const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
+    const verifyUrl = `https://nexora-certificates.vercel.app/#verify/${certificate_id}`;
 
-// Look up the student's email (the old cert doesn't carry it)
-try {
-    const stu = await db.query(`SELECT email, full_name FROM users WHERE id = $1`, [o.user_id]);
-    if (stu.rows.length) {
-        await sendCertificateEmail({
-            to: stu.rows[0].email,
-            studentName: stu.rows[0].full_name,
-            certificateId: certificate_id,
-            courseName: o.course_name,
-            certificateType: cert.certificate_type,
-            issuedDate: cert.issued_date,
-            verifyUrl,
-        });
-    }
-} catch (mailErr) {
-    console.error('[email] Reissue email failed:', mailErr.message);
-}
+    // Send email in background
+    db.query(`SELECT email, full_name FROM users WHERE id = $1`, [o.user_id])
+        .then(stu => {
+            if (stu.rows.length) {
+                return sendCertificateEmail({
+                    to: stu.rows[0].email,
+                    studentName: stu.rows[0].full_name,
+                    certificateId: certificate_id,
+                    courseName: o.course_name,
+                    certificateType: cert.certificate_type,
+                    issuedDate: cert.issued_date,
+                    verifyUrl,
+                });
+            }
+        })
+        .catch(mailErr => console.error('[email] Reissue failed:', mailErr.message));
 
-res.status(201).json({
-    certificate: cert,
-    replaces: o.certificate_id,
-    verify_url: verifyUrl,
-    email_sent: mailer ? true : false,
-});
+    res.status(201).json({
+        certificate: cert,
+        replaces: o.certificate_id,
+        verify_url: verifyUrl,
+        email_queued: true,
+    });
 }));
 
 module.exports = router;
