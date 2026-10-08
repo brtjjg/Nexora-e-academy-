@@ -46,6 +46,24 @@ function sanitizeFilename(name) {
     return `${base}${ext}`;
 }
 
+// ═════════════════════════════════════════════
+// EMAIL BRANDING CONSTANTS
+// ═════════════════════════════════════════════
+const BRAND = {
+    logoUrl: 'https://nexora-certificates.vercel.app/logo.png',
+    portalUrl: 'https://nexora-contributor-portal.vercel.app',
+    academyUrl: 'https://nexora-e-academy.vercel.app',
+    privacyUrl: 'https://nexora-e-academy.vercel.app/privacy-policy.html',
+    termsUrl: 'https://nexora-e-academy.vercel.app/terms.html',
+    whatsappUrl: 'https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN',
+    supportEmail: 'nexoraacademyhelpdesk@gmail.com',
+    principalName: 'Eng. Brian Ondieki',
+    principalTitle: 'Principal, Nexora Academy',
+    primaryColor: '#0B1F3A',
+    accentColor: '#29A9E8',
+    goldColor: '#D4A63A',
+};
+
 // ─────────────────────────────────────────────
 // GET /api/admin/stats
 // ─────────────────────────────────────────────
@@ -966,9 +984,9 @@ router.post('/submissions/:id/publish', requireAdmin, asyncHandler(async (req, r
     }
 }));
 
-/* ═══════════════════════════════════════════════════════════
-   PUBLIC (webhook): POST /api/admin/contributor-applications/decide
-   ═══════════════════════════════════════════════════════════ */
+// ═════════════════════════════════════════════
+// PUBLIC WEBHOOK — Google Form contributor decisions
+// ═════════════════════════════════════════════
 router.post('/contributor-applications/decide', asyncHandler(async (req, res) => {
     const secret = req.headers['x-webhook-secret'];
     if (!process.env.FORM_WEBHOOK_SECRET) {
@@ -1059,14 +1077,14 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
         console.log('[form] Created contributor:', username, '→', emailLower);
     }
 
-    // Send email in BACKGROUND — do NOT await
+    // Fire email in background
     sendContributorDecisionEmail({
         to: emailLower,
         name: full_name || user.full_name || 'Contributor',
         approved: true,
         username: user.username,
         tempPassword,
-        portalUrl: 'https://nexora-contributor-portal.vercel.app',
+        portalUrl: BRAND.portalUrl,
     }).catch(e => console.error('[form] approve email failed:', e.message));
 
     res.json({
@@ -1096,107 +1114,308 @@ function generateTempPassword() {
     return pw.split('').sort(() => Math.random() - 0.5).join('');
 }
 
-// ─────────────────────────────────────────────
-// Helper: contributor decision email (uses Brevo API)
-// ─────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════
+// SHARED EMAIL LAYOUT BUILDER
+// Wraps email body in consistent branding with logo, footer, privacy links
+// ═══════════════════════════════════════════════════════════
+function buildEmailShell({ headerText, bodyHtml, preheader }) {
+    return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nexora Academy</title>
+</head>
+<body style="margin:0;padding:0;background:#F0F2F5;font-family:Arial,Helvetica,sans-serif">
+
+  <!-- Preheader (hidden preview text) -->
+  <div style="display:none;font-size:1px;color:#F0F2F5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">
+    ${preheader || ''}
+  </div>
+
+  <!-- Outer wrapper -->
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F0F2F5;padding:24px 12px">
+    <tr>
+      <td align="center">
+
+        <!-- Main container -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#FFFFFF;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(11,31,58,0.08)">
+
+          <!-- HEADER with logo -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#0B1F3A 0%,#172B4D 100%);padding:34px 24px 28px;text-align:center;border-bottom:3px solid #D4A63A">
+
+              <img src="${BRAND.logoUrl}"
+                   alt="Nexora Academy"
+                   width="88"
+                   height="88"
+                   style="display:block;margin:0 auto 14px;border-radius:14px;background:#0B1F3A">
+
+              <div style="color:#D4A63A;font-size:20px;font-weight:800;letter-spacing:4px;margin:0">
+                NEXORA ACADEMY
+              </div>
+              <div style="color:rgba(255,255,255,0.7);font-size:11px;letter-spacing:3px;margin-top:6px">
+                ${headerText || 'CONTRIBUTOR PROGRAM'}
+              </div>
+            </td>
+          </tr>
+
+          <!-- BODY -->
+          <tr>
+            <td style="padding:32px 28px 8px">
+              ${bodyHtml}
+            </td>
+          </tr>
+
+          <!-- WHATSAPP + EMAIL BUTTONS -->
+          <tr>
+            <td style="padding:24px 28px 8px">
+              <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="50%" style="padding-right:6px">
+                    <a href="${BRAND.whatsappUrl}"
+                       style="display:block;background:#25D366;color:#FFFFFF;text-decoration:none;text-align:center;padding:13px 12px;border-radius:50px;font-weight:700;font-size:13px">
+                      💬 Join WhatsApp
+                    </a>
+                  </td>
+                  <td width="50%" style="padding-left:6px">
+                    <a href="mailto:${BRAND.supportEmail}"
+                       style="display:block;background:#EEF7FF;color:#0B1F3A;text-decoration:none;text-align:center;padding:13px 12px;border-radius:50px;font-weight:700;font-size:13px;border:2px solid #0B1F3A">
+                      ✉️ Email Support
+                    </a>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- SIGNATURE -->
+          <tr>
+            <td style="padding:16px 28px 24px">
+              <div style="border-top:1px solid #E2E8F0;padding-top:20px;color:#0B1F3A;font-size:14px">
+                Warm regards,
+                <div style="font-family:Georgia,serif;font-style:italic;font-size:22px;color:#0B1F3A;margin:8px 0 4px">
+                  Brian Ondieki
+                </div>
+                <div style="font-weight:700;font-size:13px">${BRAND.principalName}</div>
+                <div style="color:#64748B;font-size:12px">${BRAND.principalTitle}</div>
+              </div>
+            </td>
+          </tr>
+
+          <!-- FOOTER with Privacy & Terms -->
+          <tr>
+            <td style="background:#0B1F3A;padding:22px 28px;text-align:center;color:rgba(255,255,255,0.65);font-size:12px;line-height:1.7">
+              <div style="color:#D4A63A;font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:8px">
+                NEXORA ACADEMY
+              </div>
+              <div style="margin-bottom:12px">
+                Empowering minds, building futures.
+              </div>
+              <div style="margin-bottom:12px">
+                <a href="${BRAND.academyUrl}" style="color:#7CB8FF;text-decoration:none;margin:0 8px">Website</a>
+                <span style="color:rgba(255,255,255,0.3)">•</span>
+                <a href="${BRAND.privacyUrl}" style="color:#7CB8FF;text-decoration:none;margin:0 8px">Privacy Policy</a>
+                <span style="color:rgba(255,255,255,0.3)">•</span>
+                <a href="${BRAND.termsUrl}" style="color:#7CB8FF;text-decoration:none;margin:0 8px">Terms &amp; Conditions</a>
+              </div>
+              <div style="font-size:11px;color:rgba(255,255,255,0.4);margin-top:10px">
+                Questions? Reach us at
+                <a href="mailto:${BRAND.supportEmail}" style="color:#D4A63A;text-decoration:none">${BRAND.supportEmail}</a>
+              </div>
+            </td>
+          </tr>
+
+        </table>
+        <!-- /Main container -->
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>`;
+}
+
+// ═══════════════════════════════════════════════════════════
+// CONTRIBUTOR DECISION EMAIL (approve or reject)
+// ═══════════════════════════════════════════════════════════
 async function sendContributorDecisionEmail({ to, name, approved, reason, username, tempPassword, portalUrl }) {
     if (!approved) {
-        const html = `
-        <div style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;background:#F5F7FA;padding:20px">
-          <div style="background:linear-gradient(135deg,#0B1F3A,#172B4D);padding:30px;text-align:center;border-bottom:3px solid #D4A63A">
-            <h1 style="color:#D4A63A;margin:0;letter-spacing:3px;font-size:22px">NEXORA ACADEMY</h1>
-            <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:2px">CONTRIBUTOR PROGRAM</p>
-          </div>
-          <div style="background:#fff;padding:30px;border-radius:0 0 12px 12px">
-            <h2 style="color:#0B1F3A;margin:0 0 12px">Hello ${name},</h2>
-            <p style="color:#64748B;line-height:1.7;font-size:15px">
-              Thank you for applying to the Nexora Contributor Program. After careful review, we are unable to approve your application at this time.
-            </p>
-            ${reason ? `<div style="background:#FEF3C7;padding:14px;border-radius:10px;margin:20px 0;border-left:4px solid #D4A63A"><strong style="color:#92400E">Reason:</strong><div style="color:#78350F;margin-top:6px">${reason}</div></div>` : ''}
-            <p style="color:#64748B;line-height:1.7;font-size:14px">
-              You are welcome to reapply in the future with additional qualifications or experience.
-            </p>
-            <p style="color:#94A3B8;font-size:12px;margin-top:24px;padding-top:20px;border-top:1px solid #E2E8F0">
-              Questions? Contact nexoraacademyhelpdesk@gmail.com
-            </p>
-          </div>
-        </div>`;
+        // ── REJECTION EMAIL ──
+        const bodyHtml = `
+          <h2 style="color:#0B1F3A;margin:0 0 14px;font-size:22px">Hello ${name},</h2>
+
+          <p style="color:#475569;line-height:1.75;font-size:15px;margin:0 0 18px">
+            Thank you for applying to the <strong>Nexora Academy Contributor Program</strong>. After careful review, we are unable to approve your application at this time.
+          </p>
+
+          ${reason ? `
+            <div style="background:#FEF3C7;border-left:4px solid #D4A63A;padding:16px;border-radius:10px;margin:20px 0">
+              <div style="color:#92400E;font-weight:700;font-size:13px;margin-bottom:6px">Reason</div>
+              <div style="color:#78350F;font-size:14px;line-height:1.6">${reason}</div>
+            </div>
+          ` : ''}
+
+          <p style="color:#475569;line-height:1.75;font-size:14px;margin:18px 0">
+            You are welcome to <strong>reapply in the future</strong> with additional qualifications or experience.
+          </p>
+
+          <p style="color:#475569;line-height:1.75;font-size:14px;margin:18px 0">
+            We appreciate your interest in Nexora Academy and wish you the very best.
+          </p>
+        `;
 
         return sendEmail({
             to,
             toName: name,
-            subject: 'Nexora Contributor Application — Decision',
-            html,
+            subject: 'Nexora Academy — Contributor Application Update',
+            html: buildEmailShell({
+                headerText: 'CONTRIBUTOR PROGRAM',
+                bodyHtml,
+                preheader: 'An update on your Nexora Academy Contributor Program application.',
+            }),
         });
     }
 
+    // ── APPROVAL EMAIL ──
     const credBlock = tempPassword ? `
-        <div style="background:#F5F7FA;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #16A34A">
-          <div style="font-size:13px;color:#64748B;margin-bottom:6px;text-transform:uppercase;letter-spacing:1px;font-weight:700">Your Contributor Credentials</div>
-          <div style="font-family:monospace;font-size:15px;color:#0B1F3A;margin-top:8px">
-            <div><strong>Username:</strong> ${username}</div>
-            <div style="margin-top:4px"><strong>Password:</strong> ${tempPassword}</div>
+        <div style="background:#F0FDF4;border-left:4px solid #16A34A;padding:18px;border-radius:10px;margin:22px 0">
+          <div style="font-size:12px;color:#166534;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px">
+            🔐 Your Contributor Credentials
           </div>
-          <div style="font-size:12px;color:#92400E;margin-top:10px">⚠️ Please change your password immediately after first login.</div>
-        </div>` : `
-        <div style="background:#DCFCE7;padding:14px;border-radius:10px;margin:20px 0;border-left:4px solid #16A34A">
-          <strong style="color:#166534">Your existing Nexora account is now active as a Contributor.</strong>
-          <div style="font-size:13px;color:#166534;margin-top:6px">Use your existing username and password to log in.</div>
-        </div>`;
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:6px 0;font-size:14px;color:#0B1F3A">
+                <strong style="display:inline-block;width:80px">Username:</strong>
+                <span style="font-family:Courier,monospace;background:#FFFFFF;padding:2px 8px;border-radius:4px;border:1px solid #D1FAE5">${username}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:6px 0;font-size:14px;color:#0B1F3A">
+                <strong style="display:inline-block;width:80px">Password:</strong>
+                <span style="font-family:Courier,monospace;background:#FFFFFF;padding:2px 8px;border-radius:4px;border:1px solid #D1FAE5">${tempPassword}</span>
+              </td>
+            </tr>
+          </table>
+          <div style="font-size:12px;color:#92400E;margin-top:10px">
+            ⚠️ <strong>Change your password</strong> immediately after first login.
+          </div>
+        </div>
+    ` : `
+        <div style="background:#DCFCE7;border-left:4px solid #16A34A;padding:16px;border-radius:10px;margin:22px 0">
+          <div style="color:#166534;font-weight:700;font-size:14px;margin-bottom:4px">
+            ✅ Your existing Nexora account is now active as a Contributor.
+          </div>
+          <div style="color:#166534;font-size:13px">
+            Use your existing username and password to log in.
+          </div>
+        </div>
+    `;
 
-    const html = `
-    <div style="font-family:Arial,sans-serif;max-width:620px;margin:0 auto;background:#F5F7FA;padding:20px">
-      <div style="background:linear-gradient(135deg,#0B1F3A,#172B4D);padding:30px;text-align:center;border-bottom:3px solid #D4A63A">
-        <h1 style="color:#D4A63A;margin:0;letter-spacing:3px;font-size:22px">NEXORA ACADEMY</h1>
-        <p style="color:rgba(255,255,255,0.85);margin:6px 0 0;font-size:13px;letter-spacing:2px">CONTRIBUTOR PROGRAM</p>
+    const bodyHtml = `
+      <h2 style="color:#0B1F3A;margin:0 0 14px;font-size:22px">🎉 Welcome aboard, ${name}!</h2>
+
+      <p style="color:#475569;line-height:1.75;font-size:15px;margin:0 0 8px">
+        Your application to become a <strong>Nexora Academy Contributor</strong> has been
+        <strong style="color:#16A34A">approved</strong>. You can now access the Contributor Portal to start creating courses.
+      </p>
+
+      ${credBlock}
+
+      <!-- Big CTA button -->
+      <div style="text-align:center;margin:28px 0">
+        <a href="${portalUrl}"
+           style="background:#29A9E8;color:#FFFFFF;padding:15px 36px;border-radius:50px;text-decoration:none;font-weight:700;display:inline-block;font-size:15px">
+          Open Contributor Portal →
+        </a>
       </div>
-      <div style="background:#fff;padding:30px;border-radius:0 0 12px 12px">
-        <h2 style="color:#0B1F3A;margin:0 0 12px">🎉 Welcome aboard, ${name}!</h2>
-        <p style="color:#64748B;line-height:1.7;font-size:15px">
-          Your application to become a <strong>Nexora Academy Contributor</strong> has been <strong style="color:#16A34A">approved</strong>.
-          You can now access the Contributor Portal to start creating courses.
-        </p>
 
-        ${credBlock}
-
-        <div style="text-align:center;margin:26px 0">
-          <a href="${portalUrl}"
-             style="background:#29A9E8;color:#fff;padding:14px 32px;border-radius:50px;text-decoration:none;font-weight:700;display:inline-block;font-size:14px;letter-spacing:0.5px">
-            Open Contributor Portal →
-          </a>
+      <!-- Numbered next steps -->
+      <div style="background:#F5F7FA;border-radius:12px;padding:20px;margin:24px 0">
+        <div style="font-weight:700;color:#0B1F3A;font-size:15px;margin-bottom:16px">
+          📋 Your Next Steps
         </div>
 
-        <div style="background:#EEF7FF;padding:16px;border-radius:10px;margin:20px 0;border-left:4px solid #29A9E8">
-          <div style="font-weight:700;color:#0B1F3A;margin-bottom:8px">📚 Available on the Portal:</div>
-          <ul style="color:#334155;font-size:14px;line-height:1.9;margin:0;padding-left:20px">
-            <li>Contributor Manual</li>
-            <li>Course Development Manual</li>
-            <li>Assessment Guidelines</li>
-            <li>Submission Procedures</li>
-            <li>Other official resources</li>
-          </ul>
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td width="30" valign="top" style="padding-bottom:14px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">1</div>
+            </td>
+            <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
+              <strong>Log in</strong> to the Contributor Portal using the credentials above.
+            </td>
+          </tr>
+          <tr>
+            <td width="30" valign="top" style="padding-bottom:14px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">2</div>
+            </td>
+            <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
+              <strong>Change your password</strong> immediately from your Profile page.
+            </td>
+          </tr>
+          <tr>
+            <td width="30" valign="top" style="padding-bottom:14px">
+              <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">3</div>
+            </td>
+            <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
+              <strong>Read the Contributor Manual</strong> under the Manuals section.
+            </td>
+          </tr>
+          <tr>
+            <td width="30" valign="top">
+              <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">4</div>
+            </td>
+            <td valign="top" style="color:#334155;font-size:14px;line-height:1.6">
+              <strong>Submit your first course</strong> following the development guidelines.
+            </td>
+          </tr>
+        </table>
+      </div>
+
+      <!-- Manuals preview -->
+      <div style="margin:24px 0">
+        <div style="font-weight:700;color:#0B1F3A;font-size:15px;margin-bottom:12px">
+          📚 What You'll Find on the Portal
         </div>
 
-        <p style="color:#64748B;line-height:1.7;font-size:14px">
-          Read the Contributor Manual carefully before submitting your first course. If you have questions,
-          reach the team at
-          <a href="mailto:nexoraacademyhelpdesk@gmail.com" style="color:#29A9E8">nexoraacademyhelpdesk@gmail.com</a>
-          or join the
-          <a href="https://chat.whatsapp.com/Cc07MSgeXeTCJTdJCAuRkN" style="color:#29A9E8">WhatsApp group</a>.
-        </p>
-
-        <p style="color:#94A3B8;font-size:12px;margin-top:24px;padding-top:20px;border-top:1px solid #E2E8F0">
-          Welcome to the Nexora Academy team. We look forward to your courses!<br>
-          — The Nexora Academy Team
-        </p>
+        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
+          <div style="color:#334155;font-size:13px;line-height:1.5">
+            📘 <strong>Contributor Manual</strong> — Program rules, standards, and expectations
+          </div>
+        </div>
+        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
+          <div style="color:#334155;font-size:13px;line-height:1.5">
+            📗 <strong>Course Development Manual</strong> — Structure, formatting, and quality
+          </div>
+        </div>
+        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
+          <div style="color:#334155;font-size:13px;line-height:1.5">
+            📙 <strong>Assessment Guidelines</strong> — How to write exams and CATs
+          </div>
+        </div>
+        <div style="background:#EEF7FF;border-radius:10px;padding:14px">
+          <div style="color:#334155;font-size:13px;line-height:1.5">
+            📕 <strong>Submission Procedures</strong> — How to submit and track your courses
+          </div>
+        </div>
       </div>
-    </div>`;
+
+      <p style="color:#475569;line-height:1.75;font-size:14px;margin:22px 0 0">
+        Read the Contributor Manual carefully before submitting your first course. If you have any questions, reach us using the buttons below.
+      </p>
+    `;
 
     return sendEmail({
         to,
         toName: name,
-        subject: '🎉 You\'re approved — Welcome to Nexora Contributor Program',
-        html,
+        subject: '🎉 Welcome to Nexora Academy — Contributor Program',
+        html: buildEmailShell({
+            headerText: 'CONTRIBUTOR PROGRAM',
+            bodyHtml,
+            preheader: `🎉 You're approved! Here are your Nexora Contributor credentials and next steps.`,
+        }),
     });
 }
 
