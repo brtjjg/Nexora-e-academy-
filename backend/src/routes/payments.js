@@ -4,6 +4,7 @@ const db = require('../db');
 const { asyncHandler, money, genTransactionId, genWalletTxId } = require('../utils');
 const { requireAuth, requireAdmin } = require('../middleware');
 const { sendPaymentConfirmation } = require('../email');
+const { recordCourseSaleSplit } = require('../utils/ledger');
 
 const ACTIVATION_FEE = parseFloat(process.env.ACTIVATION_FEE) || 0.50;
 
@@ -211,12 +212,29 @@ router.post('/course', requireAuth, asyncHandler(async (req, res) => {
             [tx.rows[0].id]
         );
 
-        const wId = await genWalletTxId(client);
+                const wId = await genWalletTxId(client);
         await client.query(
             `INSERT INTO wallet_transactions (wallet_tx_id, user_id, transaction_id, type, amount, description, status)
              VALUES ($1,$2,$3,'debit',$4,$5,'completed')`,
             [wId, req.user.user_id, tx.rows[0].id, payAmount, `Course payment: ${course_id}`]
         );
+
+        // ─── NEXORA FINANCIALS: record 70/30 split ───
+        const contributorRes = await client.query(
+            `SELECT created_by FROM courses WHERE id = $1`,
+            [course_id]
+        );
+        const contributorId = contributorRes.rows[0]?.created_by || null;
+
+        await recordCourseSaleSplit(client, {
+            contributor_id: contributorId,
+            course_id,
+            transaction_id: tx.rows[0].id,
+            gross_amount: payAmount,
+            currency: 'USD',
+            hold_days: 7,
+        });
+
         await client.query('COMMIT');
 
         (async () => {
