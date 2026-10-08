@@ -996,11 +996,7 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
         return res.status(401).json({ error: 'Unauthorized' });
     }
 
-    const {
-        full_name, email, phone, country,
-        education, expertise, course_interests,
-        status, reason,
-    } = req.body || {};
+    const { full_name, email, phone, country, status, reason } = req.body || {};
 
     if (!email || !status) {
         return res.status(400).json({ error: 'email and status are required' });
@@ -1024,99 +1020,24 @@ router.post('/contributor-applications/decide', asyncHandler(async (req, res) =>
     }
 
     // ══════════ APPROVAL PATH ══════════
-    const existing = await db.query(
-        `SELECT id, username, email, full_name, role, status FROM users WHERE LOWER(email) = $1`,
-        [emailLower]
-    );
+    // ❌ NO AUTO-GENERATION OF ACCOUNTS.
+    // The applicant creates their own account on the portal signup page.
+    // We only send them an email telling them they're approved.
 
-    let user = existing.rows[0] || null;
-    let tempPassword = null;
-
-    if (user) {
-        if (user.role !== 'contributor' && user.role !== 'admin') {
-            await db.query(
-                `UPDATE users SET role = 'contributor', status = 'active', updated_at = NOW()
-                 WHERE id = $1`,
-                [user.id]
-            );
-            user.role = 'contributor';
-        } else if (user.status !== 'active') {
-            await db.query(
-                `UPDATE users SET status = 'active', updated_at = NOW() WHERE id = $1`,
-                [user.id]
-            );
-            user.status = 'active';
-        }
-    } else {
-        const baseUsername = String(full_name || emailLower.split('@')[0])
-            .toLowerCase()
-            .replace(/[^a-z0-9_]/g, '')
-            .slice(0, 18) || 'contributor';
-
-        let username = baseUsername;
-        let suffix = 0;
-        while (true) {
-            const u = await db.query(`SELECT 1 FROM users WHERE username = $1`, [username]);
-            if (!u.rows.length) break;
-            suffix += 1;
-            username = `${baseUsername}${suffix}`;
-        }
-
-        tempPassword = generateTempPassword();
-        const hash = await bcrypt.hash(tempPassword, 10);
-
-        const ins = await db.query(
-            `INSERT INTO users
-                (username, email, password_hash, full_name, phone, country, role, status)
-             VALUES ($1, $2, $3, $4, $5, $6, 'contributor', 'active')
-             RETURNING id, username, email, full_name, role, status`,
-            [username, emailLower, hash, full_name || 'Contributor', phone || null, country || null]
-        );
-        user = ins.rows[0];
-
-        console.log('[form] Created contributor:', username, '→', emailLower);
-    }
-
-    // Fire email in background
     sendContributorDecisionEmail({
         to: emailLower,
-        name: full_name || user.full_name || 'Contributor',
+        name: full_name || 'Contributor',
         approved: true,
-        username: user.username,
-        tempPassword,
+        username: null,
+        tempPassword: null,
         portalUrl: BRAND.portalUrl,
     }).catch(e => console.error('[form] approve email failed:', e.message));
 
-    res.json({
-        ok: true,
-        action: 'approved',
-        email,
-        username: user.username,
-        is_new: !!tempPassword,
-    });
+    return res.json({ ok: true, action: 'approved', email });
 }));
-
-// ─────────────────────────────────────────────
-// Helper: generate temp password
-// ─────────────────────────────────────────────
-function generateTempPassword() {
-    const upper = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
-    const lower = 'abcdefghjkmnpqrstuvwxyz';
-    const digits = '23456789';
-    const all = upper + lower + digits;
-    let pw = '';
-    pw += upper[Math.floor(Math.random() * upper.length)];
-    pw += lower[Math.floor(Math.random() * lower.length)];
-    pw += digits[Math.floor(Math.random() * digits.length)];
-    for (let i = 0; i < 7; i++) {
-        pw += all[Math.floor(Math.random() * all.length)];
-    }
-    return pw.split('').sort(() => Math.random() - 0.5).join('');
-}
 
 // ═══════════════════════════════════════════════════════════
 // SHARED EMAIL LAYOUT BUILDER
-// Wraps email body in consistent branding with logo, footer, privacy links
 // ═══════════════════════════════════════════════════════════
 function buildEmailShell({ headerText, bodyHtml, preheader }) {
     return `
@@ -1129,20 +1050,16 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
 </head>
 <body style="margin:0;padding:0;background:#F0F2F5;font-family:Arial,Helvetica,sans-serif">
 
-  <!-- Preheader (hidden preview text) -->
   <div style="display:none;font-size:1px;color:#F0F2F5;line-height:1px;max-height:0;max-width:0;opacity:0;overflow:hidden">
     ${preheader || ''}
   </div>
 
-  <!-- Outer wrapper -->
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#F0F2F5;padding:24px 12px">
     <tr>
       <td align="center">
 
-        <!-- Main container -->
         <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:620px;background:#FFFFFF;border-radius:14px;overflow:hidden;box-shadow:0 6px 20px rgba(11,31,58,0.08)">
 
-          <!-- HEADER with logo -->
           <tr>
             <td style="background:linear-gradient(135deg,#0B1F3A 0%,#172B4D 100%);padding:34px 24px 28px;text-align:center;border-bottom:3px solid #D4A63A">
 
@@ -1161,14 +1078,12 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
             </td>
           </tr>
 
-          <!-- BODY -->
           <tr>
             <td style="padding:32px 28px 8px">
               ${bodyHtml}
             </td>
           </tr>
 
-          <!-- WHATSAPP + EMAIL BUTTONS -->
           <tr>
             <td style="padding:24px 28px 8px">
               <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
@@ -1190,7 +1105,6 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
             </td>
           </tr>
 
-          <!-- SIGNATURE -->
           <tr>
             <td style="padding:16px 28px 24px">
               <div style="border-top:1px solid #E2E8F0;padding-top:20px;color:#0B1F3A;font-size:14px">
@@ -1204,7 +1118,6 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
             </td>
           </tr>
 
-          <!-- FOOTER with Privacy & Terms -->
           <tr>
             <td style="background:#0B1F3A;padding:22px 28px;text-align:center;color:rgba(255,255,255,0.65);font-size:12px;line-height:1.7">
               <div style="color:#D4A63A;font-weight:700;letter-spacing:2px;font-size:13px;margin-bottom:8px">
@@ -1228,7 +1141,6 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
           </tr>
 
         </table>
-        <!-- /Main container -->
 
       </td>
     </tr>
@@ -1241,7 +1153,7 @@ function buildEmailShell({ headerText, bodyHtml, preheader }) {
 // ═══════════════════════════════════════════════════════════
 // CONTRIBUTOR DECISION EMAIL (approve or reject)
 // ═══════════════════════════════════════════════════════════
-async function sendContributorDecisionEmail({ to, name, approved, reason, username, tempPassword, portalUrl }) {
+async function sendContributorDecisionEmail({ to, name, approved, reason, portalUrl }) {
     if (!approved) {
         // ── REJECTION EMAIL ──
         const bodyHtml = `
@@ -1280,36 +1192,14 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
     }
 
     // ── APPROVAL EMAIL ──
-    const credBlock = tempPassword ? `
-        <div style="background:#F0FDF4;border-left:4px solid #16A34A;padding:18px;border-radius:10px;margin:22px 0">
-          <div style="font-size:12px;color:#166534;text-transform:uppercase;letter-spacing:1.5px;font-weight:700;margin-bottom:10px">
-            🔐 Your Contributor Credentials
+    const credBlock = `
+        <div style="background:#EEF7FF;border-left:4px solid #29A9E8;padding:20px 18px;border-radius:10px;margin:22px 0">
+          <div style="color:#0B1F3A;font-weight:700;font-size:15px;margin-bottom:8px">
+            👉 Create your account using the link below
           </div>
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-            <tr>
-              <td style="padding:6px 0;font-size:14px;color:#0B1F3A">
-                <strong style="display:inline-block;width:80px">Username:</strong>
-                <span style="font-family:Courier,monospace;background:#FFFFFF;padding:2px 8px;border-radius:4px;border:1px solid #D1FAE5">${username}</span>
-              </td>
-            </tr>
-            <tr>
-              <td style="padding:6px 0;font-size:14px;color:#0B1F3A">
-                <strong style="display:inline-block;width:80px">Password:</strong>
-                <span style="font-family:Courier,monospace;background:#FFFFFF;padding:2px 8px;border-radius:4px;border:1px solid #D1FAE5">${tempPassword}</span>
-              </td>
-            </tr>
-          </table>
-          <div style="font-size:12px;color:#92400E;margin-top:10px">
-            ⚠️ <strong>Change your password</strong> immediately after first login.
-          </div>
-        </div>
-    ` : `
-        <div style="background:#DCFCE7;border-left:4px solid #16A34A;padding:16px;border-radius:10px;margin:22px 0">
-          <div style="color:#166534;font-weight:700;font-size:14px;margin-bottom:4px">
-            ✅ Your existing Nexora account is now active as a Contributor.
-          </div>
-          <div style="color:#166534;font-size:13px">
-            Use your existing username and password to log in.
+          <div style="color:#475569;font-size:14px;line-height:1.6">
+            Click the <strong>Open Contributor Portal</strong> button below to create your own account.
+            Choose your own password when you sign up — for your security, we never send passwords by email.
           </div>
         </div>
     `;
@@ -1319,7 +1209,7 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
 
       <p style="color:#475569;line-height:1.75;font-size:15px;margin:0 0 8px">
         Your application to become a <strong>Nexora Academy Contributor</strong> has been
-        <strong style="color:#16A34A">approved</strong>. You can now access the Contributor Portal to start creating courses.
+        <strong style="color:#16A34A">approved</strong>. You can now create your contributor account and start building courses.
       </p>
 
       ${credBlock}
@@ -1344,7 +1234,7 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
               <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">1</div>
             </td>
             <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
-              <strong>Log in</strong> to the Contributor Portal using the credentials above.
+              <strong>Create your account</strong> — click the button above and set your own password.
             </td>
           </tr>
           <tr>
@@ -1352,7 +1242,7 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
               <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">2</div>
             </td>
             <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
-              <strong>Change your password</strong> immediately from your Profile page.
+              <strong>Read the Contributor Manual</strong> — found in the portal under "Manuals".
             </td>
           </tr>
           <tr>
@@ -1360,7 +1250,7 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
               <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">3</div>
             </td>
             <td valign="top" style="padding-bottom:14px;color:#334155;font-size:14px;line-height:1.6">
-              <strong>Read the Contributor Manual</strong> under the Manuals section.
+              <strong>Build your first course</strong> — follow the manual step by step and submit it for review.
             </td>
           </tr>
           <tr>
@@ -1368,38 +1258,10 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
               <div style="width:26px;height:26px;border-radius:50%;background:#29A9E8;color:#FFFFFF;text-align:center;line-height:26px;font-weight:700;font-size:13px">4</div>
             </td>
             <td valign="top" style="color:#334155;font-size:14px;line-height:1.6">
-              <strong>Submit your first course</strong> following the development guidelines.
+              <strong>Get it published</strong> — once approved by our team, your course goes live and you start earning <strong>70% of every sale</strong>.
             </td>
           </tr>
         </table>
-      </div>
-
-      <!-- Manuals preview -->
-      <div style="margin:24px 0">
-        <div style="font-weight:700;color:#0B1F3A;font-size:15px;margin-bottom:12px">
-          📚 What You'll Find on the Portal
-        </div>
-
-        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
-          <div style="color:#334155;font-size:13px;line-height:1.5">
-            📘 <strong>Contributor Manual</strong> — Program rules, standards, and expectations
-          </div>
-        </div>
-        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
-          <div style="color:#334155;font-size:13px;line-height:1.5">
-            📗 <strong>Course Development Manual</strong> — Structure, formatting, and quality
-          </div>
-        </div>
-        <div style="background:#EEF7FF;border-radius:10px;padding:14px;margin-bottom:8px">
-          <div style="color:#334155;font-size:13px;line-height:1.5">
-            📙 <strong>Assessment Guidelines</strong> — How to write exams and CATs
-          </div>
-        </div>
-        <div style="background:#EEF7FF;border-radius:10px;padding:14px">
-          <div style="color:#334155;font-size:13px;line-height:1.5">
-            📕 <strong>Submission Procedures</strong> — How to submit and track your courses
-          </div>
-        </div>
       </div>
 
       <p style="color:#475569;line-height:1.75;font-size:14px;margin:22px 0 0">
@@ -1410,11 +1272,11 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, userna
     return sendEmail({
         to,
         toName: name,
-        subject: '🎉 Welcome to Nexora Academy — Contributor Program',
+        subject: '🎉 Your Nexora Academy Contributor application is approved',
         html: buildEmailShell({
             headerText: 'CONTRIBUTOR PROGRAM',
             bodyHtml,
-            preheader: `🎉 You're approved! Here are your Nexora Contributor credentials and next steps.`,
+            preheader: `🎉 You're approved! Create your contributor account using the link in this email.`,
         }),
     });
 }
