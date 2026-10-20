@@ -150,6 +150,30 @@ app.use((req, res) => {
     res.status(404).json({ error: 'Not found', path: req.originalUrl });
 });
 
+// 1. Add this with your other loadRoute mounts:
+app.use('/api/studio',        loadRoute('studio'));
+
+// 2. Add this right before `start().catch(...)` at the bottom of the file:
+if (process.env.STUDIO_AUTO === 'true') {
+  const { spawn } = require('child_process');
+  setInterval(async () => {
+    try {
+      const db = require('./db');
+      const r = await db.query(`
+        SELECT id FROM lessons l JOIN modules m ON m.id = l.module_id JOIN courses c ON c.id = m.course_id
+        WHERE (l.video_status IS NULL OR l.video_status = 'none') AND c.status = 'published' AND l.published = true AND LENGTH(l.notes) >= 200
+        ORDER BY l.created_at ASC LIMIT 2
+      `);
+      for (const row of r.rows) {
+        const script = require('path').join(__dirname, 'studio', 'generate.js');
+        spawn('node', [script, row.id], { detached: true, stdio: 'ignore', env: process.env }).unref();
+        await db.query(`UPDATE lessons SET video_status='queued' WHERE id=$1`, [row.id]);
+      }
+      if (r.rows.length) console.log(`[studio-auto] queued ${r.rows.length} lesson(s)`);
+    } catch (e) { console.error('[studio-auto]', e.message); }
+  }, 60 * 60 * 1000);
+}
+
 app.use((err, req, res, next) => {
     console.error('[ERROR]', err.message);
     if (err.code === 'LIMIT_FILE_SIZE') {
