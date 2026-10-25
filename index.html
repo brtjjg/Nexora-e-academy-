@@ -2167,21 +2167,33 @@ async function renderStudentCertificates() {
         c.innerHTML = certificates.map(cert => `<div style="background:var(--white);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.5rem;margin-bottom:1rem;border-left:4px solid var(--gold)"><h4>${esc(cert.certificate_id)}</h4><p>${esc(cert.course_name)}</p><p style="font-size:0.85rem;color:var(--text-secondary)">Issued: ${fmtDate(cert.issued_date)}</p><div style="margin-top:1rem;display:flex;gap:0.5rem;flex-wrap:wrap"><button class="btn btn-primary btn-sm" onclick="openCertificateModal('${esc(cert.certificate_id)}')"><i class="fas fa-eye"></i> View Certificate</button><button class="btn btn-outline btn-sm" onclick="window.open('/certificate.html?id=${encodeURIComponent(cert.certificate_id)}','_blank')"><i class="fas fa-external-link-alt"></i> Open in New Tab</button></div></div>`).join('');
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>'; }
 }
-
-  async function renderStudentProfile() {
+async function renderStudentProfile() {
     const c = document.getElementById('studentProfileContent');
     c.innerHTML = '<div class="empty-state">Loading profile...</div>';
     
     try {
         const { profile } = await api('/auth/profile');
-        const initials = (profile.full_name || 'U').charAt(0).toUpperCase();
         
+        // Check if user has an avatar, otherwise show initials
+        const avatarHtml = profile.avatar_url 
+            ? `<img src="${esc(profile.avatar_url)}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;">`
+            : `<span style="font-size:2.5rem;font-weight:700;">${esc((profile.full_name || 'U').charAt(0).toUpperCase())}</span>`;
+
         c.innerHTML = `
             <div class="wallet-hero" style="background:linear-gradient(135deg,var(--navy),#1a3a5c); padding: 2rem; border-radius: var(--radius); color:#fff; margin-bottom: 2rem;">
                 <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
-                    <div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;border:3px solid var(--gold);">
-                        ${esc(initials)}
+                    
+                    <!-- PROFILE PICTURE UPLOAD -->
+                    <div style="position:relative;">
+                        <div style="width:90px;height:90px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;border:3px solid var(--gold);overflow:hidden;">
+                            ${avatarHtml}
+                        </div>
+                        <label for="avatarUpload" style="position:absolute; bottom:-5px; right:-5px; background:var(--gold); color:var(--navy); width:32px; height:32px; border-radius:50%; display:flex; align-items:center; justify-content:center; cursor:pointer; border:2px solid #fff; box-shadow:0 2px 10px rgba(0,0,0,0.3);">
+                            <i class="fas fa-camera"></i>
+                        </label>
+                        <input type="file" id="avatarUpload" accept="image/*" style="display:none;" onchange="uploadAvatar(this)">
                     </div>
+
                     <div>
                         <h2 style="margin-bottom:0.3rem; font-size: 1.8rem;">${esc(profile.full_name)}</h2>
                         <p style="color:rgba(255,255,255,0.7); font-size: 0.95rem;">${esc(profile.email)}</p>
@@ -2227,23 +2239,49 @@ async function renderStudentCertificates() {
                         <input type="text" value="${esc(profile.course_interest || 'General')}" disabled style="background:var(--bg);">
                     </div>
                 </div>
-
-                <div class="form-group" style="margin-top: 1rem;">
-                    <label>Account Created</label>
-                    <input type="text" value="${new Date(profile.created_at).toLocaleDateString()}" disabled style="background:var(--bg);">
-                </div>
-
-                <div style="margin-top: 2rem; text-align: right;">
-                    <button class="btn btn-primary" onclick="alert('Edit profile feature coming soon!')">
-                        <i class="fas fa-edit"></i> Edit Profile
-                    </button>
-                </div>
             </div>
         `;
     } catch (err) {
         c.innerHTML = `<div class="empty-state" style="color:var(--danger);">Failed to load profile: ${esc(err.message)}</div>`;
     }
 }
+
+// Function to handle the upload
+async function uploadAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const file = input.files[0];
+    
+    const formData = new FormData();
+    formData.append('avatar', file);
+    
+    // Show loading state
+    const label = input.previousElementSibling;
+    const originalHtml = label.innerHTML;
+    label.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    
+    try {
+        const res = await fetch(API_BASE + '/auth/profile/avatar', {
+            method: 'POST',
+            credentials: 'include',
+            body: formData
+        });
+        
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Upload failed');
+        
+        // Update the current session so the top navbar updates too
+        if (currentUser) currentUser.avatar_url = data.url;
+        updateTopNav();
+        
+        // Re-render the profile page to show the new picture
+        renderStudentProfile();
+        
+    } catch (err) {
+        alert('Upload failed: ' + err.message);
+        label.innerHTML = originalHtml;
+    }
+}
+
 
 async function updateAdminDashboard() {
     try {
