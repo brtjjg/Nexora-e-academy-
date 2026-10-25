@@ -406,6 +406,22 @@ table tbody tr:hover{background:#f8fafc}
 <span class="tagline">EXPERT ONLINE · QUALITY EDUCATION</span>
 </div>
 </div>
+  <!-- Notification Bell -->
+<div id="notifBell" class="hidden" style="position:relative; cursor:pointer; margin-right: 15px;" onclick="toggleNotifications()">
+    <i class="fas fa-bell" style="font-size: 1.2rem; color: rgba(255,255,255,0.8);"></i>
+    <span id="notifBadge" class="hidden" style="position:absolute; top:-5px; right:-8px; background:#ef4444; color:white; font-size:0.65rem; padding:2px 6px; border-radius:50%; font-weight:bold;">0</span>
+</div>
+
+<!-- Notification Dropdown (Hidden by default) -->
+<div id="notifDropdown" class="hidden" style="position:absolute; top:60px; right:20px; width:320px; background:var(--white); border-radius:12px; box-shadow:0 10px 40px rgba(0,0,0,0.2); z-index:9999; border:1px solid var(--border); overflow:hidden;">
+    <div style="padding:12px 16px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
+        <strong style="color:var(--navy);">Notifications</strong>
+        <span style="font-size:0.75rem; color:var(--blue); cursor:pointer;" onclick="markAllRead()">Mark all read</span>
+    </div>
+    <div id="notifList" style="max-height:300px; overflow-y:auto;">
+        <!-- Notifications injected here by JS -->
+    </div>
+</div>
 <div class="nav-links">
 <a href="#" onclick="goHome()"><i class="fas fa-home"></i> Home</a>
 <a href="#" onclick="showCoursesPublic()"><i class="fas fa-book-open"></i> Courses</a>
@@ -458,7 +474,6 @@ table tbody tr:hover{background:#f8fafc}
 <div id="studentMenu" class="hidden">
 <div class="menu-item active" onclick="navigateTo('student-dashboard')"><i class="fas fa-tachometer-alt"></i><span>Dashboard</span></div>
 <div class="menu-item" onclick="navigateTo('student-wallet')"><i class="fas fa-wallet"></i><span>Wallet & Payments</span></div>
-<div class="menu-item" onclick="navigateTo('notifications')"><i class="fas fa-bell"></i><span>Notifications</span></div>
 <div class="menu-item" onclick="navigateTo('student-courses')"><i class="fas fa-book-open"></i><span>My Courses</span><span class="badge-count" id="studentEnrollCount">0</span></div>
 <div class="menu-item" onclick="navigateTo('student-results')"><i class="fas fa-clipboard-list"></i><span>Results</span></div>
 <div class="menu-item" onclick="navigateTo('student-exams')"><i class="fas fa-pencil-alt"></i><span>Exams & CATs</span></div>
@@ -536,11 +551,6 @@ table tbody tr:hover{background:#f8fafc}
 <p class="text-center" style="color:var(--text-secondary);font-size:0.9rem;margin-top:1.5rem">Don't have an account? <a onclick="showRegister()" style="color:var(--blue);font-weight:600;cursor:pointer">Register</a></p>
 </div>
 </div>
-</div>
-
-<div id="page-notifications" class="page">
-<h2 style="color:var(--navy);margin-bottom:1.5rem"><i class="fas fa-bell" style="color:var(--gold)"></i> Notification Settings</h2>
-<div id="notificationPrefsContent"></div>
 </div>
 
 <div id="page-register" class="page">
@@ -1106,6 +1116,61 @@ async function loadHomeStats() {
     }
 }
 
+// --- NOTIFICATIONS SYSTEM ---
+async function loadNotifications() {
+    if (!currentUser) return;
+    try {
+        const { notifications } = await api('/notifications');
+        const unreadCount = notifications.filter(n => !n.is_read).length;
+        
+        // Show/Hide Bell
+        document.getElementById('notifBell').classList.remove('hidden');
+        
+        // Update Badge
+        const badge = document.getElementById('notifBadge');
+        if (unreadCount > 0) {
+            badge.textContent = unreadCount;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+
+        // Populate Dropdown
+        const list = document.getElementById('notifList');
+        if (notifications.length === 0) {
+            list.innerHTML = '<div style="padding:20px; text-align:center; color:#64748b; font-size:0.85rem;">No new notifications</div>';
+        } else {
+            list.innerHTML = notifications.map(n => `
+                <div style="padding:12px 16px; border-bottom:1px solid #f1f5f9; ${n.is_read ? 'opacity:0.6;' : 'background:#eff6ff;'} cursor:pointer;" onclick="clickNotification('${n.id}', '${n.link || '#'}')">
+                    <div style="font-weight:600; color:var(--navy); font-size:0.85rem;">${n.title}</div>
+                    <div style="font-size:0.8rem; color:#475569; margin-top:4px;">${n.message}</div>
+                    <div style="font-size:0.7rem; color:#94a3b8; margin-top:6px;">${new Date(n.created_at).toLocaleDateString()}</div>
+                </div>
+            `).join('');
+        }
+    } catch (err) { console.error('Notification error:', err); }
+}
+
+function toggleNotifications() {
+    document.getElementById('notifDropdown').classList.toggle('hidden');
+}
+
+async function markAllRead() {
+    await api('/notifications/read-all', { method: 'PUT' });
+    loadNotifications();
+}
+
+async function clickNotification(id, link) {
+    await api(`/notifications/${id}/read`, { method: 'PUT' });
+    document.getElementById('notifDropdown').classList.add('hidden');
+    loadNotifications();
+    
+    // Navigate to the link
+    if (link.includes('groups')) navigateTo('student-groups');
+    else if (link.includes('certificates')) navigateTo('student-certificates');
+    else if (link.includes('wallet')) navigateTo('student-wallet');
+}
+  
 async function showApp() {
     document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
     document.getElementById('sidebarToggleBar').classList.add('visible');
@@ -1249,7 +1314,6 @@ async function navigateTo(page) {
         else if (page === 'student-exams') await renderStudentExams();
         else if (page === 'student-certificates') await renderStudentCertificates();
         else if (page === 'student-profile') renderStudentProfile();
-        else if (page === 'notifications') await renderNotificationPrefs();
         else if (page === 'admin-contributors') loadContributors('pending');
         else if (page === 'admin-submissions') loadSubmissions('pending_review');
         else if (page === 'admin-manuals') loadManuals();
