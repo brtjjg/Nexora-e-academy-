@@ -2,6 +2,8 @@
 const express = require('express');
 const router = express.Router();
 const db = require('../db');
+const multer = require('multer');
+const { createClient } = require('@supabase/supabase-js');
 const { asyncHandler, isValidEmail, isStrongPassword, logActivity } = require('../utils');
 const {
     hashPassword, verifyPassword,
@@ -9,6 +11,8 @@ const {
 } = require('../auth');
 const { requireAuth } = require('../middleware');
 
+const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 5 * 1024 * 1024 } }); // 5MB limit
+const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_SERVICE_KEY);
 // Mount the Google OAuth router on the same router
 const authGoogleRouter = require('./auth-google');
 router.use('/', authGoogleRouter);
@@ -128,4 +132,26 @@ router.get('/profile', requireAuth, asyncHandler(async (req, res) => {
     if (!r.rows.length) return res.status(404).json({ error: 'Profile not found' });
     res.json({ profile: r.rows[0] });
 }));
+
+// POST /api/auth/profile/avatar - Upload profile picture
+router.post('/profile/avatar', requireAuth, upload.single('avatar'), asyncHandler(async (req, res) => {
+    if (!req.file) return res.status(400).json({ error: 'No image provided' });
+    
+    // Create a unique filename
+    const ext = req.file.originalname.split('.').pop();
+    const filename = `avatars/${req.user.user_id}-${Date.now()}.${ext}`;
+    
+    // Upload to Supabase Storage (nexora-videos bucket)
+    const { error } = await supabase.storage.from('nexora-videos').upload(filename, req.file.buffer, { contentType: req.file.mimetype });
+    if (error) throw new Error(error.message);
+    
+    // Get public URL
+    const { data } = supabase.storage.from('nexora-videos').getPublicUrl(filename);
+    
+    // Save to Database
+    await db.query(`UPDATE users SET avatar_url = $1 WHERE id = $2`, [data.publicUrl, req.user.user_id]);
+    
+    res.json({ ok: true, url: data.publicUrl });
+}));
+
 module.exports = router;
