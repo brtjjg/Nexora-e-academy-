@@ -64,6 +64,9 @@ function loadRoute(name) {
     }
 }
 
+const notifApi = require('./routes/notifications_api');
+app.use('/api/notifications', notifApi.router);
+
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
 app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), {
