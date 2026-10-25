@@ -9,50 +9,9 @@ const fs = require('fs');
 
 const app = express();
 
-// --- NEW NOTIFICATIONS API ---
-const db = require('../db');
-const { asyncHandler } = require('../utils');
-
-// Get all my notifications
-router.get('/', requireAuth, asyncHandler(async (req, res) => {
-  const r = await db.query(
-    `SELECT * FROM notifications WHERE user_id = $1 ORDER BY created_at DESC LIMIT 50`,
-    [req.user.user_id]
-  );
-  res.json({ notifications: r.rows });
-}));
-
-// Mark one as read
-router.put('/:id/read', requireAuth, asyncHandler(async (req, res) => {
-  await db.query(
-    `UPDATE notifications SET is_read = true WHERE id = $1 AND user_id = $2`,
-    [req.params.id, req.user.user_id]
-  );
-  res.json({ ok: true });
-}));
-
-// Mark all as read
-router.put('/read-all', requireAuth, asyncHandler(async (req, res) => {
-  await db.query(
-    `UPDATE notifications SET is_read = true WHERE user_id = $1`,
-    [req.user.user_id]
-  );
-  res.json({ ok: true });
-}));
-
-// Helper to create notifications from other files
-async function createNotification(userId, title, message, type, link = null) {
-  try {
-    await db.query(
-      `INSERT INTO notifications (user_id, title, message, type, link) VALUES ($1, $2, $3, $4, $5)`,
-      [userId, title, message, type, link]
-    );
-  } catch (err) { console.error('[notification]', err.message); }
-}
-
 app.set('trust proxy', 1);
 
-// Log every incoming request so we can see if requests actually reach the server
+// Log every incoming request
 app.use((req, res, next) => {
     console.log(`[REQ] ${req.method} ${req.originalUrl}`);
     next();
@@ -85,194 +44,108 @@ function loadRoute(name) {
     const filePath = `./routes/${name}`;
     try {
         const mod = require(filePath);
-        if (typeof mod !== 'function') {
-            console.error(`[route-loader] BROKEN: ${name}.js exports ${typeof mod}`);
-            const placeholder = express.Router();
-            placeholder.use((req, res) => res.status(503).json({
-                error: `Route "${name}" is misconfigured`,
-            }));
-            return placeholder;
+        const router = mod.router || mod; // Handle { router } exports
+        if (typeof router !== 'function') {
+            console.error(`[route-loader] BROKEN: ${name}.js exports ${typeof router}`);
+            return (req, res) => res.status(503).json({ error: `Route "${name}" is misconfigured` });
         }
         console.log(`[route-loader] OK: ${name}.js`);
-        return mod;
+        return router;
     } catch (err) {
         console.error(`[route-loader] FAILED: ${name}.js - ${err.message}`);
-        const placeholder = express.Router();
-        placeholder.use((req, res) => res.status(503).json({
-            error: `Route "${name}" failed to load: ${err.message}`,
-        }));
-        return placeholder;
+        return (req, res) => res.status(503).json({ error: `Route "${name}" failed to load: ${err.message}` });
     }
 }
 
-const notifApi = require('./routes/notifications_api');
-app.use('/api/notifications', notifApi.router);
-
 const UPLOAD_DIR = process.env.UPLOAD_DIR || './uploads';
 if (!fs.existsSync(UPLOAD_DIR)) fs.mkdirSync(UPLOAD_DIR, { recursive: true });
-app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), {
-    maxAge: '7d',
-    setHeaders: (res, filePath) => {
-        res.setHeader('Access-Control-Allow-Origin', '*');
-        res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
-        const ext = path.extname(filePath).toLowerCase();
-        if (['.pdf', '.doc', '.docx', '.txt', '.rtf'].includes(ext)) {
-            const name = path.basename(filePath);
-            res.setHeader('Content-Disposition', `inline; filename="${name}"`);
-        }
-    },
-}));
-const apiLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 500,
-    standardHeaders: true,
-    legacyHeaders: false,
-});
+app.use('/uploads', express.static(path.resolve(UPLOAD_DIR), { maxAge: '7d' }));
+
+const apiLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 500 });
 app.use('/api', apiLimiter);
 
-const authLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000,
-    max: 30,
-    message: { error: 'Too many attempts, try again later' },
-});
+const authLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 30, message: { error: 'Too many attempts' } });
 app.use('/api/auth/login', authLimiter);
 app.use('/api/auth/register', authLimiter);
 
 // ─────────────────────────────────────────────
-// TEMPORARY — bootstrap route. Delete after use.
+// Mounting all routes safely
 // ─────────────────────────────────────────────
 app.use('/api/setup',         loadRoute('setup'));
-
 app.use('/api',               loadRoute('security-gate'));
 app.use('/api/security',      loadRoute('security'));
-app.use('/api/auth', loadRoute('auth'));
-app.use('/api/auth', loadRoute('auth-google'));
-app.use('/api/courses',      loadRoute('courses'));
-app.use('/api/enrollments',  loadRoute('enrollments'));
-app.use('/api/progress',     loadRoute('progress'));
-app.use('/api/applications', loadRoute('applications'));
-app.use('/api/payments',     loadRoute('payments'));
-app.use('/api/certificates', loadRoute('certificates'));
-app.use('/api/admin',        loadRoute('admin'));
-app.use('/api/groups',       loadRoute('groups'));
-app.use('/api/notifications', loadRoute('notifications'));
-app.use('/api/uploads',      loadRoute('uploads'));
-app.use('/api/assignments',  loadRoute('assignments'));
-app.use('/api/public',       loadRoute('public'));
-app.use('/api/paypal',       loadRoute('paypal'));
-app.use('/api/pesapal',      loadRoute('pesapal'));
-app.use('/api/contributor',  loadRoute('contributor'));
-app.use('/api/financials', loadRoute('financials'));
-
-// Simple root handler — if this works, Express is alive
-app.get('/', (req, res) => {
-    res.json({
-        ok: true,
-        service: 'Nexora Academy API',
-        version: '1.0.0',
-        ts: new Date().toISOString(),
-    });
-});
-
-app.get('/api/health', (req, res) => {
-    const routeStatus = {};
-    ['auth','courses','enrollments','progress','applications','payments','certificates','admin','uploads','groups','notifications','assignments','public','paypal']
-        .forEach(name => {
-            try {
-                const mod = require(`./routes/${name}`);
-                routeStatus[name] = typeof mod === 'function' ? 'OK' : `BROKEN (${typeof mod})`;
-            } catch (err) {
-                routeStatus[name] = `FAILED: ${err.message}`;
-            }
-        });
-    res.json({ ok: true, ts: new Date().toISOString(), routes: routeStatus });
-});
-
-// 404 handler — logs what paths are missing
-app.use((req, res) => {
-    console.warn(`[404] ${req.method} ${req.originalUrl}`);
-    res.status(404).json({ error: 'Not found', path: req.originalUrl });
-});
-
-// 1. Add this with your other loadRoute mounts:
+app.use('/api/auth',          loadRoute('auth'));
+app.use('/api/auth',          loadRoute('auth-google'));
+app.use('/api/courses',       loadRoute('courses'));
+app.use('/api/enrollments',   loadRoute('enrollments'));
+app.use('/api/progress',      loadRoute('progress'));
+app.use('/api/applications',  loadRoute('applications'));
+app.use('/api/payments',      loadRoute('payments'));
+app.use('/api/certificates',  loadRoute('certificates'));
+app.use('/api/admin',         loadRoute('admin'));
+app.use('/api/groups',        loadRoute('groups'));
+app.use('/api/notifications', loadRoute('notifications')); // Uses the file you already have
+app.use('/api/uploads',       loadRoute('uploads'));
+app.use('/api/assignments',   loadRoute('assignments'));
+app.use('/api/public',        loadRoute('public'));
+app.use('/api/paypal',        loadRoute('paypal'));
+app.use('/api/pesapal',       loadRoute('pesapal'));
+app.use('/api/contributor',   loadRoute('contributor'));
+app.use('/api/financials',    loadRoute('financials'));
 app.use('/api/studio',        loadRoute('studio'));
 
-// 2. Add this right before `start().catch(...)` at the bottom of the file:
+// Root and Health Checks
+app.get('/', (req, res) => res.json({ ok: true, service: 'Nexora Academy API' }));
+app.get('/api/health', (req, res) => res.json({ ok: true, ts: new Date().toISOString() }));
+
+// 404 handler
+app.use((req, res) => res.status(404).json({ error: 'Not found', path: req.originalUrl }));
+
+// Global Error Handler
+app.use((err, req, res, next) => {
+    console.error('[ERROR]', err.message);
+    res.status(err.status || 500).json({ error: process.env.NODE_ENV === 'production' ? 'Server error' : err.message });
+});
+
+// ─────────────────────────────────────────────
+// Auto-Generate Studio Videos (Cron)
+// ─────────────────────────────────────────────
 if (process.env.STUDIO_AUTO === 'true') {
-  const { spawn } = require('child_process');
   setInterval(async () => {
     try {
-      const db = require('./db');
+      // Use the correct relative path to db from inside src/
+      const db = require('./db'); 
+      const { spawn } = require('child_process');
       const r = await db.query(`
         SELECT id FROM lessons l JOIN modules m ON m.id = l.module_id JOIN courses c ON c.id = m.course_id
         WHERE (l.video_status IS NULL OR l.video_status = 'none') AND c.status = 'published' AND l.published = true AND LENGTH(l.notes) >= 200
         ORDER BY l.created_at ASC LIMIT 2
       `);
       for (const row of r.rows) {
-        const script = require('path').join(__dirname, 'studio', 'generate.js');
+        const script = path.join(__dirname, 'studio', 'generate.js');
         spawn('node', [script, row.id], { detached: true, stdio: 'ignore', env: process.env }).unref();
         await db.query(`UPDATE lessons SET video_status='queued' WHERE id=$1`, [row.id]);
       }
-      if (r.rows.length) console.log(`[studio-auto] queued ${r.rows.length} lesson(s)`);
     } catch (e) { console.error('[studio-auto]', e.message); }
   }, 60 * 60 * 1000);
 }
 
-app.use((err, req, res, next) => {
-    console.error('[ERROR]', err.message);
-    if (err.code === 'LIMIT_FILE_SIZE') {
-        return res.status(413).json({ error: 'File too large' });
-    }
-    if (err.message === 'File type not allowed') {
-        return res.status(415).json({ error: err.message });
-    }
-    const status = err.status || 500;
-    res.status(status).json({
-        error: process.env.NODE_ENV === 'production' ? 'Server error' : err.message,
-    });
-});
-
-// Session cleanup every hour
+// Session cleanup
 setInterval(() => {
-    try {
-        require('./auth').cleanupExpiredSessions().catch(err => {
-            console.error('[session-cleanup] Error:', err.message);
-        });
-    } catch (e) {}
+    try { require('./auth').cleanupExpiredSessions().catch(() => {}); } catch (e) {}
 }, 60 * 60 * 1000);
 
 const PORT = parseInt(process.env.PORT, 10) || 3000;
 
-// Try to run migrations, but ALWAYS start the server even if migrations fail
 async function start() {
     try {
-        console.log('[start] Starting migrations...');
         const { runMigrations } = require('./migrate');
         await runMigrations();
-        console.log('[start] Migrations complete');
-    } catch (err) {
-        console.error('[start] Migration error (continuing anyway):', err.message);
-    }
+    } catch (err) { console.error('[start] Migration skipped:', err.message); }
 
     app.listen(PORT, '0.0.0.0', () => {
-        console.log('==================================================');
         console.log(`[Nexora API] listening on port ${PORT}`);
-        console.log(`[Nexora API] NODE_ENV=${process.env.NODE_ENV}`);
-        console.log(`[Nexora API] DB_NAME=${process.env.DB_NAME}`);
-        console.log(`[Nexora API] DB_HOST=${process.env.DB_HOST}`);
-        console.log('==================================================');
     });
 }
 
-start().catch(err => {
-    console.error('[start] Fatal startup error:', err);
-    process.exit(1);
-});
-
-// Catch any crash and log it
-process.on('uncaughtException', err => {
-    console.error('[uncaughtException]', err.message, err.stack);
-});
-process.on('unhandledRejection', err => {
-    console.error('[unhandledRejection]', err && err.message);
-});
+start();
