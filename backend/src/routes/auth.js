@@ -114,4 +114,18 @@ router.post('/logout', asyncHandler(async (req, res) => {
     res.json({ ok: true });
 }));
 
+
+// GET /api/auth/profile - Get full user details for the profile page
+router.get('/profile', requireAuth, asyncHandler(async (req, res) => {
+    const r = await db.query(`
+        SELECT u.full_name, u.email, u.username, u.phone, u.country, u.date_of_birth, u.role, u.created_at,
+               sp.admission_number, sp.course_interest
+        FROM users u
+        LEFT JOIN student_profiles sp ON sp.user_id = u.id
+        WHERE u.id = $1
+    `, [req.user.user_id]);
+
+    if (!r.rows.length) return res.status(404).json({ error: 'Profile not found' });
+    res.json({ profile: r.rows[0] });
+}));
 module.exports = router;
