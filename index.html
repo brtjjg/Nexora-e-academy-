@@ -2168,10 +2168,81 @@ async function renderStudentCertificates() {
     } catch (err) { c.innerHTML = '<div class="empty-state">Failed to load certificates.</div>'; }
 }
 
-function renderStudentProfile() {
-    const initials = (currentUser.full_name || 'U').charAt(0).toUpperCase();
-    const avatar = currentUser.avatar_url ? `<img src="${esc(currentUser.avatar_url)}" style="width:80px;height:80px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)">` : `<div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700">${esc(initials)}</div>`;
-    document.getElementById('studentProfileContent').innerHTML = `<div style="background:var(--white);padding:2rem;border-radius:var(--radius);box-shadow:var(--shadow)"><div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap;margin-bottom:1.5rem">${avatar}<div><h2>${esc(currentUser.full_name)}</h2><p>${esc(currentUser.email)}</p></div></div><div class="form-row"><div class="form-group"><label>Username</label><input type="text" value="${esc(currentUser.username)}" disabled></div><div class="form-group"><label>Role</label><input type="text" value="${esc(currentUser.role)}" disabled></div></div></div>`;
+  async function renderStudentProfile() {
+    const c = document.getElementById('studentProfileContent');
+    c.innerHTML = '<div class="empty-state">Loading profile...</div>';
+    
+    try {
+        const { profile } = await api('/auth/profile');
+        const initials = (profile.full_name || 'U').charAt(0).toUpperCase();
+        
+        c.innerHTML = `
+            <div class="wallet-hero" style="background:linear-gradient(135deg,var(--navy),#1a3a5c); padding: 2rem; border-radius: var(--radius); color:#fff; margin-bottom: 2rem;">
+                <div style="display:flex; align-items:center; gap:1.5rem; flex-wrap:wrap;">
+                    <div style="width:80px;height:80px;border-radius:50%;background:var(--blue);color:#fff;display:flex;align-items:center;justify-content:center;font-size:2.5rem;font-weight:700;border:3px solid var(--gold);">
+                        ${esc(initials)}
+                    </div>
+                    <div>
+                        <h2 style="margin-bottom:0.3rem; font-size: 1.8rem;">${esc(profile.full_name)}</h2>
+                        <p style="color:rgba(255,255,255,0.7); font-size: 0.95rem;">${esc(profile.email)}</p>
+                        <span class="badge" style="background:var(--gold);color:var(--navy);margin-top:0.5rem;">${esc(profile.role.toUpperCase())}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div style="background:var(--white); padding:2rem; border-radius:var(--radius); box-shadow:var(--shadow);">
+                <h3 style="color:var(--navy); margin-bottom:1.5rem; border-bottom:2px solid #f0f0f0; padding-bottom:1rem;">
+                    <i class="fas fa-user-circle" style="color:var(--gold);"></i> Personal Details
+                </h3>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Username</label>
+                        <input type="text" value="${esc(profile.username)}" disabled style="background:var(--bg);">
+                    </div>
+                    <div class="form-group">
+                        <label>Admission Number</label>
+                        <input type="text" value="${esc(profile.admission_number || 'Pending Approval')}" disabled style="background:var(--bg);">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="text" value="${esc(profile.phone || 'Not provided')}" disabled style="background:var(--bg);">
+                    </div>
+                    <div class="form-group">
+                        <label>Country</label>
+                        <input type="text" value="${esc(profile.country || 'Not provided')}" disabled style="background:var(--bg);">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Date of Birth</label>
+                        <input type="text" value="${profile.date_of_birth ? new Date(profile.date_of_birth).toLocaleDateString() : 'Not provided'}" disabled style="background:var(--bg);">
+                    </div>
+                    <div class="form-group">
+                        <label>Course of Interest</label>
+                        <input type="text" value="${esc(profile.course_interest || 'General')}" disabled style="background:var(--bg);">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-top: 1rem;">
+                    <label>Account Created</label>
+                    <input type="text" value="${new Date(profile.created_at).toLocaleDateString()}" disabled style="background:var(--bg);">
+                </div>
+
+                <div style="margin-top: 2rem; text-align: right;">
+                    <button class="btn btn-primary" onclick="alert('Edit profile feature coming soon!')">
+                        <i class="fas fa-edit"></i> Edit Profile
+                    </button>
+                </div>
+            </div>
+        `;
+    } catch (err) {
+        c.innerHTML = `<div class="empty-state" style="color:var(--danger);">Failed to load profile: ${esc(err.message)}</div>`;
+    }
 }
 
 async function updateAdminDashboard() {
