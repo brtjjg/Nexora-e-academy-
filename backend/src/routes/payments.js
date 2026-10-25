@@ -322,7 +322,7 @@ router.get('/me/summary', requireAuth, asyncHandler(async (req, res) => {
             AND t.payment_type = 'COURSE_PAYMENT'
             AND t.status = 'completed'
         WHERE e.user_id = $1
-        GROUP BY e.course_id, c.title, c.price
+        GROUP BY e.course_id, c.title, c.price, e.enrolled_at
         ORDER BY e.enrolled_at DESC
     `, [userId]);
 
