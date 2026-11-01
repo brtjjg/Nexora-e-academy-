@@ -10,6 +10,7 @@ const path = require('path');
 const fs = require('fs');
 const { createClient } = require('@supabase/supabase-js');
 const { sendEmail } = require('../utils/sendEmail');
+const crypto = require('crypto');
 
 // ═════════════════════════════════════════════
 // SUPABASE STORAGE
@@ -1280,5 +1281,52 @@ async function sendContributorDecisionEmail({ to, name, approved, reason, portal
         }),
     });
 }
+
+// POST /api/admin/lessons/:id/generate-video
+router.post('/lessons/:id/generate-video', requireAdmin, asyncHandler(async (req, res) => {
+    const lessonId = req.params.id;
+    
+    const lessonRes = await db.query(`
+        SELECT l.id, l.title, l.notes, m.course_id 
+        FROM lessons l JOIN modules m ON m.id = l.module_id WHERE l.id = $1
+    `, [lessonId]);
+
+    if (!lessonRes.rows.length) return res.status(404).json({ error: 'Lesson not found' });
+    const lesson = lessonRes.rows[0];
+
+    const payload = {
+        event_id: `evt_${Date.now()}_${lessonId}`,
+        event: 'lesson.published',
+        lesson: {
+            id: lesson.id,
+            title: lesson.title,
+            content: lesson.notes || 'No content provided',
+            course_id: lesson.course_id,
+            updated_at: new Date().toISOString()
+        }
+    };
+
+    const rawBody = JSON.stringify(payload);
+    const secret = process.env.ACADEMY_WEBHOOK_SECRET;
+    const signature = 'sha256=' + crypto.createHmac('sha256', secret).update(rawBody).digest('hex');
+    const studioUrl = process.env.STUDIO_WEBHOOK_URL;
+
+    try {
+        const response = await fetch(studioUrl, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Nexora-Signature': signature,
+                'X-Nexora-Event-Id': payload.event_id
+            },
+            body: rawBody
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || 'Studio rejected the request');
+        res.json({ ok: true, message: 'Video generation started', studio_response: data });
+    } catch (error) {
+        res.status(500).json({ error: 'Failed to reach Studio API: ' + error.message });
+    }
+}));
 
 module.exports = router;
