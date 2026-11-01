@@ -1,91 +1,46 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db');
-const { EdgeTTS } = require('edge-tts');
-const ffmpeg = require('fluent-ffmpeg');
-const fs = require('fs');
-const path = require('path');
-const crypto = require('crypto');
+const db = require('../db'); // Your Node.js Postgres pool
+const fetch = require('node-fetch');
+
+// The URL of your new Python Brain on Render
+const PYTHON_BRAIN_URL = 'https://YOUR-PYTHON-APP-NAME.onrender.com';
 
 router.post('/generate/:lessonId', async (req, res) => {
     try {
         const { lessonId } = req.params;
-        const { voice } = req.body;
 
-        // 1. Fetch Lesson
+        // 1. Fetch the lesson notes from your Node.js database
         const lessonRes = await db.query('SELECT title, notes FROM lessons WHERE id = $1', [lessonId]);
-        if (lessonRes.rows.length === 0) throw new Error("Lesson not found");
+        if (lessonRes.rows.length === 0) return res.status(404).json({ error: "Lesson not found" });
+        
         const lesson = lessonRes.rows[0];
 
-        // 2. Create DB Record
-        const prodRes = await db.query(
-            'INSERT INTO studio_productions (lesson_id, title, status) VALUES ($1, $2, $3) RETURNING id', 
-            [lessonId, lesson.title, 'rendering']
-        );
-        const productionId = prodRes.rows[0].id;
-
-        // Send response immediately so the frontend doesn't freeze
-        res.json({ success: true, message: "Local AI is rendering the video..." });
-
-        // --- THE HARDCODED AI BRAIN STARTS HERE ---
+        // 2. Send the lesson to the Python Brain
+        console.log(`[Bridge] Sending lesson "${lesson.title}" to Python Brain...`);
         
-        // Generate unique file names
-        const fileId = crypto.randomBytes(4).toString('hex');
-        const audioPath = path.join(__dirname, `../../uploads/${fileId}.mp3`);
-        const videoPath = path.join(__dirname, `../../uploads/${fileId}.mp4`);
-        
-        // A. Generate the Voiceover (Text to Speech)
-        console.log(`[AI] Generating audio for: ${lesson.title}`);
-        const tts = new EdgeTTS(lesson.notes || lesson.title, voice || 'en-US-AriaNeural');
-        await tts.toFile(audioPath);
-
-        // B. Generate the Video using FFmpeg
-        console.log(`[AI] Rendering video...`);
-        
-        // You need a background image. Put a generic image in your backend/public folder.
-        const backgroundImage = path.join(__dirname, `../../public/bg.jpg`); 
-
-        await new Promise((resolve, reject) => {
-            ffmpeg()
-                .input(backgroundImage)
-                .input(audioPath)
-                .inputOptions(['-loop 1']) // Loop the image
-                .outputOptions([
-                    '-c:v libx264',
-                    '-tune stillimage',
-                    '-c:a aac',
-                    '-b:a 192k',
-                    '-pix_fmt yuv420p',
-                    '-shortest' // Finish video when audio ends
-                ])
-                .save(videoPath)
-                .on('end', () => {
-                    console.log(`[AI] Video finished: ${videoPath}`);
-                    resolve();
-                })
-                .on('error', (err) => {
-                    console.error(`[AI] FFmpeg Error:`, err);
-                    reject(err);
-                });
+        const pythonRes = await fetch(`${PYTHON_BRAIN_URL}/api/receive-lesson`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                lesson_id: lessonId,
+                title: lesson.title,
+                notes: lesson.notes || lesson.title
+            })
         });
 
-        // C. Update the Database with the new local video URL
-        // Assuming your server serves the /uploads folder statically
-        const videoUrl = `https://nexora-api-sskg.onrender.com/uploads/${fileId}.mp4`;
-        
-        await db.query(
-            'UPDATE studio_productions SET status = $1, video_url = $2 WHERE id = $3', 
-            ['ready', videoUrl, productionId]
-        );
+        if (!pythonRes.ok) {
+            throw new Error("Python Brain failed to accept the job.");
+        }
 
-        // Clean up the temporary audio file
-        fs.unlinkSync(audioPath);
-        console.log(`[AI] Job complete for: ${lesson.title}`);
+        // 3. Return success to Vercel Studio Portal
+        res.json({ success: true, message: "Sent to AI Brain for rendering." });
 
     } catch (err) { 
-        console.error("[AI Error]", err);
-        // You might want to update the DB to 'failed' here if something crashes
+        console.error("[Bridge Error]", err);
+        res.status(500).json({ error: err.message }); 
     }
 });
 
+// Keep your existing /dashboard, /productions, and /approve routes exactly as they are!
 module.exports = router;
