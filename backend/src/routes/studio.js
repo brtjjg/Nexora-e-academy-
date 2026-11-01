@@ -1,16 +1,16 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../db'); // Your Node.js Postgres pool
+const db = require('../db'); 
 const fetch = require('node-fetch');
 
-// The URL of your new Python Brain on Render
-const PYTHON_BRAIN_URL = 'https://YOUR-PYTHON-APP-NAME.onrender.com';
+// ⚠️ PASTE YOUR PYTHON URL HERE
+const PYTHON_BRAIN_URL = 'https://nexora-studio-brain.onrender.com';
 
 router.post('/generate/:lessonId', async (req, res) => {
     try {
         const { lessonId } = req.params;
 
-        // 1. Fetch the lesson notes from your Node.js database
+        // 1. Fetch the lesson notes from Node.js database
         const lessonRes = await db.query('SELECT title, notes FROM lessons WHERE id = $1', [lessonId]);
         if (lessonRes.rows.length === 0) return res.status(404).json({ error: "Lesson not found" });
         
