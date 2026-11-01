@@ -155,4 +155,23 @@ router.post('/profile/avatar', requireAuth, upload.single('avatar'), asyncHandle
     res.json({ ok: true, url: data.publicUrl });
 }));
 
+// GET /api/auth/studio-token
+router.get('/studio-token', requireAuth, asyncHandler(async (req, res) => {
+    if (!['admin', 'super_admin'].includes(req.user.role)) {
+        return res.status(403).json({ error: 'Admin access required' });
+    }
+
+    const payload = {
+        sub: req.user.user_id,
+        email: req.user.email,
+        role: req.user.role,
+        iss: 'nexora-academy',
+        aud: 'nexora-studio'
+    };
+
+    const secret = process.env.STUDIO_JWT_SECRET || 'my-super-secret-studio-key-2026';
+    const token = jwt.sign(payload, secret, { expiresIn: '12h', algorithm: 'HS256' });
+    res.json({ token });
+}));
+
 module.exports = router;
