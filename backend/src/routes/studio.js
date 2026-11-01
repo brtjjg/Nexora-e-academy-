@@ -1,66 +1,76 @@
 const express = require('express');
 const router = express.Router();
-const supabase = require('../db'); // Ensure this path matches your setup
+const supabase = require('../db'); 
+const fetch = require('node-fetch'); // Make sure you have node-fetch installed in package.json
 
-// 1. Get Dashboard Stats
-router.get('/dashboard', async (req, res) => {
-    try {
-        // In a real app, you'd count from Supabase. For now, send dummy data.
-        res.json({ productions: { queued: 0, rendering: 0, ready: 1, failed: 0 } });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 2. Get Productions List
-router.get('/productions', async (req, res) => {
-    try {
-        const { data, error } = await supabase
-            .from('studio_productions')
-            .select('*')
-            .order('created_at', { ascending: false });
-            
-        if (error) throw error;
-        res.json({ items: data });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
-
-// 3. Trigger Video Generation
+// 3. Trigger Real Video Generation
 router.post('/generate/:lessonId', async (req, res) => {
     try {
         const { lessonId } = req.params;
         const { voice } = req.body;
 
-        // 1. Fetch lesson info
-        const { data: lesson } = await supabase.from('lessons').select('title').eq('id', lessonId).single();
+        // 1. Fetch the lesson text from Supabase
+        const { data: lesson, error: lessonError } = await supabase
+            .from('lessons')
+            .select('title, notes')
+            .eq('id', lessonId)
+            .single();
 
-        // 2. Add to queue in database
-        const { data, error } = await supabase.from('studio_productions').insert([{
-            lesson_id: lessonId,
-            title: lesson.title,
-            status: 'ready', // Simulate instantly ready for testing!
-            video_url: 'https://www.w3schools.com/html/mov_bbb.mp4' // Dummy video
-        }]).select();
+        if (lessonError) throw new Error("Lesson not found");
 
-        if (error) throw error;
-        res.json({ success: true, message: "Generation started" });
-    } catch (err) { res.status(500).json({ error: err.message }); }
-});
+        // 2. Create a record in Supabase first (Status: Rendering)
+        const { data: production, error: dbError } = await supabase
+            .from('studio_productions')
+            .insert([{
+                lesson_id: lessonId,
+                title: lesson.title,
+                status: 'rendering', 
+                video_url: null
+            }])
+            .select()
+            .single();
 
-// 4. Approve Video (Publishes to Academy)
-router.post('/approve/:id', async (req, res) => {
-    try {
-        const { id } = req.params;
+        if (dbError) throw dbError;
 
-        // 1. Find the production record
-        const { data: production } = await supabase.from('studio_productions').select('*').eq('id', id).single();
+        // 3. Call the external AI Video API (Example using a generic HeyGen endpoint)
+        // Note: Each API has slightly different payloads. Check your provider's docs.
+        const apiResponse = await fetch('https://api.heygen.com/v2/video/generate', {
+            method: 'POST',
+            headers: {
+                'X-Api-Key': process.env.VIDEO_API_KEY,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                video_inputs: [{
+                    character: {
+                        type: "avatar",
+                        avatar_id: "Angela-inTshirt-20220820", // You get this ID from the API provider
+                        avatar_style: "normal"
+                    },
+                    voice: {
+                        type: "text",
+                        input_text: `${lesson.title}. ${lesson.notes}`, // The script
+                        voice_id: voice // e.g., "en-US-AriaNeural"
+                    }
+                }],
+                dimension: { width: 1280, height: 720 }
+            })
+        });
+
+        const apiData = await apiResponse.json();
         
-        // 2. Update status to approved
-        await supabase.from('studio_productions').update({ status: 'approved' }).eq('id', id);
+        // Save the external API's video ID so we can check its progress later
+        if (apiData.data && apiData.data.video_id) {
+            await supabase
+                .from('studio_productions')
+                .update({ external_id: apiData.data.video_id })
+                .eq('id', production.id);
+        }
 
-        // 3. Inject the video URL into the Academy lessons table
-        await supabase.from('lessons').update({ video_url: production.video_url }).eq('id', production.lesson_id);
-
-        res.json({ success: true });
-    } catch (err) { res.status(500).json({ error: err.message }); }
+        res.json({ success: true, message: "AI is generating the video..." });
+        
+    } catch (err) { 
+        console.error(err);
+        res.status(500).json({ error: err.message }); 
+    }
 });
-
-module.exports = router;
