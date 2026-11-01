@@ -3,6 +3,27 @@ const router = express.Router();
 const supabase = require('../db'); 
 const fetch = require('node-fetch'); // Make sure you have node-fetch installed in package.json
 
+// Get Video Status for a specific lesson
+router.get('/status/:lessonId', async (req, res) => {
+    try {
+        const { lessonId } = req.params;
+        const { data, error } = await supabase
+            .from('studio_productions')
+            .select('status')
+            .eq('lesson_id', lessonId)
+            .order('created_at', { ascending: false })
+            .limit(1)
+            .single();
+
+        if (error || !data) {
+            return res.json({ status: 'none' });
+        }
+        res.json({ status: data.status });
+    } catch (err) {
+        res.json({ status: 'none' });
+    }
+});
+
 // 3. Trigger Real Video Generation
 router.post('/generate/:lessonId', async (req, res) => {
     try {
