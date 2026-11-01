@@ -3180,9 +3180,10 @@ function addLesson(mi) {
     document.getElementById('lesImgList').innerHTML = '';
     document.getElementById('lessonEditorModal').classList.add('active');
 }
-function editLesson(mi, li) {
+async function editLesson(mi, li) {
     const les = currentCourseData.modules[mi].lessons[li];
-    lessonDraft = { videoFile: les.video_url || null, pdfs: JSON.parse(JSON.stringify(les.pdfs || [])), images: JSON.parse(JSON.stringify(les.images || [])) };
+    
+    // (Keep all your existing form filling code here)
     document.getElementById('lessonEditorTitle').textContent = 'Edit Lesson';
     document.getElementById('lessonEditModuleIdx').value = mi;
     document.getElementById('lessonEditLessonIdx').value = li;
@@ -3192,11 +3193,34 @@ function editLesson(mi, li) {
     document.getElementById('lesNotes').value = les.notes || '';
     document.getElementById('lesAssignment').value = les.assignment || '';
     document.getElementById('lesPublished').value = les.published === 'draft' ? 'draft' : 'published';
-    if (les.video_url) { document.getElementById('lesVideoEl').src = les.video_url; document.getElementById('lesVideoPreview').style.display = 'block'; }
-    else document.getElementById('lesVideoPreview').style.display = 'none';
-    renderLesPdfs(); renderLesImgs();
+
+    // --- NEW CODE TO CHECK VIDEO STATUS ---
+    const videoBox = document.getElementById('aiVideoStatusBox');
+    if (videoBox) {
+        videoBox.innerHTML = '<div style="color:var(--text-secondary);"><i class="fas fa-spinner fa-spin"></i> Checking video status...</div>';
+        
+        try {
+            // Ask the backend if this lesson has a video in the studio
+            const res = await fetch(`${API_BASE}/studio/status/${les.id}`);
+            const data = await res.json();
+            
+            if (data.status === 'rendering') {
+                videoBox.innerHTML = `<h4 style="color:var(--warning); margin-bottom:0.3rem;"><i class="fas fa-cog fa-spin"></i> Generating Video...</h4><p style="font-size:0.85rem; color:var(--text-secondary);">The AI is currently making this video in the Studio. Check back in a few minutes.</p>`;
+            } else if (data.status === 'ready') {
+                videoBox.innerHTML = `<h4 style="color:var(--blue); margin-bottom:0.3rem;"><i class="fas fa-check-circle"></i> Video Ready for Review</h4><p style="font-size:0.85rem; color:var(--text-secondary);">Go to the <strong>Nexora Studio</strong> to play and approve this video.</p>`;
+            } else if (data.status === 'approved') {
+                videoBox.innerHTML = `<h4 style="color:var(--success); margin-bottom:0.3rem;"><i class="fas fa-play-circle"></i> Video is Live!</h4><p style="font-size:0.85rem; color:var(--text-secondary);">This video has been approved and is currently live for students.</p>`;
+            } else {
+                videoBox.innerHTML = `<h4 style="color:var(--navy); margin-bottom:0.3rem;">AI Video Studio</h4><p style="font-size:0.85rem; color:var(--text-secondary);">No video yet. Save this lesson, then go to the <strong>Nexora Studio</strong> to generate it.</p>`;
+            }
+        } catch (e) {
+            videoBox.innerHTML = '<div style="color:var(--danger);">Failed to check video status.</div>';
+        }
+    }
+    // --- END NEW CODE ---
+
     document.getElementById('lessonEditorModal').classList.add('active');
-}
+      }
 function closeLessonEditor() { document.getElementById('lessonEditorModal').classList.remove('active'); }
 async function handleLesVideo(e) {
     const file = e.target.files[0]; if (!file) return;
