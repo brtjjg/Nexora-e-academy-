@@ -1869,8 +1869,14 @@ function renderNxLessonMain() {
       <div class="nx-breadcrumb"><span class="lnk" onclick="navigateTo('student-courses')">← Back</span><span style="color:#B8C7D6">|</span><span>Module ${modNum}: ${esc(mod ? mod.title : '')}</span></div>
       <div class="nx-lesson-title-row"><h1 class="nx-lesson-title">${lessonNumber} ${esc(lesson.title)}</h1>${isDone ? '<span class="nx-completed-badge"><i class="fas fa-check"></i> Completed</span>' : ''}</div>
       <div class="nx-lesson-meta">${lesson.video_url ? '<span><i class="fas fa-play-circle"></i> Video</span>' : ''}${lesson.duration_minutes ? `<span><i class="fas fa-clock"></i> ${lesson.duration_minutes} minutes</span>` : ''}<span><i class="fas fa-calendar"></i> Last updated: ${lesson.updated_at ? fmtDate(lesson.updated_at) : fmtDate(new Date())}</span></div>
-      ${lesson.video_url ? `<div class="nx-video"><video controls preload="metadata"><source src="${esc(lesson.video_url)}" type="video/mp4">Your browser doesn't support video.</video></div>` : ''}
-      <div class="nx-overview"><h3>Lesson Overview</h3><p>${esc(lesson.description || lesson.notes || 'In this lesson, you will learn the key concepts and practical skills covered in this module.')}</p></div>
+      ${lesson.video_url ? `
+    <div class="nx-video" style="margin-bottom: 24px; border-radius: 12px; overflow: hidden; background: #000;">
+        <video controls preload="metadata" style="width: 100%; display: block;">
+            <source src="${lesson.video_url}" type="video/mp4">
+            Your browser does not support the video tag.
+        </video>
+    </div>
+` : ''}
       ${lesson.notes ? `<div class="nx-key-topics"><h4>📌 Key Topics</h4><ul>${lesson.notes.split('\n').filter(l => l.trim()).slice(0, 6).map(line => `<li><i class="fas fa-check"></i> <span>${esc(line.replace(/^[-•*]\s*/, ''))}</span></li>`).join('')}</ul></div>` : ''}
       <div class="nx-tabs">${renderNxTab('notes', 'Notes', 'fa-book')}${renderNxTab('resources', 'Resources', 'fa-paperclip')}${renderNxTab('discussion', 'Discussion', 'fa-comments')}${renderNxTab('assignment', 'Assignment', 'fa-file-signature')}</div>
       <div class="nx-tab-content ${nxTab === 'notes' ? 'active' : ''}" data-tab="notes"><h4>Lesson Notes</h4><div class="nx-notes-body">${esc(lesson.notes || 'No detailed notes for this lesson.')}</div></div>
