@@ -3227,24 +3227,25 @@ async function saveLesson() {
     const li = document.getElementById('lessonEditLessonIdx').value;
     const title = document.getElementById('lesTitle').value.trim();
     if (!title) { alert('⚠️ Title required'); return; }
-    const uploadedPdfs = [], uploadedImgs = [];
-    try {
-        setLoading(true);
-        for (const p of lessonDraft.pdfs) {
-            if (p._file) { const fd = new FormData(); fd.append('file', p._file); const r = await apiForm('/uploads/lesson-attachment?attachment_type=pdf&scope=lessons', fd); uploadedPdfs.push({ name: p.name, path: r.path }); }
-            else uploadedPdfs.push(p);
-        }
-        for (const im of lessonDraft.images) {
-            if (im._file) { const fd = new FormData(); fd.append('file', im._file); const r = await apiForm('/uploads/lesson-attachment?attachment_type=image&scope=lessons', fd); uploadedImgs.push({ name: im.name, path: r.path }); }
-            else uploadedImgs.push(im);
-        }
-    } catch (err) { setLoading(false); alert('❌ Upload failed: ' + (err.data?.error || err.message)); return; }
-    setLoading(false);
-    const lessonObj = { title, description: document.getElementById('lesDescription').value, position: parseInt(document.getElementById('lesOrder').value) || 1, notes: document.getElementById('lesNotes').value, assignment: document.getElementById('lesAssignment').value, video_url: lessonDraft.videoFile || null, pdfs: uploadedPdfs, images: uploadedImgs, published: document.getElementById('lesPublished').value };
+    
+    // We are bypassing the manual video upload completely
+    const lessonObj = { 
+        title, 
+        description: document.getElementById('lesDescription').value, 
+        position: parseInt(document.getElementById('lesOrder').value) || 1, 
+        notes: document.getElementById('lesNotes').value, 
+        assignment: document.getElementById('lesAssignment').value, 
+        video_url: null, // Video will be added by Studio later
+        pdfs: [], 
+        images: [], 
+        published: document.getElementById('lesPublished').value 
+    };
+
     const lessons = currentCourseData.modules[mi].lessons = currentCourseData.modules[mi].lessons || [];
     if (li !== '') lessons[parseInt(li)] = { ...lessons[parseInt(li)], ...lessonObj };
     else lessons.push(lessonObj);
     lessons.forEach((x, i) => x.position = i + 1);
+    
     closeLessonEditor();
     renderModules();
 }
