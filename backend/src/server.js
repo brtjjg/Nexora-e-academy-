@@ -92,7 +92,6 @@ app.use('/api/paypal',        loadRoute('paypal'));
 app.use('/api/pesapal',       loadRoute('pesapal'));
 app.use('/api/contributor',   loadRoute('contributor'));
 app.use('/api/financials',    loadRoute('financials'));
-app.use('/api/studio',        loadRoute('studio'));
 
 // Root and Health Checks
 app.get('/', (req, res) => res.json({ ok: true, service: 'Nexora Academy API' }));
